@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 #include "bot.h"
 
 #define expect_more(x) (x & 0x80)
@@ -65,7 +66,11 @@ int send_str(struct bot *your_bot, char *str){
 }
 
 int send_raw(struct bot *your_bot, void *data, int len){
-    send(your_bot -> socketfd, data, len, 0);
+    return send(your_bot -> socketfd, data, len, 0);
+}
+
+int receive_raw(struct bot *your_bot, void *data, int len){
+    return recv(your_bot -> socketfd, data, len, 0);
 }
 
 int64_t varint64(char *data){
@@ -97,8 +102,13 @@ int main(int argc, char **argv){
     if(join_server(&test_bot, argv[1], argv[2], argv[3]) == -1){
         return -1;
     }
-    char handshake[20] = {0x0E, 0x00, 0x04, 'l', 'o', 'c', 'a', 'l', 'h', 'o', 's', 't', 0x63, 0xDD, 0x02};
-    printf("%d\n", send_raw(&test_bot, handshake, 15));
+    char handshake[20] = {0x0E, 0x00, 47, 'l', 'o', 'c', 'a', 'l', 'h', 'o', 's', 't', 0x63, 0xDD, 0x02};
+    char buf[100] = {0};
+    int bytes_sent = send_raw(&test_bot, handshake, 15);
+    printf("sent %d bytes\n", bytes_sent);
+    int bytes_received = receive_raw(&test_bot, buf, 100);
+    printf("received %d bytes\n", bytes_received);
+    printf("%X\n", buf[0]);
     disconnect(&test_bot);
     //char var[2] = {0xAC, 0x02};
     //printf("%d\n", varint64(var));
