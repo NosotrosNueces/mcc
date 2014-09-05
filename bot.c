@@ -103,6 +103,7 @@ int main(int argc, char **argv){
         return -1;
     }
     char handshake[20] = {0x0E, 0x00, 47, 'l', 'o', 'c', 'a', 'l', 'h', 'o', 's', 't', 0x63, 0xDD, 0x02};
+    printf("varint: %lu\n", uvarint64(handshake + 2));
     char buf[100] = {0};
     int bytes_sent = send_raw(&test_bot, handshake, 15);
     printf("sent %d bytes\n", bytes_sent);
