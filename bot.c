@@ -73,44 +73,88 @@ int receive_raw(struct bot *your_bot, void *data, int len){
     return recv(your_bot -> socketfd, data, len, 0);
 }
 
-int64_t varint64(char *data){
-    int64_t result = 0;
-    int shifts = 0;
-    do{
-        result |= ((0x7F & *data) << shifts);
-        shifts += 7;
-    }while(expect_more(*data++));
-    return result;
-}
 
-uint64_t uvarint64(char *data){
+// returns the number of bytes read from data
+int uvarint64(char *data, uint64_t *value){
     uint64_t result = 0;
     int shifts = 0;
     do{
-        result |= ((0x7F & *data) << shifts);
-        shifts += 7;
+        result |= ((0x7F & *data) << (shifts * 7));
+        shifts++;
     }while(expect_more(*data++));
-    return result;
+    *value = result;
+    return shifts;
+}
+
+// returns the number of bytes read from data
+int uvarint32(char *data, uint32_t *value){
+    uint32_t result = 0;
+    int shifts = 0;
+    do{
+        result |= ((0x7F & *data) << (shifts * 7));
+        shifts++;
+    }while(expect_more(*data++));
+    *value = result;
+    return shifts;
+}
+
+int uvarint64_encode(uint64_t value, char *data, int len){
+    memset(data, 0, len);
+    char mask = 0x7F;
+    int i = 0;
+    while(value){
+        if(i >= len)
+            return -1;
+        data[i] = (mask & value);
+        data[i] |= 0X80;
+        value >>= 7;
+        i++;
+    }
+    data[i - 1] &= mask;
+    return i;
+}
+
+int uvarint32_encode(uint32_t value, char *data, int len){
+    memset(data, 0, len);
+    char mask = 0x7F;
+    int i = 0;
+    while(value){
+        if(i >= len)
+            return -1;
+        data[i] = (mask & value);
+        data[i] |= 0X80;
+        value >>= 7;
+        i++;
+    }
+    data[i - 1] &= mask;
+    return i;
 }
 
 int main(int argc, char **argv){
-    if(argc < 4){
-        fprintf(stderr, "Specify local port, remote hostname/ip, and remote port\n");
-        exit(1);
-    }
-    struct bot test_bot;
-    if(join_server(&test_bot, argv[1], argv[2], argv[3]) == -1){
-        return -1;
-    }
-    char handshake[20] = {0x0E, 0x00, 47, 'l', 'o', 'c', 'a', 'l', 'h', 'o', 's', 't', 0x63, 0xDD, 0x02};
-    printf("varint: %lu\n", uvarint64(handshake + 2));
+    //if(argc < 4){
+    //    fprintf(stderr, "Specify local port, remote hostname/ip, and remote port\n");
+    //    exit(1);
+    //}
+    //struct bot test_bot;
+    //if(join_server(&test_bot, argv[1], argv[2], argv[3]) == -1){
+    //    return -1;
+    //}
+    char handshake[20] = {0x0F, 0x00, 47, 0x09, 'l', 'o', 'c', 'a', 'l', 'h', 'o', 's', 't', 0x63, 0xDD, 0x02};
+    char login_start[20] = {0x08, 0x00, 6, 'a', 'n', '_', 'g', 'u', 'y'};
+    char test[2] = {0x80, 0x02};
+    uint64_t val;
+    uvarint64(test, &val);
+    printf("varint: %d\n");
     char buf[100] = {0};
-    int bytes_sent = send_raw(&test_bot, handshake, 15);
-    printf("sent %d bytes\n", bytes_sent);
-    int bytes_received = receive_raw(&test_bot, buf, 100);
-    printf("received %d bytes\n", bytes_received);
-    printf("%X\n", buf[0]);
-    disconnect(&test_bot);
+    int len = uvarint64_encode(256, buf, 1);
+    printf("len: %d, %hhx %hhx\n", len, buf[0], buf[1]);
+    //int bytes_sent = send_raw(&test_bot, handshake, 16);
+    //printf("sent %d bytes\n", bytes_sent);
+    //bytes_sent = send_raw(&test_bot, login_start, 9);
+    //int bytes_received = receive_raw(&test_bot, buf, 100);
+    //printf("received %d bytes\n", bytes_received);
+    //printf("%hhX %hhX %hhX %hhX\n", buf[0], buf[1], buf[2], buf[3]);
+    //disconnect(&test_bot);
     //char var[2] = {0xAC, 0x02};
     //printf("%d\n", varint64(var));
 }
