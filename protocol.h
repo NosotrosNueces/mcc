@@ -1,3 +1,4 @@
+#include <stdint.h>
 
 typedef uint8_t bool;
 typedef uint64_t position_t;
