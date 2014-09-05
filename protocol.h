@@ -763,6 +763,12 @@ typedef struct play_serverbound_spectate_t {
  **
  **/
 
+/* varint functions */
+
+// returns bytes written to char array
+int varint64(char *, int64_t *);
+int uvarint64(char *, uint64_t *);
+
 
 /*
  * Handshaking serverbound functions

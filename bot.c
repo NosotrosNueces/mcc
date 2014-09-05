@@ -10,7 +10,6 @@
 #include <assert.h>
 #include "bot.h"
 
-#define expect_more(x) (x & 0x80)
 
 // initializes a bot structure with a socket. The socket is bound to the local address on
 // some port and is connected to the server specified by the server_host and server_port
@@ -74,61 +73,7 @@ int receive_raw(struct bot *your_bot, void *data, int len){
 }
 
 
-// returns the number of bytes read from data
-int uvarint64(char *data, uint64_t *value){
-    uint64_t result = 0;
-    int shifts = 0;
-    do{
-        result |= ((0x7F & *data) << (shifts * 7));
-        shifts++;
-    }while(expect_more(*data++));
-    *value = result;
-    return shifts;
-}
 
-// returns the number of bytes read from data
-int uvarint32(char *data, uint32_t *value){
-    uint32_t result = 0;
-    int shifts = 0;
-    do{
-        result |= ((0x7F & *data) << (shifts * 7));
-        shifts++;
-    }while(expect_more(*data++));
-    *value = result;
-    return shifts;
-}
-
-int uvarint64_encode(uint64_t value, char *data, int len){
-    memset(data, 0, len);
-    char mask = 0x7F;
-    int i = 0;
-    while(value){
-        if(i >= len)
-            return -1;
-        data[i] = (mask & value);
-        data[i] |= 0X80;
-        value >>= 7;
-        i++;
-    }
-    data[i - 1] &= mask;
-    return i;
-}
-
-int uvarint32_encode(uint32_t value, char *data, int len){
-    memset(data, 0, len);
-    char mask = 0x7F;
-    int i = 0;
-    while(value){
-        if(i >= len)
-            return -1;
-        data[i] = (mask & value);
-        data[i] |= 0X80;
-        value >>= 7;
-        i++;
-    }
-    data[i - 1] &= mask;
-    return i;
-}
 
 int main(int argc, char **argv){
     //if(argc < 4){
