@@ -8,7 +8,7 @@ Botting API for Minecraft using the client-server protocol
 
 
 Format Specifiers
-\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+________________
 |b| one byte    |
 |h| two bytes   |
 |w| four bytes  |
