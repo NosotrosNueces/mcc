@@ -2,6 +2,7 @@
 
 typedef uint8_t bool;
 typedef uint64_t position_t;
+typedef uint64_t vint32_t;
 typedef void* chat_t;
 typedef void* data_t;
 typedef void* meta_t;
@@ -24,10 +25,10 @@ typedef struct handshaking_serverbound_handshake_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      protocol_version;
+    vint32_t      protocol_version;
     char*         server_addr;
     uint16_t      server_port;
-    uint32_t      next_state;
+    vint32_t      next_state;
 } handshaking_serverbound_handshake;
 
 /*
@@ -53,7 +54,7 @@ typedef struct login_clientbound_set_compression_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      threshold;
+    vint32_t      threshold;
 } login_clientbound_set_compression;
 
 /*
@@ -109,7 +110,7 @@ typedef struct play_clientbound_keepalive_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      keepalive_id;
+    vint32_t      keepalive_id;
 } play_clientbound_keepalive;
 
 typedef struct play_clientbound_join_game_t {
@@ -144,8 +145,8 @@ typedef struct play_clientbound_entity_equipment_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
-    uint16_t      slot;
+    vint32_t      entity_id;
+    int16_t       slot;
     slot_t        item;
 } play_clientbound_entity_equipment;
 
@@ -161,7 +162,7 @@ typedef struct play_clientbound_update_health_t {
     int           packet_id;
 
     float         health;
-    uint32_t      food;
+    vint32_t      food;
     float         saturation;
 } play_clientbound_update_health;
 
@@ -198,7 +199,7 @@ typedef struct play_clientbound_use_bed_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     position_t    location;
 } play_clientbound_use_bed;
 
@@ -206,7 +207,7 @@ typedef struct play_clientbound_animation_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     uint8_t      animation;
 } play_clientbound_animation;
 
@@ -214,7 +215,7 @@ typedef struct play_clientbound_spawn_player_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     __uint128_t   uuid;
     int32_t       x;
     int32_t       y;
@@ -229,15 +230,15 @@ typedef struct play_clientbound_collect_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      collected_entity_id;
-    uint32_t      collector_entity_id;
+    vint32_t      collected_entity_id;
+    vint32_t      collector_entity_id;
 } play_clientbound_collect;
 
 typedef struct play_clientbound_spawn_object_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     int8_t        type;
     int32_t       x;
     int32_t       y;
@@ -251,7 +252,7 @@ typedef struct play_clientbound_spawn_mob_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     uint8_t       type;
     int32_t       x;
     int32_t       y;
@@ -269,7 +270,7 @@ typedef struct play_clientbound_spawn_painting_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     char*         title;
     position_t    location;
     uint8_t       direction;
@@ -279,7 +280,7 @@ typedef struct play_clientbound_spawn_xp_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     int32_t       x;
     int32_t       y;
     int32_t       z;
@@ -290,7 +291,7 @@ typedef struct play_clientbound_entity_velocity_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     int16_t       dx;
     int16_t       dy;
     int16_t       dz;
@@ -301,21 +302,21 @@ typedef struct play_clientbound_entity_destroy_entities_t {
     int           packet_id;
 
     int32_t       count;
-    uint32_t*     entity_ids;
+    vint32_t*     entity_ids;
 } play_clientbound_entity_destroy_entities;
 
 typedef struct play_clientbound_entity_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
 } play_clientbound_entity;
 
 typedef struct play_clientbound_entity_move_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     int8_t        dx;
     int8_t        dy;
     int8_t        dz;
@@ -326,7 +327,7 @@ typedef struct play_clientbound_entity_look_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     int8_t        yaw;
     int8_t        pitch;
     bool          on_ground;
@@ -336,7 +337,7 @@ typedef struct play_clientbound_entity_look_move_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     int8_t        dx;
     int8_t        dy;
     int8_t        dz;
@@ -349,7 +350,7 @@ typedef struct play_clientbound_entity_teleport_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     int32_t       x;
     int32_t       y;
     int32_t       z;
@@ -362,7 +363,7 @@ typedef struct play_clientbound_entity_head_look_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     int8_t        yaw;
 } play_clientbound_entity_head_look;
 
@@ -370,7 +371,7 @@ typedef struct play_clientbound_entity_status_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     int8_t        status;
 } play_clientbound_entity_status;
 
@@ -378,7 +379,7 @@ typedef struct play_clientbound_entity_attach_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     int32_t       vehicle_id;
     bool          leash;
 } play_clientbound_entity_attach;
@@ -387,10 +388,10 @@ typedef struct play_clientbound_entity_effect_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     int8_t        effect_id;
     int8_t        amplifier;
-    uint32_t      duration;
+    vint32_t      duration;
     bool          hide;
 } play_clientbound_entity_effect;
 
@@ -398,7 +399,7 @@ typedef struct play_clientbound_entity_clear_effect_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     int32_t       effect_id;
 } play_clientbound_entity_clear_effect;
 
@@ -406,7 +407,7 @@ typedef struct play_clientbound_entity_properties_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     int32_t       count;
     property_t*   properties;
 } play_clientbound_entity_properties;
@@ -428,7 +429,7 @@ typedef struct play_clientbound_chunk_data_t {
     int32_t       chunk_z;
     bool          continuous;
     uint16_t      bitmap;
-    uint32_t      size;
+    vint32_t      size;
     int8_t*       data;
 } play_clientbound_chunk_data;
 
@@ -438,7 +439,7 @@ typedef struct play_clientbound_multi_block_change_t {
 
     int32_t       chunk_x;
     int32_t       chunk_z;
-    uint32_t      count;
+    vint32_t      count;
     record_t*     records;
 } play_clientbound_multi_block_change;
 
@@ -447,7 +448,7 @@ typedef struct play_clientbound_block_change_t {
     int           packet_id;
 
     position_t    location;
-    uint32_t      block_id;
+    vint32_t      block_id;
 } play_clientbound_block_change;
 
 typedef struct play_clientbound_block_action_t {
@@ -457,14 +458,14 @@ typedef struct play_clientbound_block_action_t {
     position_t    location;
     uint8_t       byte1;
     uint8_t       byte2;
-    uint32_t      type;
+    vint32_t      type;
 } play_clientbound_block_action;
 
 typedef struct play_clientbound_block_break_animation_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     position_t    location;
     int8_t        stage;
 } play_clientbound_block_break_animation;
@@ -474,7 +475,7 @@ typedef struct play_clientbound_chunk_bulk_t {
     int           packet_id;
 
     bool          skylight;
-    uint32_t      column_count;
+    vint32_t      column_count;
     meta_t        meta;
     int8_t*       data;
 } play_clientbound_chunk_bulk;
@@ -498,7 +499,7 @@ typedef struct play_clientbound_effect_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      effect_id;
+    vint32_t      effect_id;
     position_t    location;
     int32_t       data;
     bool          relative;
@@ -520,7 +521,7 @@ typedef struct play_clientbound_particle_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      particle_id;
+    vint32_t      particle_id;
     bool          long_distance;
     float         x;
     float         y;
@@ -530,14 +531,14 @@ typedef struct play_clientbound_particle_t {
     float         dz;
     float         particle_data;
     int32_t       count;
-    uint32_t*     data;
+    vint32_t*     data;
 } play_clientbound_particle;
 
 typedef struct play_clientbound_entity_spawn_global_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     int8_t        type;
     int32_t       x;
     int32_t       y;
@@ -581,7 +582,7 @@ typedef struct play_clientbound_set_compression_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      threshold;
+    vint32_t      threshold;
 } play_clientbound_set_compression;
 
 /*
@@ -592,7 +593,7 @@ typedef struct play_serverbound_keepalive_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      keepalive_id;
+    vint32_t      keepalive_id;
 } play_serverbound_keepalive;
 
 typedef struct play_serverbound_chat_t {
@@ -606,8 +607,8 @@ typedef struct play_serverbound_entity_use_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      target;
-    uint32_t      type;
+    vint32_t      target;
+    vint32_t      type;
     float         x;
     float         y;
     float         z;
@@ -676,7 +677,7 @@ typedef struct play_serverbound_item_change_t {
     char*         format;
     int           packet_id;
 
-    uint16_t      slot;
+    int16_t       slot;
 } play_serverbound_item_change;
 
 typedef struct play_serverbound_animation_t {
@@ -688,9 +689,9 @@ typedef struct play_serverbound_entity_action_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      entity_id;
+    vint32_t      entity_id;
     uint8_t       action_id;
-    uint32_t      jump_boost;
+    vint32_t      jump_boost;
 } play_serverbound_entity_action;
 
 typedef struct play_serverbound_steer_vehicle_t {
@@ -737,7 +738,7 @@ typedef struct play_serverbound_player_status_t {
     char*         format;
     int           packet_id;
 
-    uint32_t      action_id;
+    vint32_t      action_id;
 } play_serverbound_player_status;
 
 typedef struct play_serverbound_plugin_message_t {
@@ -774,10 +775,10 @@ int uvarint64(char *, uint64_t *);
  */
 
 int32_t send_handshaking_serverbound_handshake(
-    uint32_t      protocol_version,
+    vint32_t      protocol_version,
     char*         server_addr,
     uint16_t      server_port,
-    uint32_t      next_state
+    vint32_t      next_state
 );
 
 /*
@@ -806,7 +807,7 @@ int32_t send_status_clientbound_ping(
  */
 
 int32_t send_play_serverbound_keepalive(
-    uint32_t      keepalive_id
+    vint32_t      keepalive_id
 );
 
 int32_t send_play_serverbound_chat(
@@ -814,8 +815,8 @@ int32_t send_play_serverbound_chat(
 );
 
 int32_t send_play_serverbound_entity_use(
-    uint32_t      target,
-    uint32_t      type,
+    vint32_t      target,
+    vint32_t      type,
     float         x,
     float         y,
     float         z
@@ -863,7 +864,7 @@ int32_t send_play_serverbound_player_block_place(
 );
 
 int32_t send_play_serverbound_item_change(
-    uint16_t      slot
+    int16_t       slot
 );
 
 int32_t send_play_serverbound_animation(
@@ -872,9 +873,9 @@ int32_t send_play_serverbound_animation(
 );
 
 int32_t send_play_serverbound_entity_action(
-    uint32_t      entity_id,
+    vint32_t      entity_id,
     uint8_t       action_id,
-    uint32_t      jump_boost
+    vint32_t      jump_boost
 );
 
 int32_t send_play_serverbound_steer_vehicle(
@@ -906,7 +907,7 @@ int32_t send_play_serverbound_client_settings(
 );
 
 int32_t send_play_serverbound_player_status(
-    uint32_t      action_id
+    vint32_t      action_id
 );
 
 int32_t send_play_serverbound_plugin_message(
