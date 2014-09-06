@@ -73,7 +73,7 @@ int varint32_encode(uint32_t value, char *data, int len){
 // rather than returning the converted value.
 // In addition, this function extends to 64 and 128 bit
 // words as well.
-void hton(void *number, int len){
+void reverse(void *number, int len){
     if(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__){ // we need to fliparoo!
         switch(len){
             case sizeof(int8_t):
@@ -137,6 +137,7 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
                     return -1; // TODO: compression
                 memcpy(packet_raw + index, str, value);
                 index += value;
+                packet_data += sizeof(void *);
                 break;
             }
             case 'v':{ // varint32_t
@@ -181,7 +182,7 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
                 int i = 0;
                 for(;i < arr_len * size; i += size){
                     memcpy(packet_raw + index + i, arr + i, size);
-                    hton(packet_raw + index + i, size);
+                    reverse(packet_raw + index + i, size);
                 }
                 //memcpy(packet_raw + index, arr, arr_len * size);
                 index += arr_len * size;
@@ -214,7 +215,7 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
                     return -1; // TODO: compression
                 packet_data = align(packet_data, size);
                 memcpy(packet_raw + index, packet_data, size);
-                hton(packet_raw + index, size);
+                reverse(packet_raw + index, size);
                 arr_len = *((int *)packet_data);
                 index += size;
                 packet_data += size;
@@ -242,18 +243,60 @@ int decode_packet(void *packet_raw, void *packet_data){
     packet_raw += packet_size_len;
     int len;
     vint32_t value;
+    int arr_len;
     while(*fmt){
         switch(*fmt){
-            case 's':
+            case 's': // varint followed by string
+                packet_data = align(packet_data, sizeof(void *));
+                len = varint32(packet_raw, &value);
+                packet_raw += len;
+                char *str = calloc(value + 1, sizeof(char)); // null terminated
+                memcpy(str, packet_raw, value);
+                *((char **)packet_data) = str;
+                packet_raw += value;
+                packet_data += sizeof(void *);
+                break;
             case 'v': // varint
                 packet_data = align(packet_data, sizeof(vint32_t));
-                value;
                 len = varint32(packet_raw, &value);
+                arr_len = value;
                 memcpy(packet_data, &value, sizeof(vint32_t));
                 packet_raw += len;
                 packet_data += sizeof(vint32_t);
                 break;
             case '*':
+                fmt++;
+                int size = 8;
+                switch(*fmt){
+                    case 'b':
+                        size = sizeof(int8_t);
+                        break;
+                    case 'h':
+                        size = sizeof(int16_t);
+                        break;
+                    case 'w':
+                        size = sizeof(int32_t);
+                        break;
+                    case 'l':
+                        size = sizeof(int64_t);
+                        break;
+                    case 'q':
+                        size = sizeof(__int128_t);
+                        break;
+                    default:
+                        fprintf(stderr, "Bad format string\n");
+                        return -1;
+                }
+                packet_data = align(packet_data, sizeof(void *));
+                void *arr = calloc(arr_len, size);
+                int i = 0;
+                for(; i < arr_len * size; i += size){
+                    memcpy(arr + i, packet_raw + i, size);
+                    reverse(arr + i, size);
+                }
+                *((void **)packet_data) = arr;
+                packet_raw += arr_len * size;
+                packet_data += sizeof(void *);
                 break;
             default:{
                 int size = 8;
@@ -279,6 +322,8 @@ int decode_packet(void *packet_raw, void *packet_data){
                 }
                 packet_data = align(packet_data, size);
                 memcpy(packet_data, packet_raw, size);
+                reverse(packet_data, size);
+                arr_len = *((int *)packet_data);
                 packet_raw += size;
                 packet_data += size;
                 break;
@@ -289,10 +334,20 @@ int decode_packet(void *packet_raw, void *packet_data){
     return packet_size_len + packet_size;
 }
 
+struct test_struct{
+    char *fmt;
+    vint32_t packet_id;
+    char *str;
+    vint32_t arr_len;
+    uint32_t* ints;
+    uint64_t long_one;
+} typedef test_struct;
+
 int main(){
     printf("size of void: %d\n", sizeof(void));
     char test[5];
-    handshaking_serverbound_handshake_t a = {"vvshv", 0x03, 47, "edison.me", 25565, 0x02};
+    int arr[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    test_struct a = {"vsv*wl", 0x03, "Hello, World!", 0x0A, arr, 0x0123456789ABCDEF};
     void *packet;
     bot_t an_botty = {0, 256};
     int written = format_packet(&an_botty, &a, &packet);
@@ -302,9 +357,9 @@ int main(){
         printf("%hhX ", ((char *)packet)[i]);
     }
     putchar('\n');
-    login_clientbound_set_compression_t b;
-    b.format = "vv";
+    test_struct b;
+    b.fmt = "vsv*wl";
     printf("size of b: %d\n", sizeof(b));
-    //int len = decode_packet(packet, &b);
-    //printf("%d, %s, %X, %ld\n", len, b.format, b.packet_id, b.threshold);
+    int len = decode_packet(packet, &b);
+    printf("%X, %s, %X, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %lX\n", b.packet_id, b.str, b.arr_len, b.ints[0], b.ints[1], b.ints[2], b.ints[3], b.ints[4], b.ints[5], b.ints[6], b.ints[7], b.ints[8], b.ints[9], b.long_one);
 }
