@@ -923,169 +923,169 @@ int32_t send_play_serverbound_spectate(
  * Login clientbound structs
  */
 
-login_clientbound_disconnect
+login_clientbound_disconnect*
 recv_login_clientbound_disconnect();
 
-login_clientbound_success
+login_clientbound_success*
 recv_login_clientbound_success();
 
-login_clientbound_set_compression
+login_clientbound_set_compression*
 recv_login_clientbound_set_compression();
 
 /*
  * Status clientbound structs
  */
 
-status_clientbound_response
+status_clientbound_response*
 recv_status_clientbound_response();
 
-status_clientbound_ping
+status_clientbound_ping*
 recv_status_clientbound_ping();
 
 /*
  * Play clientbound structs
  */
 
-play_clientbound_keepalive
+play_clientbound_keepalive*
 recv_play_clientbound_keepalive();
 
-play_clientbound_join_game
+play_clientbound_join_game*
 recv_play_clientbound_join_game();
 
-play_clientbound_chat
+play_clientbound_chat*
 recv_play_clientbound_chat();
 
-play_clientbound_time_update
+play_clientbound_time_update*
 recv_play_clientbound_time_update();
 
-play_clientbound_entity_equipment
+play_clientbound_entity_equipment*
 recv_play_clientbound_entity_equipment();
 
-play_clientbound_spawn_position
+play_clientbound_spawn_position*
 recv_play_clientbound_spawn_position();
 
-play_clientbound_update_health
+play_clientbound_update_health*
 recv_play_clientbound_update_health();
 
-play_clientbound_respawn
+play_clientbound_respawn*
 recv_play_clientbound_respawn();
 
-play_clientbound_position
+play_clientbound_position*
 recv_play_clientbound_position();
 
-play_clientbound_item_change
+play_clientbound_item_change*
 recv_play_clientbound_item_change();
 
-play_clientbound_use_bed
+play_clientbound_use_bed*
 recv_play_clientbound_use_bed();
 
-play_clientbound_animation
+play_clientbound_animation*
 recv_play_clientbound_animation();
 
-play_clientbound_spawn_player
+play_clientbound_spawn_player*
 recv_play_clientbound_spawn_player();
 
-play_clientbound_collect
+play_clientbound_collect*
 recv_play_clientbound_collect();
 
-play_clientbound_spawn_object
+play_clientbound_spawn_object*
 recv_play_clientbound_spawn_object();
 
-play_clientbound_spawn_mob
+play_clientbound_spawn_mob*
 recv_play_clientbound_spawn_mob();
 
-play_clientbound_spawn_painting
+play_clientbound_spawn_painting*
 recv_play_clientbound_spawn_painting();
 
-play_clientbound_spawn_xp
+play_clientbound_spawn_xp*
 recv_play_clientbound_spawn_xp();
 
-play_clientbound_entity_velocity
+play_clientbound_entity_velocity*
 recv_play_clientbound_entity_velocity();
 
-play_clientbound_entity_destroy_entities
+play_clientbound_entity_destroy_entities*
 recv_play_clientbound_entity_destroy_entities();
 
-play_clientbound_entity
+play_clientbound_entity*
 recv_play_clientbound_entity();
 
-play_clientbound_entity_move
+play_clientbound_entity_move*
 recv_play_clientbound_entity_move();
 
-play_clientbound_entity_look
+play_clientbound_entity_look*
 recv_play_clientbound_entity_look();
 
-play_clientbound_entity_look_move
+play_clientbound_entity_look_move*
 recv_play_clientbound_entity_look_move();
 
-play_clientbound_entity_teleport
+play_clientbound_entity_teleport*
 recv_play_clientbound_entity_teleport();
 
-play_clientbound_entity_head_look
+play_clientbound_entity_head_look*
 recv_play_clientbound_entity_head_look();
 
-play_clientbound_entity_status
+play_clientbound_entity_status*
 recv_play_clientbound_entity_status();
 
-play_clientbound_entity_attach
+play_clientbound_entity_attach*
 recv_play_clientbound_entity_attach();
 
-play_clientbound_entity_effect
+play_clientbound_entity_effect*
 recv_play_clientbound_entity_effect();
 
-play_clientbound_entity_clear_effect
+play_clientbound_entity_clear_effect*
 recv_play_clientbound_entity_clear_effect();
 
-play_clientbound_entity_properties
+play_clientbound_entity_properties*
 recv_play_clientbound_entity_properties();
 
-play_clientbound_set_xp
+play_clientbound_set_xp*
 recv_play_clientbound_set_xp();
 
-play_clientbound_chunk_data
+play_clientbound_chunk_data*
 recv_play_clientbound_chunk_data();
 
-play_clientbound_multi_block_change
+play_clientbound_multi_block_change*
 recv_play_clientbound_multi_block_change();
 
-play_clientbound_block_change
+play_clientbound_block_change*
 recv_play_clientbound_block_change();
 
-play_clientbound_block_action
+play_clientbound_block_action*
 recv_play_clientbound_block_action();
 
-play_clientbound_block_break_animation
+play_clientbound_block_break_animation*
 recv_play_clientbound_block_break_animation();
 
-play_clientbound_chunk_bulk
+play_clientbound_chunk_bulk*
 recv_play_clientbound_chunk_bulk();
 
-play_clientbound_explosion
+play_clientbound_explosion*
 recv_play_clientbound_explosion();
 
-play_clientbound_effect
+play_clientbound_effect*
 recv_play_clientbound_effect();
 
-play_clientbound_sound_effect
+play_clientbound_sound_effect*
 recv_play_clientbound_sound_effect();
 
-play_clientbound_particle
+play_clientbound_particle*
 recv_play_clientbound_particle();
 
-play_clientbound_entity_spawn_global
+play_clientbound_entity_spawn_global*
 recv_play_clientbound_entity_spawn_global();
 
-play_clientbound_update_sign
+play_clientbound_update_sign*
 recv_play_clientbound_update_sign();
 
-play_clientbound_plugin_message
+play_clientbound_plugin_message*
 recv_play_clientbound_plugin_message();
 
-play_clientbound_plugin_disconnect
+play_clientbound_plugin_disconnect*
 recv_play_clientbound_plugin_disconnect();
 
-play_clientbound_plugin_difficulty
+play_clientbound_plugin_difficulty*
 recv_play_clientbound_plugin_difficulty();
 
-play_clientbound_set_compression
+play_clientbound_set_compression*
 recv_play_clientbound_set_compression();
