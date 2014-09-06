@@ -759,10 +759,10 @@ typedef struct play_serverbound_spectate_t {
  */
 
 int32_t send_handshaking_serverbound_handshake(
-    uint32_t      protocol_version;
-    char*         server_addr;
-    uint16_t      server_port;
-    uint32_t      next_state;
+    uint32_t      protocol_version,
+    char*         server_addr,
+    uint16_t      server_port,
+    uint32_t      next_state,
 );
 
 /*
@@ -770,7 +770,7 @@ int32_t send_handshaking_serverbound_handshake(
  */
 
 int32_t send_login_serverbound_login(
-    char*         username;
+    char*         username,
 );
 
 /*
@@ -778,12 +778,12 @@ int32_t send_login_serverbound_login(
  */
 
 int32_t send_status_serverbound_request(
-    char*         format;
-    int           packet_id;
+    char*         format,
+    int           packet_id,
 );
 
 int32_t send_status_clientbound_ping(
-    int64_t      time;
+    int64_t      time,
 );
 
 /*
@@ -791,116 +791,116 @@ int32_t send_status_clientbound_ping(
  */
 
 int32_t send_play_serverbound_keepalive(
-    uint32_t      keepalive_id;
+    uint32_t      keepalive_id,
 );
 
 int32_t send_play_serverbound_chat(
-    char*         message;
+    char*         message,
 );
 
 int32_t send_play_serverbound_entity_use(
-    uint32_t      target;
-    uint32_t      type;
-    float         x;
-    float         y;
-    float         z;
+    uint32_t      target,
+    uint32_t      type,
+    float         x,
+    float         y,
+    float         z,
 );
 
 int32_t send_play_serverbound_player(
-    bool          on_ground;
+    bool          on_ground,
 );
 
 int32_t send_play_serverbound_player_move(
-    double        x;
-    double        y;
-    double        z;
-    bool          on_ground;
+    double        x,
+    double        y,
+    double        z,
+    bool          on_ground,
 );
 
 int32_t send_play_serverbound_player_look(
-    float         yaw;
-    float         pitch;
-    bool          on_ground;
+    float         yaw,
+    float         pitch,
+    bool          on_ground,
 );
 
 int32_t send_play_serverbound_player_move_look(
-    double        x;
-    double        y;
-    double        z;
-    float         yaw;
-    float         pitch;
-    bool          on_ground;
+    double        x,
+    double        y,
+    double        z,
+    float         yaw,
+    float         pitch,
+    bool          on_ground,
 );
 
 int32_t send_play_serverbound_player_dig(
-    int8_t        status;
-    position_t    location;
-    int8_t        face;
+    int8_t        status,
+    position_t    location,
+    int8_t        face,
 );
 
 int32_t send_play_serverbound_player_block_place(
-    position_t    location;
-    int8_t        direction;
-    slot_t        item;
-    int8_t        x;
-    int8_t        y;
-    int8_t        z;
+    position_t    location,
+    int8_t        direction,
+    slot_t        item,
+    int8_t        x,
+    int8_t        y,
+    int8_t        z,
 );
 
 int32_t send_play_serverbound_item_change(
-    uint16_t      slot;
+    uint16_t      slot,
 );
 
 int32_t send_play_serverbound_animation(
-    char*         format;
-    int           packet_id;
+    char*         format,
+    int           packet_id,
 );
 
 int32_t send_play_serverbound_entity_action(
-    uint32_t      entity_id;
-    uint8_t       action_id;
-    uint32_t      jump_boost;
+    uint32_t      entity_id,
+    uint8_t       action_id,
+    uint32_t      jump_boost,
 );
 
 int32_t send_play_serverbound_steer_vehicle(
-    float         sideways;
-    float         forward;
-    uint8_t       flags;
+    float         sideways,
+    float         forward,
+    uint8_t       flags,
 );
 
 int32_t send_play_serverbound_update_sign(
-    position_t    location;
-    chat_t        line1;
-    chat_t        line2;
-    chat_t        line3;
-    chat_t        line4;
+    position_t    location,
+    chat_t        line1,
+    chat_t        line2,
+    chat_t        line3,
+    chat_t        line4,
 );
 
 int32_t send_play_serverbound_player_abilities(
-    int8_t        flags;
-    float         flying_speed;
-    float         walking_speed;
+    int8_t        flags,
+    float         flying_speed,
+    float         walking_speed,
 );
 
 int32_t send_play_serverbound_client_settings(
-    char*         locale;
-    int8_t        view_distance;
-    int8_t        chat_flags;
-    bool          chat_colors;
-    uint8_t       skin;
+    char*         locale,
+    int8_t        view_distance,
+    int8_t        chat_flags,
+    bool          chat_colors,
+    uint8_t       skin,
 );
 
 int32_t send_play_serverbound_player_status(
-    uint32_t      action_id;
+    uint32_t      action_id,
 );
 
 int32_t send_play_serverbound_plugin_message(
-    char*         channel;
-    int8_t*       data;
+    char*         channel,
+    int8_t*       data,
 );
 
 int32_t send_play_serverbound_spectate(
-    __uint128_t   target;
+    __uint128_t   target,
 );
 
 /*
