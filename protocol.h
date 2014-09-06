@@ -1,5 +1,14 @@
 
+typedef uint8_t bool;
 typedef uint64_t position_t;
+typedef void* chat_t;
+typedef void* data_t;
+typedef void* meta_t;
+typedef void* metadata_t;
+typedef void* position_t;
+typedef void* property_t;
+typedef void* record_t;
+typedef void* slot_t;
 
 /**
  **
