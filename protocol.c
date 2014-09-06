@@ -240,17 +240,19 @@ int decode_packet(void *packet_raw, void *packet_data){
     int32_t packet_size;
     int packet_size_len = varint32(packet_raw, &packet_size);
     packet_raw += packet_size_len;
+    int len;
+    vint32_t value;
     while(*fmt){
         switch(*fmt){
-            case 'v':{ // varint
+            case 's':
+            case 'v': // varint
                 packet_data = align(packet_data, sizeof(vint32_t));
-                vint32_t value;
-                int len = varint32(packet_raw, &value);
+                value;
+                len = varint32(packet_raw, &value);
                 memcpy(packet_data, &value, sizeof(vint32_t));
                 packet_raw += len;
                 packet_data += sizeof(vint32_t);
                 break;
-            }
             case '*':
                 break;
             default:{
@@ -290,7 +292,7 @@ int decode_packet(void *packet_raw, void *packet_data){
 int main(){
     printf("size of void: %d\n", sizeof(void));
     char test[5];
-    handshaking_serverbound_handshake_t a = {"vv*b", 0x03, 500};
+    handshaking_serverbound_handshake_t a = {"vvshv", 0x03, 47, "edison.me", 25565, 0x02};
     void *packet;
     bot_t an_botty = {0, 256};
     int written = format_packet(&an_botty, &a, &packet);
@@ -303,6 +305,6 @@ int main(){
     login_clientbound_set_compression_t b;
     b.format = "vv";
     printf("size of b: %d\n", sizeof(b));
-    int len = decode_packet(packet, &b);
-    printf("%d, %s, %X, %ld\n", len, b.format, b.packet_id, b.threshold);
+    //int len = decode_packet(packet, &b);
+    //printf("%d, %s, %X, %ld\n", len, b.format, b.packet_id, b.threshold);
 }
