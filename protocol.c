@@ -264,7 +264,7 @@ int decode_packet(void *packet_raw, void *packet_data){
 int main(){
     printf("size of void: %d\n", sizeof(void));
     char test[5];
-    handshaking_serverbound_handshake a = {"vv*b", 0x03, 500};
+    handshaking_serverbound_handshake_t a = {"vv*b", 0x03, 500};
     void *packet;
     bot_t an_botty = {0, 256};
     int written = format_packet(&an_botty, &a, &packet);
@@ -274,7 +274,7 @@ int main(){
         printf("%hhX ", ((char *)packet)[i]);
     }
     putchar('\n');
-    login_clientbound_set_compression b;
+    login_clientbound_set_compression_t b;
     b.format = "vv";
     printf("size of b: %d\n", sizeof(b));
     int len = decode_packet(packet, &b);
