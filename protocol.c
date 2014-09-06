@@ -76,6 +76,8 @@ int varint32_encode(uint32_t value, char *data, int len){
 void hton(void *number, int len){
     if(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__){ // we need to fliparoo!
         switch(len){
+            case sizeof(int8_t):
+                return;
             case sizeof(int16_t):
                 *((uint16_t *)number) = __builtin_bswap16(*((uint16_t *)number));
                 break;
@@ -95,6 +97,9 @@ void hton(void *number, int len){
                 *l ^= *h;
                 break;
             }
+            default:
+                fprintf(stderr, "Bad word size\n");
+                return;
         }
     }
 }
@@ -114,20 +119,34 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
     // each value in the packet may or may not be the array length of
     // an array following it, so it must be saved off.
     int arr_len;
+    int32_t value;
+    char varint[5];
+    int varlen;
     while(*fmt){
         switch(*fmt){
-            case 's': // string (null terminated)
-                 
-                break;
-            case 'v':{ // varint32_t
-                packet_data = align(packet_data, sizeof(vint32_t));
-                int32_t varint = *((int32_t *)packet_data);
-                arr_len = varint;
-                char tmp[5];
-                int varlen = varint32_encode(varint, tmp, 5);
+            case 's':{ // string (null terminated)
+                packet_data = align(packet_data, sizeof(void *));
+                char *str = *((char **)packet_data);
+                value = strlen(str);
+                varlen = varint32_encode(value, varint, 5);
                 if(index + varlen > len)
                     return -1; // TODO: compression
-                memcpy(packet_raw + index, tmp, varlen);
+                memcpy(packet_raw + index, varint, varlen);
+                index += varlen;
+                if(index + value > len)
+                    return -1; // TODO: compression
+                memcpy(packet_raw + index, str, value);
+                index += value;
+                break;
+            }
+            case 'v':{ // varint32_t
+                packet_data = align(packet_data, sizeof(vint32_t));
+                value = *((int32_t *)packet_data);
+                arr_len = value;
+                varlen = varint32_encode(value, varint, 5);
+                if(index + varlen > len)
+                    return -1; // TODO: compression
+                memcpy(packet_raw + index, varint, varlen);
                 index += varlen;
                 packet_data += sizeof(vint32_t);
                 break;
@@ -155,10 +174,17 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
                         fprintf(stderr, "Bad format string\n");
                         return -1;
                 }
+                if(index + size * arr_len > len)
+                    return -1; // TODO: compression
                 packet_data = align(packet_data, sizeof(void *));
                 void *arr = *((void **)packet_data);
-                memcpy(packet_raw + index, arr, arr_len);
-                index += arr_len;
+                int i = 0;
+                for(;i < arr_len * size; i += size){
+                    memcpy(packet_raw + index + i, arr + i, size);
+                    hton(packet_raw + index + i, size);
+                }
+                //memcpy(packet_raw + index, arr, arr_len * size);
+                index += arr_len * size;
                 packet_data += sizeof(void *);
                 break;
             }
@@ -188,6 +214,7 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
                     return -1; // TODO: compression
                 packet_data = align(packet_data, size);
                 memcpy(packet_raw + index, packet_data, size);
+                hton(packet_raw + index, size);
                 arr_len = *((int *)packet_data);
                 index += size;
                 packet_data += size;
@@ -197,14 +224,13 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
         fmt++;
     }
     // =)
-    char packet_size[5];
-    int packet_size_len = varint32_encode(index, packet_size, 5);
-    if(index + packet_size_len > len)
-        return -1;
-    memmove(packet_raw + packet_size_len, packet_raw, index);
-    memcpy(packet_raw, packet_size, packet_size_len);
+    varlen = varint32_encode(index, varint, 5);
+    if(index + varlen > len)
+        return -1; // TODO: compression
+    memmove(packet_raw + varlen, packet_raw, index);
+    memcpy(packet_raw, varint, varlen);
     *packet_raw_ptr = packet_raw;
-    return index + packet_size_len;
+    return index + varlen;
 }
 int decode_packet(void *packet_raw, void *packet_data){
     // packet_raw = raw packet data
