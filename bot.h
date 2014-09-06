@@ -1,8 +1,9 @@
 #include <stdint.h>
 
-struct bot{
+typedef struct bot {
     int socketfd;
-};
+    size_t packet_threshold;
+} bot_t;
 
 extern struct bot context;
 

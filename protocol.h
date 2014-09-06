@@ -2,7 +2,7 @@
 
 typedef uint8_t bool;
 typedef uint64_t position_t;
-typedef uint64_t vint32_t;
+typedef uint32_t vint32_t;
 typedef void* chat_t;
 typedef void* data_t;
 typedef void* meta_t;
