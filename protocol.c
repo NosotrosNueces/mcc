@@ -502,7 +502,7 @@ recv_login_clientbound_disconnect(bot_t bot, void *packet)
     login_clientbound_disconnect_t *p;
     p = calloc(1, sizeof(login_clientbound_disconnect_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vs";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -516,7 +516,7 @@ recv_login_clientbound_success(bot_t bot, void *packet)
     login_clientbound_success_t *p;
     p = calloc(1, sizeof(login_clientbound_success_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vss";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -530,7 +530,7 @@ recv_login_clientbound_set_compression(bot_t bot, void *packet)
     login_clientbound_set_compression_t *p;
     p = calloc(1, sizeof(login_clientbound_set_compression_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vv";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -548,7 +548,7 @@ recv_status_clientbound_response(bot_t bot, void *packet)
     status_clientbound_response_t *p;
     p = calloc(1, sizeof(status_clientbound_response_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vs";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -562,7 +562,7 @@ recv_status_clientbound_ping(bot_t bot, void *packet)
     status_clientbound_ping_t *p;
     p = calloc(1, sizeof(status_clientbound_ping_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vl";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -580,7 +580,7 @@ recv_play_clientbound_keepalive(bot_t bot, void *packet)
     play_clientbound_keepalive_t *p;
     p = calloc(1, sizeof(play_clientbound_keepalive_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vv";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -594,7 +594,7 @@ recv_play_clientbound_join_game(bot_t bot, void *packet)
     play_clientbound_join_game_t *p;
     p = calloc(1, sizeof(play_clientbound_join_game_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vwbbbbs";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -608,7 +608,7 @@ recv_play_clientbound_chat(bot_t bot, void *packet)
     play_clientbound_chat_t *p;
     p = calloc(1, sizeof(play_clientbound_chat_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vsb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -622,7 +622,7 @@ recv_play_clientbound_time_update(bot_t bot, void *packet)
     play_clientbound_time_update_t *p;
     p = calloc(1, sizeof(play_clientbound_time_update_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vll";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -636,7 +636,7 @@ recv_play_clientbound_entity_equipment(bot_t bot, void *packet)
     play_clientbound_entity_equipment_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_equipment_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvhw";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -650,7 +650,7 @@ recv_play_clientbound_spawn_position(bot_t bot, void *packet)
     play_clientbound_spawn_position_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_position_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vl";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -664,7 +664,7 @@ recv_play_clientbound_update_health(bot_t bot, void *packet)
     play_clientbound_update_health_t *p;
     p = calloc(1, sizeof(play_clientbound_update_health_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vwvw";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -678,7 +678,7 @@ recv_play_clientbound_respawn(bot_t bot, void *packet)
     play_clientbound_respawn_t *p;
     p = calloc(1, sizeof(play_clientbound_respawn_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vwbbs";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -692,7 +692,7 @@ recv_play_clientbound_position(bot_t bot, void *packet)
     play_clientbound_position_t *p;
     p = calloc(1, sizeof(play_clientbound_position_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vlllwwb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -706,7 +706,7 @@ recv_play_clientbound_item_change(bot_t bot, void *packet)
     play_clientbound_item_change_t *p;
     p = calloc(1, sizeof(play_clientbound_item_change_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -720,7 +720,7 @@ recv_play_clientbound_use_bed(bot_t bot, void *packet)
     play_clientbound_use_bed_t *p;
     p = calloc(1, sizeof(play_clientbound_use_bed_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvl";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -734,7 +734,7 @@ recv_play_clientbound_animation(bot_t bot, void *packet)
     play_clientbound_animation_t *p;
     p = calloc(1, sizeof(play_clientbound_animation_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -748,7 +748,7 @@ recv_play_clientbound_spawn_player(bot_t bot, void *packet)
     play_clientbound_spawn_player_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_player_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvqwwwbbhw";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -762,7 +762,7 @@ recv_play_clientbound_collect(bot_t bot, void *packet)
     play_clientbound_collect_t *p;
     p = calloc(1, sizeof(play_clientbound_collect_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvv";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -776,7 +776,7 @@ recv_play_clientbound_spawn_object(bot_t bot, void *packet)
     play_clientbound_spawn_object_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_object_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvbwwwbbw";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -790,7 +790,7 @@ recv_play_clientbound_spawn_mob(bot_t bot, void *packet)
     play_clientbound_spawn_mob_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_mob_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvbwwwbbbhhhw";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -804,7 +804,7 @@ recv_play_clientbound_spawn_painting(bot_t bot, void *packet)
     play_clientbound_spawn_painting_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_painting_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvslb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -818,7 +818,7 @@ recv_play_clientbound_spawn_xp(bot_t bot, void *packet)
     play_clientbound_spawn_xp_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_xp_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvwwwh";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -832,7 +832,7 @@ recv_play_clientbound_entity_velocity(bot_t bot, void *packet)
     play_clientbound_entity_velocity_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_velocity_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvhhh";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -846,7 +846,7 @@ recv_play_clientbound_entity_destroy_entities(bot_t bot, void *packet)
     play_clientbound_entity_destroy_entities_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_destroy_entities_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vw*v";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -860,7 +860,7 @@ recv_play_clientbound_entity(bot_t bot, void *packet)
     play_clientbound_entity_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vv";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -874,7 +874,7 @@ recv_play_clientbound_entity_move(bot_t bot, void *packet)
     play_clientbound_entity_move_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_move_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvbbbb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -888,7 +888,7 @@ recv_play_clientbound_entity_look(bot_t bot, void *packet)
     play_clientbound_entity_look_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_look_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvbbb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -902,7 +902,7 @@ recv_play_clientbound_entity_look_move(bot_t bot, void *packet)
     play_clientbound_entity_look_move_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_look_move_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvbbbbbb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -916,7 +916,7 @@ recv_play_clientbound_entity_teleport(bot_t bot, void *packet)
     play_clientbound_entity_teleport_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_teleport_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvwwwbbb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -930,7 +930,7 @@ recv_play_clientbound_entity_head_look(bot_t bot, void *packet)
     play_clientbound_entity_head_look_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_head_look_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -944,7 +944,7 @@ recv_play_clientbound_entity_status(bot_t bot, void *packet)
     play_clientbound_entity_status_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_status_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -958,7 +958,7 @@ recv_play_clientbound_entity_attach(bot_t bot, void *packet)
     play_clientbound_entity_attach_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_attach_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvwb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -972,7 +972,7 @@ recv_play_clientbound_entity_effect(bot_t bot, void *packet)
     play_clientbound_entity_effect_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_effect_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvbbvb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -986,7 +986,7 @@ recv_play_clientbound_entity_clear_effect(bot_t bot, void *packet)
     play_clientbound_entity_clear_effect_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_clear_effect_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvw";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1000,7 +1000,7 @@ recv_play_clientbound_entity_properties(bot_t bot, void *packet)
     play_clientbound_entity_properties_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_properties_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvw*w";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1014,7 +1014,7 @@ recv_play_clientbound_set_xp(bot_t bot, void *packet)
     play_clientbound_set_xp_t *p;
     p = calloc(1, sizeof(play_clientbound_set_xp_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vwww";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1028,7 +1028,7 @@ recv_play_clientbound_chunk_data(bot_t bot, void *packet)
     play_clientbound_chunk_data_t *p;
     p = calloc(1, sizeof(play_clientbound_chunk_data_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vwwbhv*b";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1042,7 +1042,7 @@ recv_play_clientbound_multi_block_change(bot_t bot, void *packet)
     play_clientbound_multi_block_change_t *p;
     p = calloc(1, sizeof(play_clientbound_multi_block_change_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vwwv*w";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1056,7 +1056,7 @@ recv_play_clientbound_block_change(bot_t bot, void *packet)
     play_clientbound_block_change_t *p;
     p = calloc(1, sizeof(play_clientbound_block_change_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vlv";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1070,7 +1070,7 @@ recv_play_clientbound_block_action(bot_t bot, void *packet)
     play_clientbound_block_action_t *p;
     p = calloc(1, sizeof(play_clientbound_block_action_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vlbbv";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1084,7 +1084,7 @@ recv_play_clientbound_block_break_animation(bot_t bot, void *packet)
     play_clientbound_block_break_animation_t *p;
     p = calloc(1, sizeof(play_clientbound_block_break_animation_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvlb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1098,7 +1098,7 @@ recv_play_clientbound_chunk_bulk(bot_t bot, void *packet)
     play_clientbound_chunk_bulk_t *p;
     p = calloc(1, sizeof(play_clientbound_chunk_bulk_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vbvw*b";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1112,7 +1112,7 @@ recv_play_clientbound_explosion(bot_t bot, void *packet)
     play_clientbound_explosion_t *p;
     p = calloc(1, sizeof(play_clientbound_explosion_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vwwwww*wwww";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1126,7 +1126,7 @@ recv_play_clientbound_effect(bot_t bot, void *packet)
     play_clientbound_effect_t *p;
     p = calloc(1, sizeof(play_clientbound_effect_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvlwb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1140,7 +1140,7 @@ recv_play_clientbound_sound_effect(bot_t bot, void *packet)
     play_clientbound_sound_effect_t *p;
     p = calloc(1, sizeof(play_clientbound_sound_effect_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vswwwwb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1154,7 +1154,7 @@ recv_play_clientbound_particle(bot_t bot, void *packet)
     play_clientbound_particle_t *p;
     p = calloc(1, sizeof(play_clientbound_particle_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvbwwwwwwww*v";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1168,7 +1168,7 @@ recv_play_clientbound_entity_spawn_global(bot_t bot, void *packet)
     play_clientbound_entity_spawn_global_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_spawn_global_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vvbwww";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1182,7 +1182,7 @@ recv_play_clientbound_update_sign(bot_t bot, void *packet)
     play_clientbound_update_sign_t *p;
     p = calloc(1, sizeof(play_clientbound_update_sign_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vlwwww";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1196,7 +1196,7 @@ recv_play_clientbound_plugin_message(bot_t bot, void *packet)
     play_clientbound_plugin_message_t *p;
     p = calloc(1, sizeof(play_clientbound_plugin_message_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vs*b";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1210,7 +1210,7 @@ recv_play_clientbound_plugin_disconnect(bot_t bot, void *packet)
     play_clientbound_plugin_disconnect_t *p;
     p = calloc(1, sizeof(play_clientbound_plugin_disconnect_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vs";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1224,7 +1224,7 @@ recv_play_clientbound_plugin_difficulty(bot_t bot, void *packet)
     play_clientbound_plugin_difficulty_t *p;
     p = calloc(1, sizeof(play_clientbound_plugin_difficulty_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vb";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
@@ -1238,7 +1238,7 @@ recv_play_clientbound_set_compression(bot_t bot, void *packet)
     play_clientbound_set_compression_t *p;
     p = calloc(1, sizeof(play_clientbound_set_compression_t));
     // TODO: add all the juice
-    p->format = "";
+    p->format = "vv";
     p->packet_id = 0x00;
 
     decode_packet(packet, &p);
