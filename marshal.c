@@ -133,7 +133,7 @@ size_t format_sizeof(char c) {
 // returns the number of bytes written to packet_raw, or -1 if packet_raw
 // is not a long enough array
 int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
-    uint32_t len = bot -> packet_threshold;
+    uint32_t len = bot->packet_threshold;
     uint32_t index = 0;
     uint32_t value = 0;
     uint32_t varlen = 0;
@@ -176,7 +176,7 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
                 if(index + size_elem * arr_len > len)
                     return -1; // TODO: compression
                 void *arr = *((void **)packet_data);
-                for(int i = 0;i < arr_len * size_elem; i += size_elem){
+                for(int i = 0; i < arr_len * size_elem; i += size_elem){
                     memcpy(packet_raw + index + i, arr + i, size_elem);
                     reverse(packet_raw + index + i, size_elem);
                 }
