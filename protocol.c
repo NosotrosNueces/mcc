@@ -37,14 +37,14 @@ int varint64_encode(uint64_t value, char *data, int len){
     memset(data, 0, len);
     char mask = 0x7F;
     int i = 0;
-    while(value){
+    do {
         if(i >= len)
             return -1;
         data[i] = (mask & value);
         data[i] |= 0X80;
         value = value >> 7;
         i++;
-    }
+    } while(value);
     data[i - 1] &= mask;
     return i;
 }
@@ -53,14 +53,14 @@ int varint32_encode(uint32_t value, char *data, int len){
     memset(data, 0, len);
     char mask = 0x7F;
     int i = 0;
-    while(value){
+    do {
         if(i >= len)
             return -1;
         data[i] = (mask & value);
         data[i] |= 0X80;
         value = value >> 7;
         i++;
-    }
+    } while(value);
     data[i - 1] &= mask;
     return i;
 }

@@ -1,6 +1,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "protocol.h"
 #include "bot.h"
@@ -60,12 +61,12 @@ typedef struct test_protocol {
 #define TEST_CASES_FORMAT (6)
 
 char* test_formats[TEST_CASES_FORMAT] = {
-	"qqqqqqqq",
-	"llllllllllllllll",
-	"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-	"vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
-	"hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
-	"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+	"vqqqqqqqq",
+	"vllllllllllllllll",
+	"vlwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+	"vlvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
+	"vlhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
+	"vlbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
 };
 
 void test_random_protocol() {
@@ -78,6 +79,7 @@ void test_random_protocol() {
 	void* test_output;
 
 	// fill our test structure with pseudo-random data
+	memset(&test, 0, sizeof(test_protocol_t));
 	for (int i = 0; i < 16; i++) {
 		test.data[i] = (i + 0xcafebabe) * 0xdeadbeefcafeface;
 	}
@@ -97,15 +99,10 @@ void test_random_protocol() {
 
 		decode_packet(test_output, &test_decode);
 
-		char* original = (char*) test.data;
-		char* decoded = (char*) test_decode.data;
+		void* original = (void*) test.data;
+		void* decoded = (void*) test_decode.data;
 
-		hexDump("original", original, 128);
-		hexDump("decoded", decoded, 128);
-
-		hexDump("on-the-wire", test_output, length);
-
-		assert(strncmp(original, decoded, 128) == 0);
+		assert(memcmp(original, decoded, 128) == 0);
 	}
 
 	printf("test_random_protocol passed!\n");
