@@ -72,9 +72,6 @@ int receive_raw(bot_t *your_bot, void *data, size_t len){
     return recv(your_bot -> socketfd, data, len, 0);
 }
 
-
-
-
 // int main(int argc, char **argv){
 //     //if(argc < 4){
 //     //    fprintf(stderr, "Specify local port, remote hostname/ip, and remote port\n");
