@@ -20,6 +20,11 @@ int32_t send_handshaking_serverbound_handshake(
     p.format = "vvshv";
     p.packet_id = 0x00;
 
+    p.protocol_version = protocol_version;
+    p.server_addr = server_addr;
+    p.server_port = server_port;
+    p.next_state = next_state;
+
     void *packet;
     length = format_packet(bot, &p, &packet);
     send_raw(bot, packet, length);
@@ -41,6 +46,8 @@ int32_t send_login_serverbound_login(
     login_serverbound_login_t p;
     p.format = "vs";
     p.packet_id = 0x00;
+
+    p.username = username;
 
     void *packet;
     length = format_packet(bot, &p, &packet);
@@ -71,7 +78,7 @@ int32_t send_status_serverbound_request(
     return length;
 }
 
-int32_t send_status_clientbound_ping(
+int32_t send_status_serverbound_ping(
     bot_t*        bot,
     int64_t       time
 )
@@ -80,6 +87,8 @@ int32_t send_status_clientbound_ping(
     status_clientbound_ping_t p;
     p.format = "vl";
     p.packet_id = 0x01;
+
+    p.time = time;
 
     void *packet;
     length = format_packet(bot, &p, &packet);
@@ -103,6 +112,8 @@ int32_t send_play_serverbound_keepalive(
     p.format = "vv";
     p.packet_id = 0x00;
 
+    p.keepalive_id = keepalive_id;
+
     void *packet;
     length = format_packet(bot, &p, &packet);
     send_raw(bot, packet, length);
@@ -120,6 +131,8 @@ int32_t send_play_serverbound_chat(
     play_serverbound_chat_t p;
     p.format = "vs";
     p.packet_id = 0x01;
+
+    p.message = message;
 
     void *packet;
     length = format_packet(bot, &p, &packet);
@@ -143,6 +156,10 @@ int32_t send_play_serverbound_entity_use(
     p.format = "vvvwww";
     p.packet_id = 0x02;
 
+    p.x = x;
+    p.y = y;
+    p.z = z;
+
     void *packet;
     length = format_packet(bot, &p, &packet);
     send_raw(bot, packet, length);
@@ -160,6 +177,8 @@ int32_t send_play_serverbound_player(
     play_serverbound_player_t p;
     p.format = "vb";
     p.packet_id = 0x03;
+
+    p.on_ground = on_ground;
 
     void *packet;
     length = format_packet(bot, &p, &packet);
@@ -182,6 +201,11 @@ int32_t send_play_serverbound_player_move(
     p.format = "vlllb";
     p.packet_id = 0x04;
 
+    p.x = x;
+    p.y = y;
+    p.z = z;
+    p.on_ground = on_ground;
+
     void *packet;
     length = format_packet(bot, &p, &packet);
     send_raw(bot, packet, length);
@@ -201,6 +225,10 @@ int32_t send_play_serverbound_player_look(
     play_serverbound_player_look_t p;
     p.format = "vwwb";
     p.packet_id = 0x05;
+
+    p.yaw = yaw;
+    p.pitch = pitch;
+    p.on_ground = on_ground;
 
     void *packet;
     length = format_packet(bot, &p, &packet);
@@ -225,6 +253,13 @@ int32_t send_play_serverbound_player_move_look(
     p.format = "vlllwwb";
     p.packet_id = 0x06;
 
+    p.x = x;
+    p.y = y;
+    p.z = z;
+    p.yaw = yaw;
+    p.pitch = pitch;
+    p.on_ground = on_ground;
+
     void *packet;
     length = format_packet(bot, &p, &packet);
     send_raw(bot, packet, length);
@@ -244,6 +279,10 @@ int32_t send_play_serverbound_player_dig(
     play_serverbound_player_dig_t p;
     p.format = "vblb";
     p.packet_id = 0x07;
+
+    p.status = status;
+    p.location = location;
+    p.face = face;
 
     void *packet;
     length = format_packet(bot, &p, &packet);
@@ -268,6 +307,13 @@ int32_t send_play_serverbound_player_block_place(
     p.format = "vlbwbbb";
     p.packet_id = 0x08;
 
+    p.location = location;
+    p.direction = direction;
+    p.item = item;
+    p.x = x;
+    p.y = y;
+    p.z = z;
+
     void *packet;
     length = format_packet(bot, &p, &packet);
     send_raw(bot, packet, length);
@@ -285,6 +331,8 @@ int32_t send_play_serverbound_item_change(
     play_serverbound_item_change_t p;
     p.format = "vh";
     p.packet_id = 0x09;
+
+    p.slot = slot;
 
     void *packet;
     length = format_packet(bot, &p, &packet);
@@ -323,6 +371,10 @@ int32_t send_play_serverbound_entity_action(
     p.format = "vvbv";
     p.packet_id = 0x0B;
 
+    p.entity_id = entity_id;
+    p.action_id = action_id;
+    p.jump_boost = jump_boost;
+
     void *packet;
     length = format_packet(bot, &p, &packet);
     send_raw(bot, packet, length);
@@ -342,6 +394,10 @@ int32_t send_play_serverbound_steer_vehicle(
     play_serverbound_steer_vehicle_t p;
     p.format = "vwwb";
     p.packet_id = 0x0C;
+
+    p.sideways = sideways;
+    p.forward = forward;
+    p.flags = flags;
 
     void *packet;
     length = format_packet(bot, &p, &packet);
@@ -365,6 +421,12 @@ int32_t send_play_serverbound_update_sign(
     p.format = "vlssss";
     p.packet_id = 0x12;
 
+    p.location = location;
+    p.line1 = line1;
+    p.line2 = line2;
+    p.line3 = line3;
+    p.line4 = line4;
+
     void *packet;
     length = format_packet(bot, &p, &packet);
     send_raw(bot, packet, length);
@@ -384,6 +446,10 @@ int32_t send_play_serverbound_player_abilities(
     play_serverbound_player_abilities_t p;
     p.format = "vbww";
     p.packet_id = 0x13;
+
+    p.flags = flags;
+    p.flying_speed = flying_speed;
+    p.walking_speed = walking_speed;
 
     void *packet;
     length = format_packet(bot, &p, &packet);
@@ -407,6 +473,12 @@ int32_t send_play_serverbound_client_settings(
     p.format = "vsbbbb";
     p.packet_id = 0x15;
 
+    p.locale = locale;
+    p.view_distance = view_distance;
+    p.chat_flags = chat_flags;
+    p.chat_colors = chat_colors;
+    p.skin = skin;
+
     void *packet;
     length = format_packet(bot, &p, &packet);
     send_raw(bot, packet, length);
@@ -424,6 +496,8 @@ int32_t send_play_serverbound_player_status(
     play_serverbound_player_status_t p;
     p.format = "vb";
     p.packet_id = 0x16;
+
+    p.action_id = action_id;
 
     void *packet;
     length = format_packet(bot, &p, &packet);
@@ -444,6 +518,9 @@ int32_t send_play_serverbound_plugin_message(
     p.format = "vs*b";
     p.packet_id = 0x17;
 
+    p.channel = channel;
+    p.data = data;
+
     void *packet;
     length = format_packet(bot, &p, &packet);
     send_raw(bot, packet, length);
@@ -461,6 +538,8 @@ int32_t send_play_serverbound_spectate(
     play_serverbound_spectate_t p;
     p.format = "vq";
     p.packet_id = 0x18;
+
+    p.target = target;
 
     void *packet;
     length = format_packet(bot, &p, &packet);
@@ -482,7 +561,7 @@ recv_login_clientbound_disconnect(bot_t* bot, void *packet)
     p->format = "vs";
     p->packet_id = 0x00;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -495,7 +574,7 @@ recv_login_clientbound_success(bot_t* bot, void *packet)
     p->format = "vss";
     p->packet_id = 0x02;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -508,7 +587,7 @@ recv_login_clientbound_set_compression(bot_t* bot, void *packet)
     p->format = "vv";
     p->packet_id = 0x03;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -525,7 +604,7 @@ recv_status_clientbound_response(bot_t* bot, void *packet)
     p->format = "vs";
     p->packet_id = 0x00;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -538,7 +617,7 @@ recv_status_clientbound_ping(bot_t* bot, void *packet)
     p->format = "vl";
     p->packet_id = 0x01;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -555,7 +634,7 @@ recv_play_clientbound_keepalive(bot_t* bot, void *packet)
     p->format = "vv";
     p->packet_id = 0x00;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -568,7 +647,7 @@ recv_play_clientbound_join_game(bot_t* bot, void *packet)
     p->format = "vwbbbbs";
     p->packet_id = 0x01;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -581,7 +660,7 @@ recv_play_clientbound_chat(bot_t* bot, void *packet)
     p->format = "vsb";
     p->packet_id = 0x02;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -594,7 +673,7 @@ recv_play_clientbound_time_update(bot_t* bot, void *packet)
     p->format = "vll";
     p->packet_id = 0x03;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -607,7 +686,7 @@ recv_play_clientbound_entity_equipment(bot_t* bot, void *packet)
     p->format = "vvhw";
     p->packet_id = 0x04;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -620,7 +699,7 @@ recv_play_clientbound_spawn_position(bot_t* bot, void *packet)
     p->format = "vl";
     p->packet_id = 0x05;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -633,7 +712,7 @@ recv_play_clientbound_update_health(bot_t* bot, void *packet)
     p->format = "vwvw";
     p->packet_id = 0x06;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -646,7 +725,7 @@ recv_play_clientbound_respawn(bot_t* bot, void *packet)
     p->format = "vwbbs";
     p->packet_id = 0x07;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -659,7 +738,7 @@ recv_play_clientbound_position(bot_t* bot, void *packet)
     p->format = "vlllwwb";
     p->packet_id = 0x08;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -672,7 +751,7 @@ recv_play_clientbound_item_change(bot_t* bot, void *packet)
     p->format = "vb";
     p->packet_id = 0x09;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -685,7 +764,7 @@ recv_play_clientbound_use_bed(bot_t* bot, void *packet)
     p->format = "vvl";
     p->packet_id = 0x0A;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -698,7 +777,7 @@ recv_play_clientbound_animation(bot_t* bot, void *packet)
     p->format = "vvb";
     p->packet_id = 0x0B;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -711,7 +790,7 @@ recv_play_clientbound_spawn_player(bot_t* bot, void *packet)
     p->format = "vvqwwwbbhw";
     p->packet_id = 0x0C;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -724,7 +803,7 @@ recv_play_clientbound_collect(bot_t* bot, void *packet)
     p->format = "vvv";
     p->packet_id = 0x0D;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -737,7 +816,7 @@ recv_play_clientbound_spawn_object(bot_t* bot, void *packet)
     p->format = "vvbwwwbbw";
     p->packet_id = 0x0E;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -750,7 +829,7 @@ recv_play_clientbound_spawn_mob(bot_t* bot, void *packet)
     p->format = "vvbwwwbbbhhhw";
     p->packet_id = 0x0F;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -763,7 +842,7 @@ recv_play_clientbound_spawn_painting(bot_t* bot, void *packet)
     p->format = "vvslb";
     p->packet_id = 0x10;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -776,7 +855,7 @@ recv_play_clientbound_spawn_xp(bot_t* bot, void *packet)
     p->format = "vvwwwh";
     p->packet_id = 0x11;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -789,7 +868,7 @@ recv_play_clientbound_entity_velocity(bot_t* bot, void *packet)
     p->format = "vvhhh";
     p->packet_id = 0x12;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -802,7 +881,7 @@ recv_play_clientbound_entity_destroy_entities(bot_t* bot, void *packet)
     p->format = "vv*v";
     p->packet_id = 0x13;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -815,7 +894,7 @@ recv_play_clientbound_entity(bot_t* bot, void *packet)
     p->format = "vv";
     p->packet_id = 0x14;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -828,7 +907,7 @@ recv_play_clientbound_entity_move(bot_t* bot, void *packet)
     p->format = "vvbbbb";
     p->packet_id = 0x15;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -841,7 +920,7 @@ recv_play_clientbound_entity_look(bot_t* bot, void *packet)
     p->format = "vvbbbb";
     p->packet_id = 0x16;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -854,7 +933,7 @@ recv_play_clientbound_entity_look_move(bot_t* bot, void *packet)
     p->format = "vvbbbbbb";
     p->packet_id = 0x17;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -867,7 +946,7 @@ recv_play_clientbound_entity_teleport(bot_t* bot, void *packet)
     p->format = "vvwwwbbb";
     p->packet_id = 0x18;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -880,7 +959,7 @@ recv_play_clientbound_entity_head_look(bot_t* bot, void *packet)
     p->format = "vvb";
     p->packet_id = 0x19;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -893,7 +972,7 @@ recv_play_clientbound_entity_status(bot_t* bot, void *packet)
     p->format = "vwb";
     p->packet_id = 0x1A;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -906,7 +985,7 @@ recv_play_clientbound_entity_attach(bot_t* bot, void *packet)
     p->format = "vwwb";
     p->packet_id = 0x1B;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -919,7 +998,7 @@ recv_play_clientbound_entity_effect(bot_t* bot, void *packet)
     p->format = "vvbbvb";
     p->packet_id = 0x1D;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -932,7 +1011,7 @@ recv_play_clientbound_entity_clear_effect(bot_t* bot, void *packet)
     p->format = "vvb";
     p->packet_id = 0x1E;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -945,7 +1024,7 @@ recv_play_clientbound_entity_properties(bot_t* bot, void *packet)
     p->format = "vvw*w";
     p->packet_id = 0x20;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -958,7 +1037,7 @@ recv_play_clientbound_set_xp(bot_t* bot, void *packet)
     p->format = "vwww";
     p->packet_id = 0x1F;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -971,7 +1050,7 @@ recv_play_clientbound_chunk_data(bot_t* bot, void *packet)
     p->format = "vwwbhv*b";
     p->packet_id = 0x21;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -984,7 +1063,7 @@ recv_play_clientbound_multi_block_change(bot_t* bot, void *packet)
     p->format = "vwwv*w";
     p->packet_id = 0x22;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -997,7 +1076,7 @@ recv_play_clientbound_block_change(bot_t* bot, void *packet)
     p->format = "vlv";
     p->packet_id = 0x23;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -1010,7 +1089,7 @@ recv_play_clientbound_block_action(bot_t* bot, void *packet)
     p->format = "vlbbv";
     p->packet_id = 0x24;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -1023,7 +1102,7 @@ recv_play_clientbound_block_break_animation(bot_t* bot, void *packet)
     p->format = "vvlb";
     p->packet_id = 0x25;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -1036,7 +1115,7 @@ recv_play_clientbound_chunk_bulk(bot_t* bot, void *packet)
     p->format = "vbvwwh*b";
     p->packet_id = 0x26;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -1049,7 +1128,7 @@ recv_play_clientbound_explosion(bot_t* bot, void *packet)
     p->format = "vwwwww*wwww";
     p->packet_id = 0x27;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -1062,7 +1141,7 @@ recv_play_clientbound_effect(bot_t* bot, void *packet)
     p->format = "vwlwb";
     p->packet_id = 0x28;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -1075,7 +1154,7 @@ recv_play_clientbound_sound_effect(bot_t* bot, void *packet)
     p->format = "vswwwwb";
     p->packet_id = 0x29;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -1088,7 +1167,7 @@ recv_play_clientbound_particle(bot_t* bot, void *packet)
     p->format = "vvbwwwwwwww*v";
     p->packet_id = 0x2A;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -1101,7 +1180,7 @@ recv_play_clientbound_entity_spawn_global(bot_t* bot, void *packet)
     p->format = "vvbwww";
     p->packet_id = 0x2C;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -1114,7 +1193,7 @@ recv_play_clientbound_update_sign(bot_t* bot, void *packet)
     p->format = "vlssss";
     p->packet_id = 0x33;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -1127,7 +1206,7 @@ recv_play_clientbound_plugin_message(bot_t* bot, void *packet)
     p->format = "vs*b";
     p->packet_id = 0x3F;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -1140,7 +1219,7 @@ recv_play_clientbound_plugin_disconnect(bot_t* bot, void *packet)
     p->format = "vs";
     p->packet_id = 0x40;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -1153,7 +1232,7 @@ recv_play_clientbound_plugin_difficulty(bot_t* bot, void *packet)
     p->format = "vb";
     p->packet_id = 0x41;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -1166,7 +1245,7 @@ recv_play_clientbound_set_compression(bot_t* bot, void *packet)
     p->format = "vv";
     p->packet_id = 0x46;
 
-    decode_packet(packet, &p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
