@@ -16,7 +16,8 @@
 // the socket descriptor is returned by the function. If -1 is returned, then an error
 // occured, and a message will have been printed out.
 
-int join_server(bot_t *your_bot, char *local_port, char* server_host, char* server_port){
+int join_server(bot_t *your_bot, char *local_port, char* server_host,
+                char* server_port){
     int status;
     struct addrinfo hints, *res;
     int sockfd;
@@ -25,16 +26,17 @@ int join_server(bot_t *your_bot, char *local_port, char* server_host, char* serv
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
     if(status = getaddrinfo(NULL, local_port, &hints, &res)){
-        fprintf(stderr, "Your computer is literally haunted: %s\n", gai_strerror(status));
+        fprintf(stderr, "Your computer is literally haunted: %s\n",
+                gai_strerror(status));
         return -1;
     }
-    if((sockfd = socket(res -> ai_family, res -> ai_socktype, res -> ai_protocol)) == -1){
-        fprintf(stderr, "Your computer is literally haunted. Could not create socket. Why...?!?!?!\n");
+    if((sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1){
+        fprintf(stderr, "Could not create socket for unknown reason.\n");
         return -1;
     }
-    if((status = bind(sockfd, res -> ai_addr,res -> ai_addrlen)) == -1){
-        fprintf(stderr, "Your computer is literally haunted. Could not bind socket to your OWN ADDRESS?!!?!?."
-                "Acquire new Internet plz.\n");
+    if((status = bind(sockfd, res->ai_addr,res->ai_addrlen)) == -1){
+        fprintf(stderr, "Could not bind socket to your OWN ADDRESS?!!?!?."
+                        "Acquire new Internet plz.\n");
         return -1;
     }
     freeaddrinfo(res);
@@ -44,7 +46,8 @@ int join_server(bot_t *your_bot, char *local_port, char* server_host, char* serv
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     if(status = getaddrinfo(server_host, server_port, &hints, &res)){
-        fprintf(stderr, "Server could not be resolved: %s\n", gai_strerror(status));
+        fprintf(stderr, "Server could not be resolved: %s\n",
+                gai_strerror(status));
         return -1;
     }
     connect(sockfd, res->ai_addr, res->ai_addrlen);
