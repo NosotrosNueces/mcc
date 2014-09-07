@@ -1,8 +1,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "protocol.h"
+#include "marshal.h"
 #include "bot.h"
+#include "protocol.h"
 
 #define expect_more(x) (x & 0x80)
 // align pointer x to y
@@ -332,4 +333,46 @@ int decode_packet(void *packet_raw, void *packet_data){
         fmt++;
     }
     return packet_size_len + packet_size;
+}
+
+
+void free_packet(void *packet_data){
+    char *fmt = *((char **)packet_data);
+    packet_data += sizeof(void *);
+    switch(*fmt){
+        case 'b':
+            packet_data = align(packet_data, sizeof(int8_t));
+            packet_data += sizeof(int8_t);
+            break;
+        case 'h':
+            packet_data = align(packet_data, sizeof(int16_t));
+            packet_data += sizeof(int16_t);
+            break;
+        case 'w': case 'v':
+            packet_data = align(packet_data, sizeof(int32_t));
+            packet_data += sizeof(int32_t);
+            break;
+        case 'l':
+            packet_data = align(packet_data, sizeof(int64_t));
+            packet_data += sizeof(int64_t);
+            break;
+        case 'q':
+            packet_data = align(packet_data, sizeof(__int128_t));
+            packet_data += sizeof(__int128_t);
+            break;
+        case 's':
+            packet_data = align(packet_data, sizeof(void *));
+            free(*((void **)packet_data));
+            packet_data += sizeof(void *);
+            break;
+        case '*':
+            packet_data = align(packet_data, sizeof(void *));
+            free(*((void **)packet_data));
+            packet_data += sizeof(void *);
+            fmt++;
+            break;
+        default:
+            break;
+    }
+    fmt++;
 }
