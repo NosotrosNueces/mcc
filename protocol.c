@@ -17,7 +17,7 @@ int32_t send_handshaking_serverbound_handshake(
     uint32_t length;
     handshaking_serverbound_handshake_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vvshv";
     p.packet_id = 0x00;
 
     void *packet;
@@ -40,7 +40,7 @@ int32_t send_login_serverbound_login(
     uint32_t length;
     login_serverbound_login_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vs";
     p.packet_id = 0x00;
 
     void *packet;
@@ -62,7 +62,7 @@ int32_t send_status_serverbound_request(
     uint32_t length;
     status_serverbound_request_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "v";
     p.packet_id = 0x00;
 
     void *packet;
@@ -81,7 +81,7 @@ int32_t send_status_clientbound_ping(
     uint32_t length;
     status_clientbound_ping_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vl";
     p.packet_id = 0x00;
 
     void *packet;
@@ -104,7 +104,7 @@ int32_t send_play_serverbound_keepalive(
     uint32_t length;
     play_serverbound_keepalive_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vv";
     p.packet_id = 0x00;
 
     void *packet;
@@ -123,7 +123,7 @@ int32_t send_play_serverbound_chat(
     uint32_t length;
     play_serverbound_chat_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vs";
     p.packet_id = 0x00;
 
     void *packet;
@@ -146,7 +146,7 @@ int32_t send_play_serverbound_entity_use(
     uint32_t length;
     play_serverbound_entity_use_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vvvwww";
     p.packet_id = 0x00;
 
     void *packet;
@@ -165,7 +165,7 @@ int32_t send_play_serverbound_player(
     uint32_t length;
     play_serverbound_player_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vb";
     p.packet_id = 0x00;
 
     void *packet;
@@ -187,7 +187,7 @@ int32_t send_play_serverbound_player_move(
     uint32_t length;
     play_serverbound_player_move_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vlllb";
     p.packet_id = 0x00;
 
     void *packet;
@@ -208,7 +208,7 @@ int32_t send_play_serverbound_player_look(
     uint32_t length;
     play_serverbound_player_look_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vwwb";
     p.packet_id = 0x00;
 
     void *packet;
@@ -232,7 +232,7 @@ int32_t send_play_serverbound_player_move_look(
     uint32_t length;
     play_serverbound_player_move_look_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vlllwwb";
     p.packet_id = 0x00;
 
     void *packet;
@@ -253,7 +253,7 @@ int32_t send_play_serverbound_player_dig(
     uint32_t length;
     play_serverbound_player_dig_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vblb";
     p.packet_id = 0x00;
 
     void *packet;
@@ -277,7 +277,7 @@ int32_t send_play_serverbound_player_block_place(
     uint32_t length;
     play_serverbound_player_block_place_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vlbwbbb";
     p.packet_id = 0x00;
 
     void *packet;
@@ -296,7 +296,7 @@ int32_t send_play_serverbound_item_change(
     uint32_t length;
     play_serverbound_item_change_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vh";
     p.packet_id = 0x00;
 
     void *packet;
@@ -314,7 +314,7 @@ int32_t send_play_serverbound_animation(
     uint32_t length;
     play_serverbound_animation_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "v";
     p.packet_id = 0x00;
 
     void *packet;
@@ -335,7 +335,7 @@ int32_t send_play_serverbound_entity_action(
     uint32_t length;
     play_serverbound_entity_action_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vvbv";
     p.packet_id = 0x00;
 
     void *packet;
@@ -356,7 +356,7 @@ int32_t send_play_serverbound_steer_vehicle(
     uint32_t length;
     play_serverbound_steer_vehicle_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vwwb";
     p.packet_id = 0x00;
 
     void *packet;
@@ -379,7 +379,7 @@ int32_t send_play_serverbound_update_sign(
     uint32_t length;
     play_serverbound_update_sign_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vlwwww";
     p.packet_id = 0x00;
 
     void *packet;
@@ -400,7 +400,7 @@ int32_t send_play_serverbound_player_abilities(
     uint32_t length;
     play_serverbound_player_abilities_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vbww";
     p.packet_id = 0x00;
 
     void *packet;
@@ -423,7 +423,7 @@ int32_t send_play_serverbound_client_settings(
     uint32_t length;
     play_serverbound_client_settings_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vsbbbb";
     p.packet_id = 0x00;
 
     void *packet;
@@ -442,7 +442,7 @@ int32_t send_play_serverbound_player_status(
     uint32_t length;
     play_serverbound_player_status_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vv";
     p.packet_id = 0x00;
 
     void *packet;
@@ -462,7 +462,7 @@ int32_t send_play_serverbound_plugin_message(
     uint32_t length;
     play_serverbound_plugin_message_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vs*b";
     p.packet_id = 0x00;
 
     void *packet;
@@ -481,7 +481,7 @@ int32_t send_play_serverbound_spectate(
     uint32_t length;
     play_serverbound_spectate_t p;
     // TODO: add all the juice
-    p.format = "";
+    p.format = "vq";
     p.packet_id = 0x00;
 
     void *packet;
