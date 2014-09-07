@@ -773,7 +773,7 @@ typedef struct play_serverbound_spectate {
  */
 
 int32_t send_handshaking_serverbound_handshake(
-    bot_t         bot;
+    bot_t         bot,
     vint32_t      protocol_version,
     char*         server_addr,
     uint16_t      server_port,
@@ -785,7 +785,7 @@ int32_t send_handshaking_serverbound_handshake(
  */
 
 int32_t send_login_serverbound_login(
-    bot_t         bot;
+    bot_t         bot,
     char*         username
 );
 
@@ -794,11 +794,11 @@ int32_t send_login_serverbound_login(
  */
 
 int32_t send_status_serverbound_request(
-    bot_t         bot;
+    bot_t         bot
 );
 
 int32_t send_status_clientbound_ping(
-    bot_t         bot;
+    bot_t         bot,
     int64_t       time
 );
 
@@ -807,17 +807,17 @@ int32_t send_status_clientbound_ping(
  */
 
 int32_t send_play_serverbound_keepalive(
-    bot_t         bot;
+    bot_t         bot,
     vint32_t      keepalive_id
 );
 
 int32_t send_play_serverbound_chat(
-    bot_t         bot;
+    bot_t         bot,
     char*         message
 );
 
 int32_t send_play_serverbound_entity_use(
-    bot_t         bot;
+    bot_t         bot,
     vint32_t      target,
     vint32_t      type,
     float         x,
@@ -826,12 +826,12 @@ int32_t send_play_serverbound_entity_use(
 );
 
 int32_t send_play_serverbound_player(
-    bot_t         bot;
+    bot_t         bot,
     bool          on_ground
 );
 
 int32_t send_play_serverbound_player_move(
-    bot_t         bot;
+    bot_t         bot,
     double        x,
     double        y,
     double        z,
@@ -839,14 +839,14 @@ int32_t send_play_serverbound_player_move(
 );
 
 int32_t send_play_serverbound_player_look(
-    bot_t         bot;
+    bot_t         bot,
     float         yaw,
     float         pitch,
     bool          on_ground
 );
 
 int32_t send_play_serverbound_player_move_look(
-    bot_t         bot;
+    bot_t         bot,
     double        x,
     double        y,
     double        z,
@@ -856,14 +856,14 @@ int32_t send_play_serverbound_player_move_look(
 );
 
 int32_t send_play_serverbound_player_dig(
-    bot_t         bot;
+    bot_t         bot,
     int8_t        status,
     position_t    location,
     int8_t        face
 );
 
 int32_t send_play_serverbound_player_block_place(
-    bot_t         bot;
+    bot_t         bot,
     position_t    location,
     int8_t        direction,
     slot_t        item,
@@ -873,30 +873,30 @@ int32_t send_play_serverbound_player_block_place(
 );
 
 int32_t send_play_serverbound_item_change(
-    bot_t         bot;
+    bot_t         bot,
     int16_t       slot
 );
 
 int32_t send_play_serverbound_animation(
-    bot_t         bot;
+    bot_t         bot
 );
 
 int32_t send_play_serverbound_entity_action(
-    bot_t         bot;
+    bot_t         bot,
     vint32_t      entity_id,
     uint8_t       action_id,
     vint32_t      jump_boost
 );
 
 int32_t send_play_serverbound_steer_vehicle(
-    bot_t         bot;
+    bot_t         bot,
     float         sideways,
     float         forward,
     uint8_t       flags
 );
 
 int32_t send_play_serverbound_update_sign(
-    bot_t         bot;
+    bot_t         bot,
     position_t    location,
     chat_t        line1,
     chat_t        line2,
@@ -905,14 +905,14 @@ int32_t send_play_serverbound_update_sign(
 );
 
 int32_t send_play_serverbound_player_abilities(
-    bot_t         bot;
+    bot_t         bot,
     int8_t        flags,
     float         flying_speed,
     float         walking_speed
 );
 
 int32_t send_play_serverbound_client_settings(
-    bot_t         bot;
+    bot_t         bot,
     char*         locale,
     int8_t        view_distance,
     int8_t        chat_flags,
@@ -921,18 +921,18 @@ int32_t send_play_serverbound_client_settings(
 );
 
 int32_t send_play_serverbound_player_status(
-    bot_t         bot;
+    bot_t         bot,
     vint32_t      action_id
 );
 
 int32_t send_play_serverbound_plugin_message(
-    bot_t         bot;
+    bot_t         bot,
     char*         channel,
     int8_t*       data
 );
 
 int32_t send_play_serverbound_spectate(
-    bot_t         bot;
+    bot_t         bot,
     __uint128_t   target
 );
 
