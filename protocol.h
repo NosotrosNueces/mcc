@@ -17,22 +17,6 @@ typedef void* slot_t;
 
 /**
  **
- ** Protocol encode / decode functions
- **
- **/
-
-int varint64(char *data, int64_t *value);
-int varint32(char *data, int32_t *value);
-int varint64_encode(uint64_t value, char *data, int len);
-int varint32_encode(uint32_t value, char *data, int len);
-
-void reverse(void *number, int len);
-
-int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr);
-int decode_packet(void *packet_raw, void *packet_data);
-
-/**
- **
  ** Struct declarations
  **
  **/
@@ -783,18 +767,13 @@ typedef struct play_serverbound_spectate {
  **
  **/
 
-/* varint functions */
-
-// returns bytes written to char array
-int varint64(char *, int64_t *);
-int uvarint64(char *, uint64_t *);
-
 
 /*
  * Handshaking serverbound functions
  */
 
 int32_t send_handshaking_serverbound_handshake(
+    bot_t         bot,
     vint32_t      protocol_version,
     char*         server_addr,
     uint16_t      server_port,
@@ -806,6 +785,7 @@ int32_t send_handshaking_serverbound_handshake(
  */
 
 int32_t send_login_serverbound_login(
+    bot_t         bot,
     char*         username
 );
 
@@ -814,12 +794,12 @@ int32_t send_login_serverbound_login(
  */
 
 int32_t send_status_serverbound_request(
-    char*         format,
-    int           packet_id
+    bot_t         bot
 );
 
 int32_t send_status_clientbound_ping(
-    int64_t      time
+    bot_t         bot,
+    int64_t       time
 );
 
 /*
@@ -827,14 +807,17 @@ int32_t send_status_clientbound_ping(
  */
 
 int32_t send_play_serverbound_keepalive(
+    bot_t         bot,
     vint32_t      keepalive_id
 );
 
 int32_t send_play_serverbound_chat(
+    bot_t         bot,
     char*         message
 );
 
 int32_t send_play_serverbound_entity_use(
+    bot_t         bot,
     vint32_t      target,
     vint32_t      type,
     float         x,
@@ -843,10 +826,12 @@ int32_t send_play_serverbound_entity_use(
 );
 
 int32_t send_play_serverbound_player(
+    bot_t         bot,
     bool          on_ground
 );
 
 int32_t send_play_serverbound_player_move(
+    bot_t         bot,
     double        x,
     double        y,
     double        z,
@@ -854,12 +839,14 @@ int32_t send_play_serverbound_player_move(
 );
 
 int32_t send_play_serverbound_player_look(
+    bot_t         bot,
     float         yaw,
     float         pitch,
     bool          on_ground
 );
 
 int32_t send_play_serverbound_player_move_look(
+    bot_t         bot,
     double        x,
     double        y,
     double        z,
@@ -869,12 +856,14 @@ int32_t send_play_serverbound_player_move_look(
 );
 
 int32_t send_play_serverbound_player_dig(
+    bot_t         bot,
     int8_t        status,
     position_t    location,
     int8_t        face
 );
 
 int32_t send_play_serverbound_player_block_place(
+    bot_t         bot,
     position_t    location,
     int8_t        direction,
     slot_t        item,
@@ -884,27 +873,30 @@ int32_t send_play_serverbound_player_block_place(
 );
 
 int32_t send_play_serverbound_item_change(
+    bot_t         bot,
     int16_t       slot
 );
 
 int32_t send_play_serverbound_animation(
-    char*         format,
-    int           packet_id
+    bot_t         bot
 );
 
 int32_t send_play_serverbound_entity_action(
+    bot_t         bot,
     vint32_t      entity_id,
     uint8_t       action_id,
     vint32_t      jump_boost
 );
 
 int32_t send_play_serverbound_steer_vehicle(
+    bot_t         bot,
     float         sideways,
     float         forward,
     uint8_t       flags
 );
 
 int32_t send_play_serverbound_update_sign(
+    bot_t         bot,
     position_t    location,
     chat_t        line1,
     chat_t        line2,
@@ -913,12 +905,14 @@ int32_t send_play_serverbound_update_sign(
 );
 
 int32_t send_play_serverbound_player_abilities(
+    bot_t         bot,
     int8_t        flags,
     float         flying_speed,
     float         walking_speed
 );
 
 int32_t send_play_serverbound_client_settings(
+    bot_t         bot,
     char*         locale,
     int8_t        view_distance,
     int8_t        chat_flags,
@@ -927,15 +921,18 @@ int32_t send_play_serverbound_client_settings(
 );
 
 int32_t send_play_serverbound_player_status(
+    bot_t         bot,
     vint32_t      action_id
 );
 
 int32_t send_play_serverbound_plugin_message(
+    bot_t         bot,
     char*         channel,
     int8_t*       data
 );
 
 int32_t send_play_serverbound_spectate(
+    bot_t         bot,
     __uint128_t   target
 );
 
@@ -944,170 +941,170 @@ int32_t send_play_serverbound_spectate(
  */
 
 login_clientbound_disconnect_t*
-recv_login_clientbound_disconnect();
+recv_login_clientbound_disconnect(bot_t bot, void *packet);
 
 login_clientbound_success_t*
-recv_login_clientbound_success();
+recv_login_clientbound_success(bot_t bot, void *packet);
 
 login_clientbound_set_compression_t*
-recv_login_clientbound_set_compression();
+recv_login_clientbound_set_compression(bot_t bot, void *packet);
 
 /*
  * Status clientbound structs
  */
 
 status_clientbound_response_t*
-recv_status_clientbound_response();
+recv_status_clientbound_response(bot_t bot, void *packet);
 
 status_clientbound_ping_t*
-recv_status_clientbound_ping();
+recv_status_clientbound_ping(bot_t bot, void *packet);
 
 /*
  * Play clientbound structs
  */
 
 play_clientbound_keepalive_t*
-recv_play_clientbound_keepalive();
+recv_play_clientbound_keepalive(bot_t bot, void *packet);
 
 play_clientbound_join_game_t*
-recv_play_clientbound_join_game();
+recv_play_clientbound_join_game(bot_t bot, void *packet);
 
 play_clientbound_chat_t*
-recv_play_clientbound_chat();
+recv_play_clientbound_chat(bot_t bot, void *packet);
 
 play_clientbound_time_update_t*
-recv_play_clientbound_time_update();
+recv_play_clientbound_time_update(bot_t bot, void *packet);
 
 play_clientbound_entity_equipment_t*
-recv_play_clientbound_entity_equipment();
+recv_play_clientbound_entity_equipment(bot_t bot, void *packet);
 
 play_clientbound_spawn_position_t*
-recv_play_clientbound_spawn_position();
+recv_play_clientbound_spawn_position(bot_t bot, void *packet);
 
 play_clientbound_update_health_t*
-recv_play_clientbound_update_health();
+recv_play_clientbound_update_health(bot_t bot, void *packet);
 
 play_clientbound_respawn_t*
-recv_play_clientbound_respawn();
+recv_play_clientbound_respawn(bot_t bot, void *packet);
 
 play_clientbound_position_t*
-recv_play_clientbound_position();
+recv_play_clientbound_position(bot_t bot, void *packet);
 
 play_clientbound_item_change_t*
-recv_play_clientbound_item_change();
+recv_play_clientbound_item_change(bot_t bot, void *packet);
 
 play_clientbound_use_bed_t*
-recv_play_clientbound_use_bed();
+recv_play_clientbound_use_bed(bot_t bot, void *packet);
 
 play_clientbound_animation_t*
-recv_play_clientbound_animation();
+recv_play_clientbound_animation(bot_t bot, void *packet);
 
 play_clientbound_spawn_player_t*
-recv_play_clientbound_spawn_player();
+recv_play_clientbound_spawn_player(bot_t bot, void *packet);
 
 play_clientbound_collect_t*
-recv_play_clientbound_collect();
+recv_play_clientbound_collect(bot_t bot, void *packet);
 
 play_clientbound_spawn_object_t*
-recv_play_clientbound_spawn_object();
+recv_play_clientbound_spawn_object(bot_t bot, void *packet);
 
 play_clientbound_spawn_mob_t*
-recv_play_clientbound_spawn_mob();
+recv_play_clientbound_spawn_mob(bot_t bot, void *packet);
 
 play_clientbound_spawn_painting_t*
-recv_play_clientbound_spawn_painting();
+recv_play_clientbound_spawn_painting(bot_t bot, void *packet);
 
 play_clientbound_spawn_xp_t*
-recv_play_clientbound_spawn_xp();
+recv_play_clientbound_spawn_xp(bot_t bot, void *packet);
 
 play_clientbound_entity_velocity_t*
-recv_play_clientbound_entity_velocity();
+recv_play_clientbound_entity_velocity(bot_t bot, void *packet);
 
 play_clientbound_entity_destroy_entities_t*
-recv_play_clientbound_entity_destroy_entities();
+recv_play_clientbound_entity_destroy_entities(bot_t bot, void *packet);
 
 play_clientbound_entity_t*
-recv_play_clientbound_entity();
+recv_play_clientbound_entity(bot_t bot, void *packet);
 
 play_clientbound_entity_move_t*
-recv_play_clientbound_entity_move();
+recv_play_clientbound_entity_move(bot_t bot, void *packet);
 
 play_clientbound_entity_look_t*
-recv_play_clientbound_entity_look();
+recv_play_clientbound_entity_look(bot_t bot, void *packet);
 
 play_clientbound_entity_look_move_t*
-recv_play_clientbound_entity_look_move();
+recv_play_clientbound_entity_look_move(bot_t bot, void *packet);
 
 play_clientbound_entity_teleport_t*
-recv_play_clientbound_entity_teleport();
+recv_play_clientbound_entity_teleport(bot_t bot, void *packet);
 
 play_clientbound_entity_head_look_t*
-recv_play_clientbound_entity_head_look();
+recv_play_clientbound_entity_head_look(bot_t bot, void *packet);
 
 play_clientbound_entity_status_t*
-recv_play_clientbound_entity_status();
+recv_play_clientbound_entity_status(bot_t bot, void *packet);
 
 play_clientbound_entity_attach_t*
-recv_play_clientbound_entity_attach();
+recv_play_clientbound_entity_attach(bot_t bot, void *packet);
 
 play_clientbound_entity_effect_t*
-recv_play_clientbound_entity_effect();
+recv_play_clientbound_entity_effect(bot_t bot, void *packet);
 
 play_clientbound_entity_clear_effect_t*
-recv_play_clientbound_entity_clear_effect();
+recv_play_clientbound_entity_clear_effect(bot_t bot, void *packet);
 
 play_clientbound_entity_properties_t*
-recv_play_clientbound_entity_properties();
+recv_play_clientbound_entity_properties(bot_t bot, void *packet);
 
 play_clientbound_set_xp_t*
-recv_play_clientbound_set_xp();
+recv_play_clientbound_set_xp(bot_t bot, void *packet);
 
 play_clientbound_chunk_data_t*
-recv_play_clientbound_chunk_data();
+recv_play_clientbound_chunk_data(bot_t bot, void *packet);
 
 play_clientbound_multi_block_change_t*
-recv_play_clientbound_multi_block_change();
+recv_play_clientbound_multi_block_change(bot_t bot, void *packet);
 
 play_clientbound_block_change_t*
-recv_play_clientbound_block_change();
+recv_play_clientbound_block_change(bot_t bot, void *packet);
 
 play_clientbound_block_action_t*
-recv_play_clientbound_block_action();
+recv_play_clientbound_block_action(bot_t bot, void *packet);
 
 play_clientbound_block_break_animation_t*
-recv_play_clientbound_block_break_animation();
+recv_play_clientbound_block_break_animation(bot_t bot, void *packet);
 
 play_clientbound_chunk_bulk_t*
-recv_play_clientbound_chunk_bulk();
+recv_play_clientbound_chunk_bulk(bot_t bot, void *packet);
 
 play_clientbound_explosion_t*
-recv_play_clientbound_explosion();
+recv_play_clientbound_explosion(bot_t bot, void *packet);
 
 play_clientbound_effect_t*
-recv_play_clientbound_effect();
+recv_play_clientbound_effect(bot_t bot, void *packet);
 
 play_clientbound_sound_effect_t*
-recv_play_clientbound_sound_effect();
+recv_play_clientbound_sound_effect(bot_t bot, void *packet);
 
 play_clientbound_particle_t*
-recv_play_clientbound_particle();
+recv_play_clientbound_particle(bot_t bot, void *packet);
 
 play_clientbound_entity_spawn_global_t*
-recv_play_clientbound_entity_spawn_global();
+recv_play_clientbound_entity_spawn_global(bot_t bot, void *packet);
 
 play_clientbound_update_sign_t*
-recv_play_clientbound_update_sign();
+recv_play_clientbound_update_sign(bot_t bot, void *packet);
 
 play_clientbound_plugin_message_t*
-recv_play_clientbound_plugin_message();
+recv_play_clientbound_plugin_message(bot_t bot, void *packet);
 
 play_clientbound_plugin_disconnect_t*
-recv_play_clientbound_plugin_disconnect();
+recv_play_clientbound_plugin_disconnect(bot_t bot, void *packet);
 
 play_clientbound_plugin_difficulty_t*
-recv_play_clientbound_plugin_difficulty();
+recv_play_clientbound_plugin_difficulty(bot_t bot, void *packet);
 
 play_clientbound_set_compression_t*
-recv_play_clientbound_set_compression();
+recv_play_clientbound_set_compression(bot_t bot, void *packet);
 
 #endif /* PROTOCOL_H */

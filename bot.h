@@ -11,8 +11,8 @@ typedef struct bot {
 
 extern struct bot context;
 
-int join_server(struct bot *, char *, char *, char *);
-int send_str(struct bot *, char *);
-int send_raw(struct bot *, void *, int);
+int join_server(bot_t *, char *, char *, char *);
+int send_str(bot_t *, char *);
+int send_raw(bot_t *, void *, size_t);
 
 #endif /* BOT_H */

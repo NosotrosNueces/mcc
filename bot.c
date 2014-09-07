@@ -16,7 +16,7 @@
 // the socket descriptor is returned by the function. If -1 is returned, then an error
 // occured, and a message will have been printed out.
 
-int join_server(struct bot *your_bot, char *local_port, char* server_host, char* server_port){
+int join_server(bot_t *your_bot, char *local_port, char* server_host, char* server_port){
     int status;
     struct addrinfo hints, *res;
     int sockfd;
@@ -54,21 +54,21 @@ int join_server(struct bot *your_bot, char *local_port, char* server_host, char*
     return sockfd;
 }
 
-int disconnect(struct bot *your_bot){
+int disconnect(bot_t *your_bot){
     close(your_bot -> socketfd);
 }
 
-int send_str(struct bot *your_bot, char *str){
+int send_str(bot_t *your_bot, char *str){
     //TODO: send is not guaranteed to send all the data. Need to make loop
     size_t len = strlen(str) + 1; // to include null character
     return send(your_bot -> socketfd, str, len, 0);
 }
 
-int send_raw(struct bot *your_bot, void *data, int len){
+int send_raw(bot_t *your_bot, void *data, size_t len){
     return send(your_bot -> socketfd, data, len, 0);
 }
 
-int receive_raw(struct bot *your_bot, void *data, int len){
+int receive_raw(bot_t *your_bot, void *data, size_t len){
     return recv(your_bot -> socketfd, data, len, 0);
 }
 
@@ -80,7 +80,7 @@ int main(int argc, char **argv){
     //    fprintf(stderr, "Specify local port, remote hostname/ip, and remote port\n");
     //    exit(1);
     //}
-    //struct bot test_bot;
+    //bot_t test_bot;
     //if(join_server(&test_bot, argv[1], argv[2], argv[3]) == -1){
     //    return -1;
     //}
