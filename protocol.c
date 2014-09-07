@@ -37,14 +37,14 @@ int varint64_encode(uint64_t value, char *data, int len){
     memset(data, 0, len);
     char mask = 0x7F;
     int i = 0;
-    while(value){
+    do{
         if(i >= len)
             return -1;
         data[i] = (mask & value);
         data[i] |= 0X80;
         value = value >> 7;
         i++;
-    }
+    }while(value);
     data[i - 1] &= mask;
     return i;
 }
@@ -53,14 +53,14 @@ int varint32_encode(uint32_t value, char *data, int len){
     memset(data, 0, len);
     char mask = 0x7F;
     int i = 0;
-    while(value){
+    do{
         if(i >= len)
             return -1;
         data[i] = (mask & value);
         data[i] |= 0X80;
         value = value >> 7;
         i++;
-    }
+    }while(value);
     data[i - 1] &= mask;
     return i;
 }
@@ -115,7 +115,7 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
     int index = 0;
     char *fmt = *((char **)packet_data);
     packet_data += sizeof(void *);
-    printf("format str: %s\n", fmt);
+    //printf("format str: %s\n", fmt);
     // each value in the packet may or may not be the array length of
     // an array following it, so it must be saved off.
     int arr_len;
@@ -233,6 +233,7 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
     *packet_raw_ptr = packet_raw;
     return index + varlen;
 }
+
 int decode_packet(void *packet_raw, void *packet_data){
     // packet_raw = raw packet data
     // packet_data = struct containing packet data
@@ -337,29 +338,50 @@ int decode_packet(void *packet_raw, void *packet_data){
 struct test_struct{
     char *fmt;
     vint32_t packet_id;
-    char *str;
-    vint32_t arr_len;
-    uint32_t* ints;
-    uint64_t long_one;
+    int32_t a;
+    int32_t b;
+    int32_t c;
+    int32_t d;
+    int32_t e;
+    int32_t f;
+    int32_t g;
+    int32_t h;
 } typedef test_struct;
 
+// test cases for format_packet and decode_packet
+
+
+//test_struct a = {"vsv*wl", 0x03, "Hello, World!", 0x0A, (int []){0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 0x0123456789ABCDEF};
+
+void test_no_pointers(){ // test
+
+}
+
+
 int main(){
-    printf("size of void: %d\n", sizeof(void));
-    char test[5];
-    int arr[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    test_struct a = {"vsv*wl", 0x03, "Hello, World!", 0x0A, arr, 0x0123456789ABCDEF};
+    //printf("size of void: %d\n", sizeof(void));
+    //char test[5];
+    //int arr[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    //test_struct a = {"vsv*wl", 0x03, "Hello, World!", 0x0A, arr, 0x0123456789ABCDEF};
+    //void *packet;
+    //bot_t an_botty = {0, 256};
+    //int written = format_packet(&an_botty, &a, &packet);
+    //printf("wrote %d bytes\n", written);
+    //int i;
+    //for(i = 0; i < written; i++){
+    //    printf("%hhX ", ((char *)packet)[i]);
+    //}
+    //putchar('\n');
+    //test_struct b;
+    //b.fmt = "vsv*wl";
+    //printf("size of b: %d\n", sizeof(b));
+    //int len = decode_packet(packet, &b);
+    //printf("%X, %s, %X, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %lX\n", b.packet_id, b.str, b.arr_len, b.ints[0], b.ints[1], b.ints[2], b.ints[3], b.ints[4], b.ints[5], b.ints[6], b.ints[7], b.ints[8], b.ints[9], b.long_one);
+    test_struct a = {"vwwwwwwww", 0x00, 1, 2, 3, 4, 5, 6, 7, 8};
+    bot_t an_bot = {0, 256};
     void *packet;
-    bot_t an_botty = {0, 256};
-    int written = format_packet(&an_botty, &a, &packet);
-    printf("wrote %d bytes\n", written);
-    int i;
-    for(i = 0; i < written; i++){
-        printf("%hhX ", ((char *)packet)[i]);
-    }
-    putchar('\n');
+    int written = format_packet(&an_bot, &a, &packet);
     test_struct b;
-    b.fmt = "vsv*wl";
-    printf("size of b: %d\n", sizeof(b));
-    int len = decode_packet(packet, &b);
-    printf("%X, %s, %X, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %lX\n", b.packet_id, b.str, b.arr_len, b.ints[0], b.ints[1], b.ints[2], b.ints[3], b.ints[4], b.ints[5], b.ints[6], b.ints[7], b.ints[8], b.ints[9], b.long_one);
+    b.fmt = "vwwwwwwww";
+
 }
