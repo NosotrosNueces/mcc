@@ -104,126 +104,99 @@ void reverse(void *number, int len){
     }
 }
 
+size_t format_sizeof(char c) {
+    switch(c){
+        case 's':
+            return sizeof(void *);
+        case 'v':
+            return sizeof(vint32_t);
+        case '*':
+            return sizeof(void *);
+        case 'b':
+            return sizeof(int8_t);
+        case 'h':
+            return sizeof(int16_t);
+        case 'w':
+            return sizeof(int32_t);
+        case 'l':
+            return sizeof(int64_t);
+        case 'q':
+            return sizeof(__int128_t);
+        default:
+            fprintf(stderr, "Bad format specifier\n");
+            return -1;
+    }
+}
 
 
 // puts the raw packet data from the struct packet_data into packet_raw
 // returns the number of bytes written to packet_raw, or -1 if packet_raw
 // is not a long enough array
 int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
-    int len = bot -> packet_threshold;
+    uint32_t len = bot -> packet_threshold;
+    uint32_t index = 0;
+    uint32_t value = 0;
+    uint32_t varlen = 0;
+    uint32_t arr_len = 0;
+    char varint[5];
+    size_t size;
+
     void *packet_raw = calloc(bot -> packet_threshold, sizeof(int8_t));
-    int index = 0;
     char *fmt = *((char **)packet_data);
     packet_data += sizeof(void *);
-    // each value in the packet may or may not be the array length of
-    // an array following it, so it must be saved off.
-    int arr_len;
-    int32_t value;
-    char varint[5];
-    int varlen;
+
     while(*fmt){
+        size = format_sizeof(*fmt);
+        packet_data = align(packet_data, size);
         switch(*fmt){
             case 's':{ // string (null terminated)
-                packet_data = align(packet_data, sizeof(void *));
                 char *str = *((char **)packet_data);
                 value = strlen(str);
                 varlen = varint32_encode(value, varint, 5);
-                if(index + varlen > len)
+                if(index + varlen + value > len)
                     return -1; // TODO: compression
                 memcpy(packet_raw + index, varint, varlen);
-                index += varlen;
-                if(index + value > len)
-                    return -1; // TODO: compression
-                memcpy(packet_raw + index, str, value);
-                index += value;
-                packet_data += sizeof(void *);
+                memcpy(packet_raw + index + varlen, str, value);
+                index += value + varlen;
                 break;
             }
             case 'v':{ // varint32_t
-                packet_data = align(packet_data, sizeof(vint32_t));
-                value = *((int32_t *)packet_data);
+                value = *((uint32_t *)packet_data);
                 arr_len = value;
                 varlen = varint32_encode(value, varint, 5);
                 if(index + varlen > len)
                     return -1; // TODO: compression
                 memcpy(packet_raw + index, varint, varlen);
                 index += varlen;
-                packet_data += sizeof(vint32_t);
                 break;
             }
             case '*':{ // pointer/array
                 fmt++;
-                int size = 0;
-                switch(*fmt){
-                    case 'b':
-                        size = sizeof(int8_t);
-                        break;
-                    case 'h':
-                        size = sizeof(int16_t);
-                        break;
-                    case 'w':
-                        size = sizeof(int32_t);
-                        break;
-                    case 'l':
-                        size = sizeof(int64_t);
-                        break;
-                    case 'q':
-                        size = sizeof(__int128_t);
-                        break;
-                    default:
-                        fprintf(stderr, "Bad format string\n");
-                        return -1;
-                }
-                if(index + size * arr_len > len)
+                size_t size_elem = format_sizeof(*fmt);
+                if(index + size_elem * arr_len > len)
                     return -1; // TODO: compression
-                packet_data = align(packet_data, sizeof(void *));
                 void *arr = *((void **)packet_data);
-                int i = 0;
-                for(;i < arr_len * size; i += size){
-                    memcpy(packet_raw + index + i, arr + i, size);
-                    reverse(packet_raw + index + i, size);
+                for(int i = 0;i < arr_len * size_elem; i += size_elem){
+                    memcpy(packet_raw + index + i, arr + i, size_elem);
+                    reverse(packet_raw + index + i, size_elem);
                 }
-                //memcpy(packet_raw + index, arr, arr_len * size);
-                index += arr_len * size;
-                packet_data += sizeof(void *);
+                index += arr_len * size_elem;
                 break;
             }
             default:{
-                int size = 0;
-                switch(*fmt){
-                    case 'b':
-                        size = sizeof(int8_t);
-                        break;
-                    case 'h':
-                        size = sizeof(int16_t);
-                        break;
-                    case 'w':
-                        size = sizeof(int32_t);
-                        break;
-                    case 'l':
-                        size = sizeof(int64_t);
-                        break;
-                    case 'q':
-                        size = sizeof(__int128_t);
-                        break;
-                    default:
-                        fprintf(stderr, "Bad format string\n");
-                        return -1;
-                }
+                size_t size = format_sizeof(*fmt);
                 if(index + size > len)
                     return -1; // TODO: compression
-                packet_data = align(packet_data, size);
                 memcpy(packet_raw + index, packet_data, size);
                 reverse(packet_raw + index, size);
                 arr_len = *((int *)packet_data);
                 index += size;
-                packet_data += size;
                 break;
             }
         }
+        packet_data += size;
         fmt++;
     }
-    // =)
     varlen = varint32_encode(index, varint, 5);
     if(index + varlen > len)
         return -1; // TODO: compression
@@ -236,99 +209,56 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
 int decode_packet(void *packet_raw, void *packet_data){
     // packet_raw = raw packet data
     // packet_data = struct containing packet data
+    uint32_t len;
+    vint32_t value;
+    uint32_t arr_len;
+    size_t size;
+
     char *fmt = *((char **)packet_data);
     packet_data += sizeof(void *);
+    
     int32_t packet_size;
     int packet_size_len = varint32(packet_raw, &packet_size);
     packet_raw += packet_size_len;
-    int len;
-    vint32_t value;
-    int arr_len;
+    
     while(*fmt){
+        size = format_sizeof(*fmt);
+        packet_data = align(packet_data, size);
         switch(*fmt){
             case 's': // varint followed by string
-                packet_data = align(packet_data, sizeof(void *));
                 len = varint32(packet_raw, &value);
                 packet_raw += len;
                 char *str = calloc(value + 1, sizeof(char)); // null terminated
                 memcpy(str, packet_raw, value);
                 *((char **)packet_data) = str;
                 packet_raw += value;
-                packet_data += sizeof(void *);
                 break;
             case 'v': // varint
-                packet_data = align(packet_data, sizeof(vint32_t));
                 len = varint32(packet_raw, &value);
                 arr_len = value;
                 memcpy(packet_data, &value, sizeof(vint32_t));
                 packet_raw += len;
-                packet_data += sizeof(vint32_t);
                 break;
             case '*':
                 fmt++;
-                int size = 8;
-                switch(*fmt){
-                    case 'b':
-                        size = sizeof(int8_t);
-                        break;
-                    case 'h':
-                        size = sizeof(int16_t);
-                        break;
-                    case 'w':
-                        size = sizeof(int32_t);
-                        break;
-                    case 'l':
-                        size = sizeof(int64_t);
-                        break;
-                    case 'q':
-                        size = sizeof(__int128_t);
-                        break;
-                    default:
-                        fprintf(stderr, "Bad format string\n");
-                        return -1;
-                }
-                packet_data = align(packet_data, sizeof(void *));
-                void *arr = calloc(arr_len, size);
-                int i = 0;
-                for(; i < arr_len * size; i += size){
-                    memcpy(arr + i, packet_raw + i, size);
-                    reverse(arr + i, size);
+                size_t size_elem = format_sizeof(*fmt);
+                void *arr = calloc(arr_len, size_elem);
+                for(int i = 0; i < arr_len * size_elem; i += size_elem){
+                    memcpy(arr + i, packet_raw + i, size_elem);
+                    reverse(arr + i, size_elem);
                 }
                 *((void **)packet_data) = arr;
-                packet_raw += arr_len * size;
-                packet_data += sizeof(void *);
+                packet_raw += arr_len * size_elem;
                 break;
             default:{
-                int size = 8;
-                switch(*fmt){
-                    case 'b':
-                        size = sizeof(int8_t);
-                        break;
-                    case 'h':
-                        size = sizeof(int16_t);
-                        break;
-                    case 'w':
-                        size = sizeof(int32_t);
-                        break;
-                    case 'l':
-                        size = sizeof(int64_t);
-                        break;
-                    case 'q':
-                        size = sizeof(__int128_t);
-                        break;
-                    default:
-                        fprintf(stderr, "Bad format string\n");
-                        return -1;
-                }
-                packet_data = align(packet_data, size);
                 memcpy(packet_data, packet_raw, size);
                 reverse(packet_data, size);
                 arr_len = *((int *)packet_data);
                 packet_raw += size;
-                packet_data += size;
                 break;
             }
         }
+        packet_data += size;
         fmt++;
     }
     return packet_size_len + packet_size;

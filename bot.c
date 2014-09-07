@@ -75,31 +75,31 @@ int receive_raw(bot_t *your_bot, void *data, size_t len){
 
 
 
-int main(int argc, char **argv){
-    //if(argc < 4){
-    //    fprintf(stderr, "Specify local port, remote hostname/ip, and remote port\n");
-    //    exit(1);
-    //}
-    //bot_t test_bot;
-    //if(join_server(&test_bot, argv[1], argv[2], argv[3]) == -1){
-    //    return -1;
-    //}
-    char handshake[20] = {0x0F, 0x00, 47, 0x09, 'l', 'o', 'c', 'a', 'l', 'h', 'o', 's', 't', 0x63, 0xDD, 0x02};
-    char login_start[20] = {0x08, 0x00, 6, 'a', 'n', '_', 'g', 'u', 'y'};
-    char test[2] = {0x80, 0x02};
-    uint64_t val;
-    uvarint64(test, &val);
-    printf("varint: %d\n");
-    char buf[100] = {0};
-    int len = uvarint64_encode(256, buf, 1);
-    printf("len: %d, %hhx %hhx\n", len, buf[0], buf[1]);
-    //int bytes_sent = send_raw(&test_bot, handshake, 16);
-    //printf("sent %d bytes\n", bytes_sent);
-    //bytes_sent = send_raw(&test_bot, login_start, 9);
-    //int bytes_received = receive_raw(&test_bot, buf, 100);
-    //printf("received %d bytes\n", bytes_received);
-    //printf("%hhX %hhX %hhX %hhX\n", buf[0], buf[1], buf[2], buf[3]);
-    //disconnect(&test_bot);
-    //char var[2] = {0xAC, 0x02};
-    //printf("%d\n", varint64(var));
-}
+// int main(int argc, char **argv){
+//     //if(argc < 4){
+//     //    fprintf(stderr, "Specify local port, remote hostname/ip, and remote port\n");
+//     //    exit(1);
+//     //}
+//     //bot_t test_bot;
+//     //if(join_server(&test_bot, argv[1], argv[2], argv[3]) == -1){
+//     //    return -1;
+//     //}
+//     char handshake[20] = {0x0F, 0x00, 47, 0x09, 'l', 'o', 'c', 'a', 'l', 'h', 'o', 's', 't', 0x63, 0xDD, 0x02};
+//     char login_start[20] = {0x08, 0x00, 6, 'a', 'n', '_', 'g', 'u', 'y'};
+//     char test[2] = {0x80, 0x02};
+//     uint64_t val;
+//     // uvarint64(test, &val);
+//     printf("varint: %d\n");
+//     char buf[100] = {0};
+//     // int len = uvarint64_encode(256, buf, 1);
+//     printf("len: %d, %hhx %hhx\n", len, buf[0], buf[1]);
+//     //int bytes_sent = send_raw(&test_bot, handshake, 16);
+//     //printf("sent %d bytes\n", bytes_sent);
+//     //bytes_sent = send_raw(&test_bot, login_start, 9);
+//     //int bytes_received = receive_raw(&test_bot, buf, 100);
+//     //printf("received %d bytes\n", bytes_received);
+//     //printf("%hhX %hhX %hhX %hhX\n", buf[0], buf[1], buf[2], buf[3]);
+//     //disconnect(&test_bot);
+//     //char var[2] = {0xAC, 0x02};
+//     //printf("%d\n", varint64(var));
+// }
