@@ -10,6 +10,7 @@
 #include <assert.h>
 #include "bot.h"
 #include "protocol.h"
+#include "marshal.h"
 
 void hexDump (char *desc, void *addr, int len) {
     int i;
