@@ -198,6 +198,7 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
         packet_data += size;
         fmt++;
     }
+
     varlen = varint32_encode(index, varint, 5);
     if(index + varlen > len)
         return -1; // TODO: compression
@@ -207,7 +208,7 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
     return index + varlen;
 }
 
-int decode_packet(void *packet_raw, void *packet_data){
+int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
     // packet_raw = raw packet data
     // packet_data = struct containing packet data
     uint32_t len;
@@ -221,7 +222,7 @@ int decode_packet(void *packet_raw, void *packet_data){
     int32_t packet_size;
     int packet_size_len = varint32(packet_raw, &packet_size);
     packet_raw += packet_size_len;
-    
+
     while(*fmt){
         size = format_sizeof(*fmt);
         packet_data = align(packet_data, size);
@@ -265,6 +266,16 @@ int decode_packet(void *packet_raw, void *packet_data){
     return packet_size_len + packet_size;
 }
 
+vint32_t peek_packet(bot_t *bot, void *packet_raw){
+    int32_t packet_size;
+    int32_t value;
+    uint32_t len;
+    int packet_size_len = varint32(packet_raw, &packet_size);
+    packet_raw += packet_size_len;
+
+    len = varint32(packet_raw, &value);
+    return value;
+}
 
 void free_packet(void *packet_data){
     char *fmt = *((char **)packet_data);
@@ -306,3 +317,4 @@ void free_packet(void *packet_data){
     }
     fmt++;
 }
+

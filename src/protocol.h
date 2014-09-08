@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include "bot.h"
 
+#define DEFAULT_THRESHOLD (512)
+
 typedef uint8_t bool;
 typedef uint64_t position_t;
 typedef uint32_t vint32_t;
@@ -799,7 +801,7 @@ int32_t send_status_serverbound_request(
     bot_t*        bot
 );
 
-int32_t send_status_clientbound_ping(
+int32_t send_status_serverbound_ping(
     bot_t*        bot,
     int64_t       time
 );
