@@ -7,8 +7,8 @@
 
 int varint64(char *data, int64_t *value);
 int varint32(char *data, int32_t *value);
-int varint64_encode(uint64_t value, char *data, int len);
-int varint32_encode(uint32_t value, char *data, int len);
+int varint64_encode(int64_t value, char *data, int len);
+int varint32_encode(int32_t value, char *data, int len);
 
 void reverse(void *number, int len);
 

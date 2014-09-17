@@ -7,6 +7,7 @@
 typedef struct bot {
     int socketfd;
     size_t packet_threshold;
+    /* registered callbacks */
 } bot_t;
 
 extern struct bot context;

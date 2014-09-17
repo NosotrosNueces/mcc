@@ -34,7 +34,7 @@ int varint32(char *data, int32_t *value){
     return shifts;
 }
 
-int varint64_encode(uint64_t value, char *data, int len){
+int varint64_encode(int64_t value, char *data, int len){
     memset(data, 0, len);
     char mask = 0x7F;
     int i = 0;
@@ -43,14 +43,14 @@ int varint64_encode(uint64_t value, char *data, int len){
             return -1;
         data[i] = (mask & value);
         data[i] |= 0X80;
-        value = value >> 7;
+        value = (uint64_t)value >> 7;
         i++;
     }while(value);
     data[i - 1] &= mask;
     return i;
 }
 
-int varint32_encode(uint32_t value, char *data, int len){
+int varint32_encode(int32_t value, char *data, int len){
     memset(data, 0, len);
     char mask = 0x7F;
     int i = 0;
@@ -59,7 +59,7 @@ int varint32_encode(uint32_t value, char *data, int len){
             return -1;
         data[i] = (mask & value);
         data[i] |= 0X80;
-        value = value >> 7;
+        value = (uint32_t)value >> 7;
         i++;
     }while(value);
     data[i - 1] &= mask;
@@ -218,7 +218,7 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
 
     char *fmt = *((char **)packet_data);
     packet_data += sizeof(void *);
-    
+
     int32_t packet_size;
     int packet_size_len = varint32(packet_raw, &packet_size);
     packet_raw += packet_size_len;
