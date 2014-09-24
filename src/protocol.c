@@ -1250,3 +1250,66 @@ recv_play_clientbound_set_compression(bot_t* bot, void *packet)
     return p;
 }
 
+void init_decode_table(void) {
+    void ***decode_table = calloc(NUM_STATES, sizeof(void*));
+    decode_table[HANDSHAKE] = calloc(HANDSHAKE_PACKETS, sizeof(void*));
+    decode_table[LOGIN] = calloc(LOGIN_PACKETS, sizeof(void*));
+    decode_table[STATUS] = calloc(STATUS_PACKETS, sizeof(void*));
+    decode_table[PLAY] = calloc(PLAY_PACKETS, sizeof(void*));
+
+    decode_table[LOGIN][0x00] = recv_login_clientbound_disconnect;
+    decode_table[LOGIN][0x02] = recv_login_clientbound_success;
+    decode_table[LOGIN][0x03] = recv_login_clientbound_set_compression;
+
+    decode_table[STATUS][0x00] = recv_status_clientbound_response;
+    decode_table[STATUS][0x01] = recv_status_clientbound_ping;
+
+    decode_table[PLAY][0x00] = recv_play_clientbound_keepalive;
+    decode_table[PLAY][0x01] = recv_play_clientbound_join_game;
+    decode_table[PLAY][0x02] = recv_play_clientbound_chat;
+    decode_table[PLAY][0x03] = recv_play_clientbound_time_update;
+    decode_table[PLAY][0x04] = recv_play_clientbound_entity_equipment;
+    decode_table[PLAY][0x05] = recv_play_clientbound_spawn_position;
+    decode_table[PLAY][0x06] = recv_play_clientbound_update_health;
+    decode_table[PLAY][0x07] = recv_play_clientbound_respawn;
+    decode_table[PLAY][0x08] = recv_play_clientbound_position;
+    decode_table[PLAY][0x09] = recv_play_clientbound_item_change;
+    decode_table[PLAY][0x0A] = recv_play_clientbound_use_bed;
+    decode_table[PLAY][0x0B] = recv_play_clientbound_animation;
+    decode_table[PLAY][0x0C] = recv_play_clientbound_spawn_player;
+    decode_table[PLAY][0x0D] = recv_play_clientbound_collect;
+    decode_table[PLAY][0x0E] = recv_play_clientbound_spawn_object;
+    decode_table[PLAY][0x0F] = recv_play_clientbound_spawn_mob;
+    decode_table[PLAY][0x10] = recv_play_clientbound_spawn_painting;
+    decode_table[PLAY][0x11] = recv_play_clientbound_spawn_xp;
+    decode_table[PLAY][0x12] = recv_play_clientbound_entity_velocity;
+    decode_table[PLAY][0x13] = recv_play_clientbound_entity_destroy_entities;
+    decode_table[PLAY][0x14] = recv_play_clientbound_entity;
+    decode_table[PLAY][0x15] = recv_play_clientbound_entity_move;
+    decode_table[PLAY][0x16] = recv_play_clientbound_entity_look;
+    decode_table[PLAY][0x17] = recv_play_clientbound_entity_look_move;
+    decode_table[PLAY][0x18] = recv_play_clientbound_entity_teleport;
+    decode_table[PLAY][0x19] = recv_play_clientbound_entity_head_look;
+    decode_table[PLAY][0x1A] = recv_play_clientbound_entity_status;
+    decode_table[PLAY][0x1B] = recv_play_clientbound_entity_attach;
+    decode_table[PLAY][0x1D] = recv_play_clientbound_entity_effect;
+    decode_table[PLAY][0x1E] = recv_play_clientbound_entity_clear_effect;
+    decode_table[PLAY][0x20] = recv_play_clientbound_entity_properties;
+    decode_table[PLAY][0x1F] = recv_play_clientbound_set_xp;
+    decode_table[PLAY][0x21] = recv_play_clientbound_chunk_data;
+    decode_table[PLAY][0x22] = recv_play_clientbound_multi_block_change;
+    decode_table[PLAY][0x23] = recv_play_clientbound_block_change;
+    decode_table[PLAY][0x24] = recv_play_clientbound_block_action;
+    decode_table[PLAY][0x25] = recv_play_clientbound_block_break_animation;
+    decode_table[PLAY][0x26] = recv_play_clientbound_chunk_bulk;
+    decode_table[PLAY][0x27] = recv_play_clientbound_explosion;
+    decode_table[PLAY][0x28] = recv_play_clientbound_effect;
+    decode_table[PLAY][0x29] = recv_play_clientbound_sound_effect;
+    decode_table[PLAY][0x2A] = recv_play_clientbound_particle;
+    decode_table[PLAY][0x2C] = recv_play_clientbound_entity_spawn_global;
+    decode_table[PLAY][0x33] = recv_play_clientbound_update_sign;
+    decode_table[PLAY][0x3F] = recv_play_clientbound_plugin_message;
+    decode_table[PLAY][0x40] = recv_play_clientbound_plugin_disconnect;
+    decode_table[PLAY][0x41] = recv_play_clientbound_plugin_difficulty;
+    decode_table[PLAY][0x46] = recv_play_clientbound_set_compression;
+}

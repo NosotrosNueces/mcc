@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-typedef enum {HANDSHAKE, LOGIN, PLAY, NUM_STATES} state;
+typedef enum {HANDSHAKE, LOGIN, STATUS, PLAY, NUM_STATES} state;
 
 typedef struct _function {
     void (*f)(void *);

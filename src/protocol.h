@@ -7,9 +7,9 @@
 
 #define DEFAULT_THRESHOLD (512)
 #define HANDSHAKE_PACKETS 0x0
-#define LOGIN_PACKETS 0x04
-#define PLAY_PACKETS 0x50
-
+#define LOGIN_PACKETS 0x03
+#define PLAY_PACKETS 0x47
+#define STATUS_PACKETS 0x02
 
 //typedef uint8_t bool;
 typedef uint64_t position_t;
