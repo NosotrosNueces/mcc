@@ -5,11 +5,6 @@
 #include "bot.h"
 #include "protocol.h"
 
-#define expect_more(x) (x & 0x80)
-// align pointer x to y
-// y is assumed to be a power of 2
-#define align(x, y) ((void *)((size_t)(x + y - 1) & (~y + 1)))
-
 // returns the number of bytes read from data
 int varint64(char *data, int64_t *value){
     int64_t result = 0;
