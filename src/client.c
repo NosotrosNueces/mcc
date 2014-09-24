@@ -47,7 +47,3 @@ void *receiver(void *ignore) {
         }
     }
 }
-
-void client_run(bot_t *bot, uint32_t num_bots) {
-     
-}
