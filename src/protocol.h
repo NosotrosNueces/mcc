@@ -3,12 +3,17 @@
 
 #include <stdint.h>
 #include "bot.h"
+#include <stdbool.h>
 
 #define DEFAULT_THRESHOLD (512)
+#define HANDSHAKE_PACKETS 0x0
+#define LOGIN_PACKETS 0x04
+#define PLAY_PACKETS 0x50
 
-typedef uint8_t bool;
+
+//typedef uint8_t bool;
 typedef uint64_t position_t;
-typedef uint32_t vint32_t;
+typedef int32_t vint32_t;
 typedef char* chat_t;
 typedef int32_t data_t;
 typedef void* metadata_t;

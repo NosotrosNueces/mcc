@@ -12,6 +12,8 @@
 #include "protocol.h"
 #include "marshal.h"
 
+void free_list(function *);
+
 void hexDump (char *desc, void *addr, int len) {
     int i;
     unsigned char buff[17];
@@ -53,6 +55,57 @@ void hexDump (char *desc, void *addr, int len) {
 
     // And print the final ASCII bit.
     printf ("  %s\n", buff);
+}
+
+// initializes the bot with a name, and default callbacks
+bot_t *init_bot(char *name){
+    // set the bot name
+    bot_t *bot = calloc(1, sizeof(bot_t));
+    size_t len = strlen(name);
+    bot -> name = calloc(len + 1, sizeof(char));
+    strncpy(bot -> name, name, len + 1);
+    // initialize the callback data structure
+    bot -> callbacks = calloc(NUM_STATES, sizeof(function **));
+    bot -> callbacks[HANDSHAKE] = calloc(HANDSHAKE_PACKETS, sizeof(function *));
+    bot -> callbacks[LOGIN] = calloc(LOGIN_PACKETS, sizeof(function *));
+    bot -> callbacks[PLAY] = calloc(PLAY_PACKETS, sizeof(function *));
+    return bot;
+}
+
+void free_bot(bot_t *bot){
+    free(bot -> name);
+    // free all handshake callback structs
+    // unrolled outer loop just cuz
+    int i;
+    for(i = 0; i < HANDSHAKE_PACKETS; i++){
+        function *func = bot -> callbacks[HANDSHAKE][i];
+        free_list(func);
+    }
+    for(i = 0; i < LOGIN_PACKETS; i++){
+        function *func = bot -> callbacks[LOGIN][i];
+        free_list(func);
+    }
+    for(i = 0; i < PLAY_PACKETS; i++){
+        function *func = bot -> callbacks[PLAY][i];
+        free_list(func);
+    }
+    free(bot);
+}
+
+void free_list(function *list){
+    if(list)
+        free_list(list -> next);
+    free(list);
+}
+
+
+void register_event(bot_t *bot, uint32_t state, uint32_t packet_id, 
+        void (*f)(void *)){
+    function *current = bot -> callbacks[state][packet_id];
+    while(current)
+        current = current -> next;
+    current = calloc(1, sizeof(function));
+    current -> f = f;
 }
 
 // initializes a bot structure with a socket. The socket is bound to the local address on
