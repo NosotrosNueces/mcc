@@ -4,6 +4,7 @@
 #include "bot.h"
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define STRUCT_SIZE 4096
 
@@ -34,7 +35,7 @@ void test_no_pointers(uint64_t trials){ // test
         //fwrite(test, 1, STRUCT_SIZE, original_f);
 
         // decode packet
-        decode_packet(packet_raw, decoded);
+        decode_packet(NULL, packet_raw, decoded);
         void *packet_raw_decode;
 
         // re-encode packet
@@ -63,10 +64,13 @@ char *random_fmt(){
 }
 
 int main(){
-    f = fopen("/dev/urandom", "r");
-    int seed;
-    fread(&seed, 1, sizeof(int), f);
-    srand(seed);
-    test_no_pointers(~0lu);
-    fclose(f);
+    //f = fopen("/dev/urandom", "r");
+    //int seed;
+    //fread(&seed, 1, sizeof(int), f);
+    //srand(seed);
+    //test_no_pointers(~0lu);
+    //fclose(f);
+    char varint[100];
+    printf("%d bytes written\n", varint32_encode(-1, varint, 100));
+    printf("%hhX %hhX %hhX %hhX %hhX\n", varint[0], varint[1], varint[2], varint[3], varint[4]);
 }

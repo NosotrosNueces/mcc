@@ -149,7 +149,7 @@ int join_server(bot_t *your_bot, char *local_port, char* server_host,
 }
 
 int disconnect(bot_t *your_bot){
-    close(your_bot -> socketfd);
+    return close(your_bot -> socketfd);
 }
 
 int send_str(bot_t *your_bot, char *str){
@@ -166,42 +166,53 @@ int receive_raw(bot_t *your_bot, void *data, size_t len){
     return recv(your_bot -> socketfd, data, len, 0);
 }
 
-// int main(int argc, char **argv){
-//     //if(argc < 4){
-//     //    fprintf(stderr, "Specify local port, remote hostname/ip, and remote port\n");
-//     //    exit(1);
-//     //}
-//     //bot_t test_bot;
-//     //if(join_server(&test_bot, argv[1], argv[2], argv[3]) == -1){
-//     //    return -1;
-//     //}
-//     char handshake[20] = {0x0F, 0x00, 47, 0x09, 'l', 'o', 'c', 'a', 'l', 'h', 'o', 's', 't', 0x63, 0xDD, 0x02};
-//     char login_start[20] = {0x08, 0x00, 6, 'a', 'n', '_', 'g', 'u', 'y'};
-//     char test[2] = {0x80, 0x02};
-//     uint64_t val;
-//     // uvarint64(test, &val);
-//     printf("varint: %d\n");
-//     char buf[100] = {0};
-//     // int len = uvarint64_encode(256, buf, 1);
-//     printf("len: %d, %hhx %hhx\n", len, buf[0], buf[1]);
-//     //int bytes_sent = send_raw(&test_bot, handshake, 16);
-//     //printf("sent %d bytes\n", bytes_sent);
-//     //bytes_sent = send_raw(&test_bot, login_start, 9);
-//     //int bytes_received = receive_raw(&test_bot, buf, 100);
-//     //printf("received %d bytes\n", bytes_received);
-//     //printf("%hhX %hhX %hhX %hhX\n", buf[0], buf[1], buf[2], buf[3]);
-//     //disconnect(&test_bot);
-//     //char var[2] = {0xAC, 0x02};
-//     //printf("%d\n", varint64(var));
-// }
-
-int main() {
-    char* buf = calloc(sizeof(char), DEFAULT_THRESHOLD);
+int receive_packet(bot_t *bot) {
     vint32_t packet_size;
     uint32_t received;
+    uint32_t ret;
     uint32_t len;
-    int ret, i;
+    uint32_t i;
 
+    memset(bot->buf, 0, bot->packet_threshold);
+    for (i = 0; i < 5; i++) {
+        ret = receive_raw(bot, bot->buf + i, 1);
+        if (ret <= 0)
+            return -1;
+        if (!expect_more(bot->buf[i]))
+            break;
+    }
+
+    len = varint32(bot->buf, &packet_size);
+    if (packet_size == 0)
+        return -2;
+
+    assert(i != len);
+
+    packet_size += len;
+    received = len + 1;
+    if (packet_size <= bot->packet_threshold) {
+        while (received < packet_size) {
+            ret = receive_raw(bot, bot->buf + received, packet_size - received);
+            if (ret <= 0)
+                return -1;
+            received += ret;
+        }
+
+        ret = peek_packet(bot, bot->buf);
+        return ret;
+    } else {
+        // read in a huge buffer, but throw it away
+        while (received < packet_size) {
+            ret = receive_raw(bot, bot->buf, bot->packet_threshold);
+            if (ret <= 0)
+                return -1;
+            received += ret;
+        }
+        return -2;
+    }
+}
+
+int main() {
     bot_t bot;
     bot.packet_threshold = DEFAULT_THRESHOLD;
 
@@ -211,58 +222,4 @@ int main() {
     send_login_serverbound_login(&bot, "an_guy");
 
     bot.packet_threshold = 256;
-
-    struct timeval tv = {2, 0};
-    fd_set readfds;
-
-    FD_ZERO(&readfds);
-    FD_SET(bot.socketfd, &readfds);
-
-    while (1) {
-        select(bot.socketfd + 1, &readfds, NULL, NULL, &tv);
-
-        memset(buf, 0, DEFAULT_THRESHOLD);
-        for (i = 0; i < 5; i++) {
-            ret = receive_raw(&bot, buf + i, 1);
-            if (ret <= 0) return 1;
-            if ((buf[i] & 0x80) == 0) break;
-        }
-
-        len = varint32(buf, &packet_size);
-        if (packet_size == 0) continue;
-
-        packet_size += len;
-        received = i + 1;
-        if (packet_size <= DEFAULT_THRESHOLD) {
-            while (received < packet_size) {
-                ret = receive_raw(&bot, buf + received, packet_size - received);
-                if (ret <= 0) return 1;
-                received += ret;
-            }
-
-            ret = peek_packet(&bot, buf);
-            if (ret > 0x49) {
-                return 1;
-            }
-            if (ret == 0x00) {
-                play_clientbound_keepalive_t *p;
-                p = recv_play_clientbound_keepalive(&bot, buf);
-
-                printf("ping: %x\n", p->keepalive_id);
-                send_play_serverbound_keepalive(&bot, p->keepalive_id);
-                free_packet(p);
-            }
-            printf("%x\n", ret);
-            hexDump("buffer", buf, packet_size);
-        } else {
-            printf("we've got a whopper %d\n", packet_size);
-            while (received < packet_size) {
-                ret = receive_raw(&bot, buf, DEFAULT_THRESHOLD);
-                if (ret <= 0) return 1;
-                received += ret;
-            }
-        }
-    }
-
-    free(buf);
 }
