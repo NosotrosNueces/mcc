@@ -1,7 +1,9 @@
-mcprotocol
+MCC
 ==========
 
-Botting API for Minecraft using the client-server protocol
+MCC is a MineCraft Client API written in C. Its purpose is to enable automation in Minecraft with high level functions and event-driven responses.
+
+[wiki.vg](wiki.vg)
 
 
 ## Packet Format Guide ##
