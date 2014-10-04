@@ -55,6 +55,7 @@ void client_run(bot_t *bots, uint32_t num) {
 void *bot_thread(void *bot) {
     pthread_setspecific(bot_key, bot);
     ((bot_t *)bot)->bot_main(bot);
+    return NULL;
 }
 
 void *receiver(void *ignore) {
@@ -68,7 +69,7 @@ void *receiver(void *ignore) {
     while (1) {
         ready = poll(fds, num_bots, -1);
         if(ready < 0)
-            perror(errno);
+            perror("event listener");
         for (i = 0; i < num_bots; i++) {
             // read packet
             // send signal to corresponding thread
