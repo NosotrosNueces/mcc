@@ -170,11 +170,3 @@ int receive_packet(bot_t *bot) {
         return -2;
     }
 }
-
-void dummy_main(void* dummy) {
-}
-
-int main() {
-
-    init_bot("batman", *dummy_main);
-}
