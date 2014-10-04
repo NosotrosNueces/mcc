@@ -571,69 +571,69 @@ int32_t send_play_serverbound_spectate(
  * Login clientbound structs
  */
 
-_render_recv(login_clientbound_disconnect, "vs", 0x00)
-_render_recv(login_clientbound_success, "vss", 0x02)
-_render_recv(login_clientbound_set_compression, "vv", 0x03)
+_render_recv(login_clientbound_disconnect, "vs", 0x00);
+_render_recv(login_clientbound_success, "vss", 0x02);
+_render_recv(login_clientbound_set_compression, "vv", 0x03);
 
 /*
  * Status clientbound structs
  */
 
-_render_recv(status_clientbound_response, "vs", 0x00)
-_render_recv(status_clientbound_ping, "vl", 0x01)
+_render_recv(status_clientbound_response, "vs", 0x00);
+_render_recv(status_clientbound_ping, "vl", 0x01);
 
 /*
  * Play clientbound structs
  */
 
-_render_recv(play_clientbound_keepalive, "vv", 0x00)
-_render_recv(play_clientbound_join_game, "vwbbbbs", 0x01)
-_render_recv(play_clientbound_chat, "vsb", 0x02)
-_render_recv(play_clientbound_time_update, "vll", 0x03)
-_render_recv(play_clientbound_entity_equipment, "vvhw", 0x04)
-_render_recv(play_clientbound_spawn_position, "vl", 0x05)
-_render_recv(play_clientbound_update_health, "vwvw", 0x06)
-_render_recv(play_clientbound_respawn, "vwbbs", 0x07)
-_render_recv(play_clientbound_position, "vlllwwb", 0x08)
-_render_recv(play_clientbound_item_change, "vb", 0x09)
-_render_recv(play_clientbound_use_bed, "vvl", 0x0A)
-_render_recv(play_clientbound_animation, "vvb", 0x0B)
-_render_recv(play_clientbound_spawn_player, "vvqwwwbbhw", 0x0C)
-_render_recv(play_clientbound_collect, "vvv", 0x0D)
-_render_recv(play_clientbound_spawn_object, "vvbwwwbbw", 0x0E)
-_render_recv(play_clientbound_spawn_mob, "vvbwwwbbbhhhw", 0x0F)
-_render_recv(play_clientbound_spawn_painting, "vvslb", 0x10)
-_render_recv(play_clientbound_spawn_xp, "vvwwwh", 0x11)
-_render_recv(play_clientbound_entity_velocity, "vvhhh", 0x12)
-_render_recv(play_clientbound_entity_destroy_entities, "vv*v", 0x13)
-_render_recv(play_clientbound_entity, "vv", 0x14)
-_render_recv(play_clientbound_entity_move, "vvbbbb", 0x15)
-_render_recv(play_clientbound_entity_look, "vvbbbb", 0x16)
-_render_recv(play_clientbound_entity_look_move, "vvbbbbbb", 0x17)
-_render_recv(play_clientbound_entity_teleport, "vvwwwbbb", 0x18)
-_render_recv(play_clientbound_entity_head_look, "vvb", 0x19)
-_render_recv(play_clientbound_entity_status, "vwb", 0x1A)
-_render_recv(play_clientbound_entity_attach, "vwwb", 0x1B)
-_render_recv(play_clientbound_entity_effect, "vvbbvb", 0x1D)
-_render_recv(play_clientbound_entity_clear_effect, "vvb", 0x1E)
-_render_recv(play_clientbound_entity_properties, "vvw*w", 0x20)
-_render_recv(play_clientbound_set_xp, "vwww", 0x1F)
-_render_recv(play_clientbound_chunk_data, "vwwbhv*b", 0x21)
-_render_recv(play_clientbound_multi_block_change, "vwwv*w", 0x22)
-_render_recv(play_clientbound_block_change, "vlv", 0x23)
-_render_recv(play_clientbound_block_action, "vlbbv", 0x24)
-_render_recv(play_clientbound_block_break_animation, "vvlb", 0x25)
-_render_recv(play_clientbound_chunk_bulk, "vbvwwh*b", 0x26)
-_render_recv(play_clientbound_explosion, "vwwwww*wwww", 0x27)
-_render_recv(play_clientbound_effect, "vwlwb", 0x28)
-_render_recv(play_clientbound_sound_effect, "vswwwwb", 0x29)
-_render_recv(play_clientbound_particle, "vvbwwwwwwww*v", 0x2A)
-_render_recv(play_clientbound_entity_spawn_global, "vvbwww", 0x2C)
-_render_recv(play_clientbound_update_sign, "vlssss", 0x33)
-_render_recv(play_clientbound_plugin_message, "vs*b", 0x3F)
-_render_recv(play_clientbound_plugin_disconnect, "vs", 0x40)
-_render_recv(play_clientbound_plugin_difficulty, "vb", 0x41)
-_render_recv(play_clientbound_set_compression, "vv", 0x46)
+_render_recv(play_clientbound_keepalive, "vv", 0x00);
+_render_recv(play_clientbound_join_game, "vwbbbbs", 0x01);
+_render_recv(play_clientbound_chat, "vsb", 0x02);
+_render_recv(play_clientbound_time_update, "vll", 0x03);
+_render_recv(play_clientbound_entity_equipment, "vvhw", 0x04);
+_render_recv(play_clientbound_spawn_position, "vl", 0x05);
+_render_recv(play_clientbound_update_health, "vwvw", 0x06);
+_render_recv(play_clientbound_respawn, "vwbbs", 0x07);
+_render_recv(play_clientbound_position, "vlllwwb", 0x08);
+_render_recv(play_clientbound_item_change, "vb", 0x09);
+_render_recv(play_clientbound_use_bed, "vvl", 0x0A);
+_render_recv(play_clientbound_animation, "vvb", 0x0B);
+_render_recv(play_clientbound_spawn_player, "vvqwwwbbhw", 0x0C);
+_render_recv(play_clientbound_collect, "vvv", 0x0D);
+_render_recv(play_clientbound_spawn_object, "vvbwwwbbw", 0x0E);
+_render_recv(play_clientbound_spawn_mob, "vvbwwwbbbhhhw", 0x0F);
+_render_recv(play_clientbound_spawn_painting, "vvslb", 0x10);
+_render_recv(play_clientbound_spawn_xp, "vvwwwh", 0x11);
+_render_recv(play_clientbound_entity_velocity, "vvhhh", 0x12);
+_render_recv(play_clientbound_entity_destroy_entities, "vv*v", 0x13);
+_render_recv(play_clientbound_entity, "vv", 0x14);
+_render_recv(play_clientbound_entity_move, "vvbbbb", 0x15);
+_render_recv(play_clientbound_entity_look, "vvbbbb", 0x16);
+_render_recv(play_clientbound_entity_look_move, "vvbbbbbb", 0x17);
+_render_recv(play_clientbound_entity_teleport, "vvwwwbbb", 0x18);
+_render_recv(play_clientbound_entity_head_look, "vvb", 0x19);
+_render_recv(play_clientbound_entity_status, "vwb", 0x1A);
+_render_recv(play_clientbound_entity_attach, "vwwb", 0x1B);
+_render_recv(play_clientbound_entity_effect, "vvbbvb", 0x1D);
+_render_recv(play_clientbound_entity_clear_effect, "vvb", 0x1E);
+_render_recv(play_clientbound_entity_properties, "vvw*w", 0x20);
+_render_recv(play_clientbound_set_xp, "vwww", 0x1F);
+_render_recv(play_clientbound_chunk_data, "vwwbhv*b", 0x21);
+_render_recv(play_clientbound_multi_block_change, "vwwv*w", 0x22);
+_render_recv(play_clientbound_block_change, "vlv", 0x23);
+_render_recv(play_clientbound_block_action, "vlbbv", 0x24);
+_render_recv(play_clientbound_block_break_animation, "vvlb", 0x25);
+_render_recv(play_clientbound_chunk_bulk, "vbvwwh*b", 0x26);
+_render_recv(play_clientbound_explosion, "vwwwww*wwww", 0x27);
+_render_recv(play_clientbound_effect, "vwlwb", 0x28);
+_render_recv(play_clientbound_sound_effect, "vswwwwb", 0x29);
+_render_recv(play_clientbound_particle, "vvbwwwwwwww*v", 0x2A);
+_render_recv(play_clientbound_entity_spawn_global, "vvbwww", 0x2C);
+_render_recv(play_clientbound_update_sign, "vlssss", 0x33);
+_render_recv(play_clientbound_plugin_message, "vs*b", 0x3F);
+_render_recv(play_clientbound_plugin_disconnect, "vs", 0x40);
+_render_recv(play_clientbound_plugin_difficulty, "vb", 0x41);
+_render_recv(play_clientbound_set_compression, "vv", 0x46);
 
 void callback_decode(bot_t *bot) {
     uint32_t pid = receive_packet(bot);
