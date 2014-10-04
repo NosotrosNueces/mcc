@@ -14,6 +14,6 @@ void sample_main(void* dummy) {
 }
 
 int main() {
-    bot_t *batman_bot = init_bot("batman", *sample_main);
-    client_run(batman_bot, 1);
+    /* bot_t *batman_bot = init_bot("batman", *sample_main); */
+    /* client_run(batman_bot, 1); */
 }

@@ -1,4 +1,3 @@
-
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -98,7 +97,7 @@ void test_random_protocol() {
 
 		length = format_packet(&test_bot, &test, &test_output);
 
-		decode_packet(test_output, &test_decode);
+		decode_packet(&test_bot, test_output, &test_decode);
 
 		void* original = (void*) test.data;
 		void* decoded = (void*) test_decode.data;
@@ -107,8 +106,4 @@ void test_random_protocol() {
 	}
 
 	printf("test_random_protocol passed!\n");
-}
-
-int main() {
-	test_random_protocol();
 }
