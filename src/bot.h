@@ -24,7 +24,7 @@ typedef struct bot {
 
 extern struct bot context;
 
-bot_t *init_bot(char *);
+bot_t *init_bot(char *name, void (*bot_main)(void *));
 void free_bot(bot_t *);
 void register_event(bot_t *, uint32_t, uint32_t, void (*)(void *));
 int join_server(bot_t *, char *, char *, char *);

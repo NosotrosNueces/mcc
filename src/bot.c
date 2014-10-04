@@ -14,36 +14,38 @@
 
 void free_list(function *);
 
-// initializes the bot with a name, and default callbacks
-bot_t *init_bot(char *name){
+// initializes the bot with defaults given a name and a main function.
+bot_t *init_bot(char *name, void (*bot_main)(void *)){
     // set the bot name
     bot_t *bot = calloc(1, sizeof(bot_t));
+    bot->packet_threshold = DEFAULT_THRESHOLD;
     size_t len = strlen(name);
-    bot -> name = calloc(len + 1, sizeof(char));
-    strncpy(bot -> name, name, len + 1);
+    bot->name = calloc(len + 1, sizeof(char));
+    strncpy(bot->name, name, len + 1);
+    bot->bot_main = bot_main;
     // initialize the callback data structure
-    bot -> callbacks = calloc(NUM_STATES, sizeof(function **));
-    bot -> callbacks[HANDSHAKE] = calloc(HANDSHAKE_PACKETS, sizeof(function *));
-    bot -> callbacks[LOGIN] = calloc(LOGIN_PACKETS, sizeof(function *));
-    bot -> callbacks[PLAY] = calloc(PLAY_PACKETS, sizeof(function *));
+    bot->callbacks = calloc(NUM_STATES, sizeof(function **));
+    bot->callbacks[HANDSHAKE] = calloc(HANDSHAKE_PACKETS, sizeof(function *));
+    bot->callbacks[LOGIN] = calloc(LOGIN_PACKETS, sizeof(function *));
+    bot->callbacks[PLAY] = calloc(PLAY_PACKETS, sizeof(function *));
     return bot;
 }
 
 void free_bot(bot_t *bot){
-    free(bot -> name);
+    free(bot->name);
     // free all handshake callback structs
     // unrolled outer loop just cuz
     int i;
     for(i = 0; i < HANDSHAKE_PACKETS; i++){
-        function *func = bot -> callbacks[HANDSHAKE][i];
+        function *func = bot->callbacks[HANDSHAKE][i];
         free_list(func);
     }
     for(i = 0; i < LOGIN_PACKETS; i++){
-        function *func = bot -> callbacks[LOGIN][i];
+        function *func = bot->callbacks[LOGIN][i];
         free_list(func);
     }
     for(i = 0; i < PLAY_PACKETS; i++){
-        function *func = bot -> callbacks[PLAY][i];
+        function *func = bot->callbacks[PLAY][i];
         free_list(func);
     }
     free(bot);
@@ -51,18 +53,18 @@ void free_bot(bot_t *bot){
 
 void free_list(function *list){
     if(list)
-        free_list(list -> next);
+        free_list(list->next);
     free(list);
 }
 
 
 void register_event(bot_t *bot, uint32_t state, uint32_t packet_id, 
         void (*f)(void *)){
-    function *current = bot -> callbacks[state][packet_id];
+    function *current = bot->callbacks[state][packet_id];
     while(current)
-        current = current -> next;
+        current = current->next;
     current = calloc(1, sizeof(function));
-    current -> f = f;
+    current->f = f;
 }
 
 // initializes a bot structure with a socket. The socket is bound to the local address on
@@ -78,7 +80,7 @@ int join_server(bot_t *your_bot, char *local_port, char* server_host,
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    if(status = getaddrinfo(NULL, local_port, &hints, &res)){
+    if((status = getaddrinfo(NULL, local_port, &hints, &res))){
         fprintf(stderr, "Your computer is literally haunted: %s\n",
                 gai_strerror(status));
         return -1;
@@ -93,7 +95,7 @@ int join_server(bot_t *your_bot, char *local_port, char* server_host,
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    if(status = getaddrinfo(server_host, server_port, &hints, &res)){
+    if((status = getaddrinfo(server_host, server_port, &hints, &res))){
         fprintf(stderr, "Server could not be resolved: %s\n",
                 gai_strerror(status));
         return -1;
@@ -101,26 +103,26 @@ int join_server(bot_t *your_bot, char *local_port, char* server_host,
     connect(sockfd, res->ai_addr, res->ai_addrlen);
     freeaddrinfo(res);
     // connected to server
-    your_bot -> socketfd = sockfd;
+    your_bot->socketfd = sockfd;
     return sockfd;
 }
 
 int disconnect(bot_t *your_bot){
-    return close(your_bot -> socketfd);
+    return close(your_bot->socketfd);
 }
 
 int send_str(bot_t *your_bot, char *str){
     //TODO: send is not guaranteed to send all the data. Need to make loop
     size_t len = strlen(str) + 1; // to include null character
-    return send(your_bot -> socketfd, str, len, 0);
+    return send(your_bot->socketfd, str, len, 0);
 }
 
 int send_raw(bot_t *your_bot, void *data, size_t len){
-    return send(your_bot -> socketfd, data, len, 0);
+    return send(your_bot->socketfd, data, len, 0);
 }
 
 int receive_raw(bot_t *your_bot, void *data, size_t len){
-    return recv(your_bot -> socketfd, data, len, 0);
+    return recv(your_bot->socketfd, data, len, 0);
 }
 
 int receive_packet(bot_t *bot) {
@@ -169,14 +171,10 @@ int receive_packet(bot_t *bot) {
     }
 }
 
+void dummy_main(void* dummy) {
+}
+
 int main() {
-    bot_t bot;
-    bot.packet_threshold = DEFAULT_THRESHOLD;
 
-    join_server(&bot, "25567", "10.10.2.16", "25565");
-
-    send_handshaking_serverbound_handshake(&bot, 47, "localhost", 25565, 2);
-    send_login_serverbound_login(&bot, "an_guy");
-
-    bot.packet_threshold = 256;
+    init_bot("batman", *dummy_main);
 }

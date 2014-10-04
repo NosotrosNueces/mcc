@@ -137,7 +137,7 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
     char varint[5];
     size_t size;
 
-    void *packet_raw = calloc(bot -> packet_threshold, sizeof(int8_t));
+    void *packet_raw = calloc(bot->packet_threshold, sizeof(int8_t));
     char *fmt = *((char **)packet_data);
     packet_data += sizeof(void *);
 
