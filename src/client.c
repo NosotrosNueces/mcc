@@ -1,10 +1,10 @@
 #include "bot.h"
+#include "protocol.h"
 #include "client.h"
 #include <pthread.h>
 #include <poll.h>
 #include <unistd.h>
 #include <signal.h>
-#include "protocol.h"
 #include <errno.h>
 #include <stdio.h>
 
