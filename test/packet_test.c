@@ -66,4 +66,3 @@ int random_fmt(char *str, int len){
     str[i] = 0;
     return size;
 }
-

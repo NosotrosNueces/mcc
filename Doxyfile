@@ -1,0 +1,11 @@
+PROJECT_NAME           = "mcc"
+OUTPUT_DIRECTORY       = ./doc
+OPTIMIZE_OUTPUT_FOR_C  = YES
+EXTRACT_ALL            = YES
+INPUT                  = ./src
+FILE_PATTERNS          = *.c *.h
+EXCLUDE                = */test/*
+
+# Theme from https://github.com/nnen/doxygen-theme
+HTML_EXTRA_STYLESHEET  = ./doc/customdoxygen.css
+LAYOUT_FILE            = ./doc/DoxygenLayout.xml
