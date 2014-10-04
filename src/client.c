@@ -82,11 +82,5 @@ void *receiver(void *ignore) {
 
 void signal_handler(int signal) {
     bot_t *bot = pthread_getspecific(bot_key);
-    uint32_t pid = receive_packet(bot);
-    void* packet = decode_table[bot->current_state][pid]();
-    function *func = bot->callbacks[bot->current_state][pid];
-    while (func) {
-        func->f(packet);
-        func = func->next;
-    }
+    callback_decode(bot);
 }

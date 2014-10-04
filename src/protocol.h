@@ -21,6 +21,8 @@ typedef void* property_t;
 typedef void* record_t;
 typedef void* slot_t;
 
+void callback_decode(bot_t *bot);
+
 /**
  **
  ** Struct declarations
@@ -30,8 +32,6 @@ typedef void* slot_t;
 /*
  * Handshaking serverbound structs
  */
-
-void *(***decode_table)();
 
 typedef struct handshaking_serverbound_handshake {
     char*         format;
