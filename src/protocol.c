@@ -7,6 +7,8 @@
  * Handshaking serverbound functions
  */
 
+extern void *(***decode_table)(bot_t *, void *);
+
 int32_t send_handshaking_serverbound_handshake(
     bot_t*        bot,
     vint32_t      protocol_version,
@@ -1251,7 +1253,7 @@ recv_play_clientbound_set_compression(bot_t* bot, void *packet)
 }
 
 void init_decode_table(void) {
-    void ***decode_table = calloc(NUM_STATES, sizeof(void*));
+    decode_table = calloc(NUM_STATES, sizeof(void*));
     decode_table[HANDSHAKE] = calloc(HANDSHAKE_PACKETS, sizeof(void*));
     decode_table[LOGIN] = calloc(LOGIN_PACKETS, sizeof(void*));
     decode_table[STATUS] = calloc(STATUS_PACKETS, sizeof(void*));

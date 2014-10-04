@@ -31,6 +31,8 @@ typedef void* slot_t;
  * Handshaking serverbound structs
  */
 
+void *(***decode_table)();
+
 typedef struct handshaking_serverbound_handshake {
     char*         format;
     vint32_t      packet_id;
