@@ -3,8 +3,9 @@ MCC
 
 MCC is a MineCraft Client API written in C. Its purpose is to enable automation in Minecraft with high level functions and event-driven responses.
 
-[wiki.vg](wiki.vg)
 
+## Documentation and Resources ##
+[wiki.vg](wiki.vg)
 
 ## Packet Format Guide ##
 
