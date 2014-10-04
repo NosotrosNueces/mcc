@@ -1,4 +1,4 @@
-CC = gcc
+CC = clang
 SA = scan-build
 OUT = test_bot
 _FILES = marshal.c protocol.c bot.c

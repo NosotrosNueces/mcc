@@ -13,12 +13,14 @@
     return p;                                                                 \
 }
 
-// Macro for iterating through the callback functions and casting packets
-#define _callback_iterator(n, p, t) {     \
-    while (n) {                           \
-        ((void (*)(t *))n->f)((t *) p);   \
-        n = n->next;                      \
-    }                                     \
+// Macro to fill structs in the callback switch
+#define _render_callback(NAME) {                                        \
+    recv_struct = recv_ ## NAME(bot);                                   \
+    while(func) {                                                       \
+        ((void (*)(NAME ## _t *))func->f)((NAME ## _t *) recv_struct);   \
+        func = func->next;                                              \
+    }                                                                   \
+    break;                                                              \
 }
 
 /*
@@ -646,223 +648,67 @@ void callback_decode(bot_t *bot) {
             break;
         case LOGIN:
             switch (pid) {
-                case 0x00:
-                    recv_struct = recv_login_clientbound_disconnect(bot);
-                    _callback_iterator(func, recv_struct, login_clientbound_disconnect_t);
-                case 0x02:
-                    recv_struct = recv_login_clientbound_success(bot);
-                    _callback_iterator(func, recv_struct, login_clientbound_success_t);
-                case 0x03:
-                    recv_struct = recv_login_clientbound_set_compression(bot);
-                    _callback_iterator(func, recv_struct, login_clientbound_set_compression_t);
+                case 0x00: _render_callback(login_clientbound_disconnect);
+                case 0x02: _render_callback(login_clientbound_success);
+                case 0x03: _render_callback(login_clientbound_set_compression);
             }
             break;
         case STATUS:
             switch (pid) {
-                case 0x00:
-                    recv_struct = recv_status_clientbound_response(bot);
-                    _callback_iterator(func, recv_struct, status_clientbound_response_t);
-                    break;
-                case 0x01:
-                    recv_struct = recv_status_clientbound_ping(bot);
-                    _callback_iterator(func, recv_struct, status_clientbound_ping_t);
-                    break;
+                case 0x00: _render_callback(status_clientbound_response);
+                case 0x01: _render_callback(status_clientbound_ping);
             }
             break;
         case PLAY:
             switch (pid) {
-                case 0x00:
-                    recv_struct = recv_play_clientbound_keepalive(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_keepalive_t);
-                    break;
-                case 0x01:
-                    recv_struct = recv_play_clientbound_join_game(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_join_game_t);
-                    break;
-                case 0x02:
-                    recv_struct = recv_play_clientbound_chat(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_chat_t);
-                    break;
-                case 0x03:
-                    recv_struct = recv_play_clientbound_time_update(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_time_update_t);
-                    break;
-                case 0x04:
-                    recv_struct = recv_play_clientbound_entity_equipment(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_entity_equipment_t);
-                    break;
-                case 0x05:
-                    recv_struct = recv_play_clientbound_spawn_position(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_spawn_position_t);
-                    break;
-                case 0x06:
-                    recv_struct = recv_play_clientbound_update_health(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_update_health_t);
-                    break;
-                case 0x07:
-                    recv_struct = recv_play_clientbound_respawn(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_respawn_t);
-                    break;
-                case 0x08:
-                    recv_struct = recv_play_clientbound_position(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_position_t);
-                    break;
-                case 0x09:
-                    recv_struct = recv_play_clientbound_item_change(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_item_change_t);
-                    break;
-                case 0x0A:
-                    recv_struct = recv_play_clientbound_use_bed(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_use_bed_t);
-                    break;
-                case 0x0B:
-                    recv_struct = recv_play_clientbound_animation(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_animation_t);
-                    break;
-                case 0x0C:
-                    recv_struct = recv_play_clientbound_spawn_player(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_spawn_player_t);
-                    break;
-                case 0x0D:
-                    recv_struct = recv_play_clientbound_collect(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_collect_t);
-                    break;
-                case 0x0E:
-                    recv_struct = recv_play_clientbound_spawn_object(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_spawn_object_t);
-                    break;
-                case 0x0F:
-                    recv_struct = recv_play_clientbound_spawn_mob(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_spawn_mob_t);
-                    break;
-                case 0x10:
-                    recv_struct = recv_play_clientbound_spawn_painting(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_spawn_painting_t);
-                    break;
-                case 0x11:
-                    recv_struct = recv_play_clientbound_spawn_xp(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_spawn_xp_t);
-                    break;
-                case 0x12:
-                    recv_struct = recv_play_clientbound_entity_velocity(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_entity_velocity_t);
-                    break;
-                case 0x13:
-                    recv_struct = recv_play_clientbound_entity_destroy_entities(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_entity_destroy_entities_t);
-                    break;
-                case 0x14:
-                    recv_struct = recv_play_clientbound_entity(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_entity_t);
-                    break;
-                case 0x15:
-                    recv_struct = recv_play_clientbound_entity_move(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_entity_move_t);
-                    break;
-                case 0x16:
-                    recv_struct = recv_play_clientbound_entity_look(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_entity_look_t);
-                    break;
-                case 0x17:
-                    recv_struct = recv_play_clientbound_entity_look_move(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_entity_look_move_t);
-                    break;
-                case 0x18:
-                    recv_struct = recv_play_clientbound_entity_teleport(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_entity_teleport_t);
-                    break;
-                case 0x19:
-                    recv_struct = recv_play_clientbound_entity_head_look(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_entity_head_look_t);
-                    break;
-                case 0x1A:
-                    recv_struct = recv_play_clientbound_entity_status(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_entity_status_t);
-                    break;
-                case 0x1B:
-                    recv_struct = recv_play_clientbound_entity_attach(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_entity_attach_t);
-                    break;
-                case 0x1D:
-                    recv_struct = recv_play_clientbound_entity_effect(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_entity_effect_t);
-                    break;
-                case 0x1E:
-                    recv_struct = recv_play_clientbound_entity_clear_effect(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_entity_clear_effect_t);
-                    break;
-                case 0x20:
-                    recv_struct = recv_play_clientbound_entity_properties(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_entity_properties_t);
-                    break;
-                case 0x1F:
-                    recv_struct = recv_play_clientbound_set_xp(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_set_xp_t);
-                    break;
-                case 0x21:
-                    recv_struct = recv_play_clientbound_chunk_data(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_chunk_data_t);
-                    break;
-                case 0x22:
-                    recv_struct = recv_play_clientbound_multi_block_change(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_multi_block_change_t);
-                    break;
-                case 0x23:
-                    recv_struct = recv_play_clientbound_block_change(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_block_change_t);
-                    break;
-                case 0x24:
-                    recv_struct = recv_play_clientbound_block_action(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_block_action_t);
-                    break;
-                case 0x25:
-                    recv_struct = recv_play_clientbound_block_break_animation(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_block_break_animation_t);
-                    break;
-                case 0x26:
-                    recv_struct = recv_play_clientbound_chunk_bulk(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_chunk_bulk_t);
-                    break;
-                case 0x27:
-                    recv_struct = recv_play_clientbound_explosion(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_explosion_t);
-                    break;
-                case 0x28:
-                    recv_struct = recv_play_clientbound_effect(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_effect_t);
-                    break;
-                case 0x29:
-                    recv_struct = recv_play_clientbound_sound_effect(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_sound_effect_t);
-                    break;
-                case 0x2A:
-                    recv_struct = recv_play_clientbound_particle(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_particle_t);
-                    break;
-                case 0x2C:
-                    recv_struct = recv_play_clientbound_entity_spawn_global(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_entity_spawn_global_t);
-                    break;
-                case 0x33:
-                    recv_struct = recv_play_clientbound_update_sign(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_update_sign_t);
-                    break;
-                case 0x3F:
-                    recv_struct = recv_play_clientbound_plugin_message(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_plugin_message_t);
-                    break;
-                case 0x40:
-                    recv_struct = recv_play_clientbound_plugin_disconnect(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_plugin_disconnect_t);
-                    break;
-                case 0x41:
-                    recv_struct = recv_play_clientbound_plugin_difficulty(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_plugin_difficulty_t);
-                    break;
-                case 0x46:
-                    recv_struct = recv_play_clientbound_set_compression(bot);
-                    _callback_iterator(func, recv_struct, play_clientbound_set_compression_t);
-                    break;
+                case 0x00: _render_callback(play_clientbound_keepalive);
+                case 0x01: _render_callback(play_clientbound_join_game);
+                case 0x02: _render_callback(play_clientbound_chat);
+                case 0x03: _render_callback(play_clientbound_time_update);
+                case 0x04: _render_callback(play_clientbound_entity_equipment);
+                case 0x05: _render_callback(play_clientbound_spawn_position);
+                case 0x06: _render_callback(play_clientbound_update_health);
+                case 0x07: _render_callback(play_clientbound_respawn);
+                case 0x08: _render_callback(play_clientbound_position);
+                case 0x09: _render_callback(play_clientbound_item_change);
+                case 0x0A: _render_callback(play_clientbound_use_bed);
+                case 0x0B: _render_callback(play_clientbound_animation);
+                case 0x0C: _render_callback(play_clientbound_spawn_player);
+                case 0x0D: _render_callback(play_clientbound_collect);
+                case 0x0E: _render_callback(play_clientbound_spawn_object);
+                case 0x0F: _render_callback(play_clientbound_spawn_mob);
+                case 0x10: _render_callback(play_clientbound_spawn_painting);
+                case 0x11: _render_callback(play_clientbound_spawn_xp);
+                case 0x12: _render_callback(play_clientbound_entity_velocity);
+                case 0x13: _render_callback(play_clientbound_entity_destroy_entities);
+                case 0x14: _render_callback(play_clientbound_entity);
+                case 0x15: _render_callback(play_clientbound_entity_move);
+                case 0x16: _render_callback(play_clientbound_entity_look);
+                case 0x17: _render_callback(play_clientbound_entity_look_move);
+                case 0x18: _render_callback(play_clientbound_entity_teleport);
+                case 0x19: _render_callback(play_clientbound_entity_head_look);
+                case 0x1A: _render_callback(play_clientbound_entity_status);
+                case 0x1B: _render_callback(play_clientbound_entity_attach);
+                case 0x1D: _render_callback(play_clientbound_entity_effect);
+                case 0x1E: _render_callback(play_clientbound_entity_clear_effect);
+                case 0x20: _render_callback(play_clientbound_entity_properties);
+                case 0x1F: _render_callback(play_clientbound_set_xp);
+                case 0x21: _render_callback(play_clientbound_chunk_data);
+                case 0x22: _render_callback(play_clientbound_multi_block_change);
+                case 0x23: _render_callback(play_clientbound_block_change);
+                case 0x24: _render_callback(play_clientbound_block_action);
+                case 0x25: _render_callback(play_clientbound_block_break_animation);
+                case 0x26: _render_callback(play_clientbound_chunk_bulk);
+                case 0x27: _render_callback(play_clientbound_explosion);
+                case 0x28: _render_callback(play_clientbound_effect);
+                case 0x29: _render_callback(play_clientbound_sound_effect);
+                case 0x2A: _render_callback(play_clientbound_particle);
+                case 0x2C: _render_callback(play_clientbound_entity_spawn_global);
+                case 0x33: _render_callback(play_clientbound_update_sign);
+                case 0x3F: _render_callback(play_clientbound_plugin_message);
+                case 0x40: _render_callback(play_clientbound_plugin_disconnect);
+                case 0x41: _render_callback(play_clientbound_plugin_difficulty);
+                case 0x46: _render_callback(play_clientbound_set_compression);
             }
             break;
         default:
