@@ -1,10 +1,10 @@
-#include "marshal.h"
 #include <stdio.h>
 #include <assert.h>
-#include "bot.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "bot.h"
+#include "marshal.h"
 
 #define STRUCT_SIZE 4096
 
@@ -61,16 +61,4 @@ char *random_fmt(){
         str[i] = fmt_specifiers[index];
     }
     return str;
-}
-
-int main(){
-    //f = fopen("/dev/urandom", "r");
-    //int seed;
-    //fread(&seed, 1, sizeof(int), f);
-    //srand(seed);
-    //test_no_pointers(~0lu);
-    //fclose(f);
-    char varint[100];
-    printf("%d bytes written\n", varint32_encode(-1, varint, 100));
-    printf("%hhX %hhX %hhX %hhX %hhX\n", varint[0], varint[1], varint[2], varint[3], varint[4]);
 }
