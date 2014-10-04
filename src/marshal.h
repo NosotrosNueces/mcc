@@ -21,5 +21,6 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr);
 int decode_packet(bot_t *bot, void *packet_raw, void *packet_data);
 void free_packet(void *);
 vint32_t peek_packet(bot_t *, void *);
+size_t format_sizeof(char);
 
 #endif /* MARSHAL_H */
