@@ -11,7 +11,6 @@
 #define PLAY_PACKETS 0x47
 #define STATUS_PACKETS 0x02
 
-//typedef uint8_t bool;
 typedef uint64_t position_t;
 typedef int32_t vint32_t;
 typedef char* chat_t;
