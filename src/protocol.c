@@ -556,40 +556,40 @@ int32_t send_play_serverbound_spectate(
  */
 
 login_clientbound_disconnect_t*
-recv_login_clientbound_disconnect(bot_t* bot)
+recv_login_clientbound_disconnect(bot_t* bot, void *packet)
 {
     login_clientbound_disconnect_t *p;
     p = calloc(1, sizeof(login_clientbound_disconnect_t));
     p->format = "vs";
     p->packet_id = 0x00;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 login_clientbound_success_t*
-recv_login_clientbound_success(bot_t* bot)
+recv_login_clientbound_success(bot_t* bot, void *packet)
 {
     login_clientbound_success_t *p;
     p = calloc(1, sizeof(login_clientbound_success_t));
     p->format = "vss";
     p->packet_id = 0x02;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 login_clientbound_set_compression_t*
-recv_login_clientbound_set_compression(bot_t* bot)
+recv_login_clientbound_set_compression(bot_t* bot, void *packet)
 {
     login_clientbound_set_compression_t *p;
     p = calloc(1, sizeof(login_clientbound_set_compression_t));
     p->format = "vv";
     p->packet_id = 0x03;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -599,27 +599,27 @@ recv_login_clientbound_set_compression(bot_t* bot)
  */
 
 status_clientbound_response_t*
-recv_status_clientbound_response(bot_t* bot)
+recv_status_clientbound_response(bot_t* bot, void *packet)
 {
     status_clientbound_response_t *p;
     p = calloc(1, sizeof(status_clientbound_response_t));
     p->format = "vs";
     p->packet_id = 0x00;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 status_clientbound_ping_t*
-recv_status_clientbound_ping(bot_t* bot)
+recv_status_clientbound_ping(bot_t* bot, void *packet)
 {
     status_clientbound_ping_t *p;
     p = calloc(1, sizeof(status_clientbound_ping_t));
     p->format = "vl";
     p->packet_id = 0x01;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
@@ -629,860 +629,689 @@ recv_status_clientbound_ping(bot_t* bot)
  */
 
 play_clientbound_keepalive_t*
-recv_play_clientbound_keepalive(bot_t* bot)
+recv_play_clientbound_keepalive(bot_t* bot, void *packet)
 {
     play_clientbound_keepalive_t *p;
     p = calloc(1, sizeof(play_clientbound_keepalive_t));
     p->format = "vv";
     p->packet_id = 0x00;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_join_game_t*
-recv_play_clientbound_join_game(bot_t* bot)
+recv_play_clientbound_join_game(bot_t* bot, void *packet)
 {
     play_clientbound_join_game_t *p;
     p = calloc(1, sizeof(play_clientbound_join_game_t));
     p->format = "vwbbbbs";
     p->packet_id = 0x01;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_chat_t*
-recv_play_clientbound_chat(bot_t* bot)
+recv_play_clientbound_chat(bot_t* bot, void *packet)
 {
     play_clientbound_chat_t *p;
     p = calloc(1, sizeof(play_clientbound_chat_t));
     p->format = "vsb";
     p->packet_id = 0x02;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_time_update_t*
-recv_play_clientbound_time_update(bot_t* bot)
+recv_play_clientbound_time_update(bot_t* bot, void *packet)
 {
     play_clientbound_time_update_t *p;
     p = calloc(1, sizeof(play_clientbound_time_update_t));
     p->format = "vll";
     p->packet_id = 0x03;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_entity_equipment_t*
-recv_play_clientbound_entity_equipment(bot_t* bot)
+recv_play_clientbound_entity_equipment(bot_t* bot, void *packet)
 {
     play_clientbound_entity_equipment_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_equipment_t));
     p->format = "vvhw";
     p->packet_id = 0x04;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_spawn_position_t*
-recv_play_clientbound_spawn_position(bot_t* bot)
+recv_play_clientbound_spawn_position(bot_t* bot, void *packet)
 {
     play_clientbound_spawn_position_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_position_t));
     p->format = "vl";
     p->packet_id = 0x05;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_update_health_t*
-recv_play_clientbound_update_health(bot_t* bot)
+recv_play_clientbound_update_health(bot_t* bot, void *packet)
 {
     play_clientbound_update_health_t *p;
     p = calloc(1, sizeof(play_clientbound_update_health_t));
     p->format = "vwvw";
     p->packet_id = 0x06;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_respawn_t*
-recv_play_clientbound_respawn(bot_t* bot)
+recv_play_clientbound_respawn(bot_t* bot, void *packet)
 {
     play_clientbound_respawn_t *p;
     p = calloc(1, sizeof(play_clientbound_respawn_t));
     p->format = "vwbbs";
     p->packet_id = 0x07;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_position_t*
-recv_play_clientbound_position(bot_t* bot)
+recv_play_clientbound_position(bot_t* bot, void *packet)
 {
     play_clientbound_position_t *p;
     p = calloc(1, sizeof(play_clientbound_position_t));
     p->format = "vlllwwb";
     p->packet_id = 0x08;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_item_change_t*
-recv_play_clientbound_item_change(bot_t* bot)
+recv_play_clientbound_item_change(bot_t* bot, void *packet)
 {
     play_clientbound_item_change_t *p;
     p = calloc(1, sizeof(play_clientbound_item_change_t));
     p->format = "vb";
     p->packet_id = 0x09;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_use_bed_t*
-recv_play_clientbound_use_bed(bot_t* bot)
+recv_play_clientbound_use_bed(bot_t* bot, void *packet)
 {
     play_clientbound_use_bed_t *p;
     p = calloc(1, sizeof(play_clientbound_use_bed_t));
     p->format = "vvl";
     p->packet_id = 0x0A;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_animation_t*
-recv_play_clientbound_animation(bot_t* bot)
+recv_play_clientbound_animation(bot_t* bot, void *packet)
 {
     play_clientbound_animation_t *p;
     p = calloc(1, sizeof(play_clientbound_animation_t));
     p->format = "vvb";
     p->packet_id = 0x0B;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_spawn_player_t*
-recv_play_clientbound_spawn_player(bot_t* bot)
+recv_play_clientbound_spawn_player(bot_t* bot, void *packet)
 {
     play_clientbound_spawn_player_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_player_t));
     p->format = "vvqwwwbbhw";
     p->packet_id = 0x0C;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_collect_t*
-recv_play_clientbound_collect(bot_t* bot)
+recv_play_clientbound_collect(bot_t* bot, void *packet)
 {
     play_clientbound_collect_t *p;
     p = calloc(1, sizeof(play_clientbound_collect_t));
     p->format = "vvv";
     p->packet_id = 0x0D;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_spawn_object_t*
-recv_play_clientbound_spawn_object(bot_t* bot)
+recv_play_clientbound_spawn_object(bot_t* bot, void *packet)
 {
     play_clientbound_spawn_object_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_object_t));
     p->format = "vvbwwwbbw";
     p->packet_id = 0x0E;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_spawn_mob_t*
-recv_play_clientbound_spawn_mob(bot_t* bot)
+recv_play_clientbound_spawn_mob(bot_t* bot, void *packet)
 {
     play_clientbound_spawn_mob_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_mob_t));
     p->format = "vvbwwwbbbhhhw";
     p->packet_id = 0x0F;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_spawn_painting_t*
-recv_play_clientbound_spawn_painting(bot_t* bot)
+recv_play_clientbound_spawn_painting(bot_t* bot, void *packet)
 {
     play_clientbound_spawn_painting_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_painting_t));
     p->format = "vvslb";
     p->packet_id = 0x10;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_spawn_xp_t*
-recv_play_clientbound_spawn_xp(bot_t* bot)
+recv_play_clientbound_spawn_xp(bot_t* bot, void *packet)
 {
     play_clientbound_spawn_xp_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_xp_t));
     p->format = "vvwwwh";
     p->packet_id = 0x11;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_entity_velocity_t*
-recv_play_clientbound_entity_velocity(bot_t* bot)
+recv_play_clientbound_entity_velocity(bot_t* bot, void *packet)
 {
     play_clientbound_entity_velocity_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_velocity_t));
     p->format = "vvhhh";
     p->packet_id = 0x12;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_entity_destroy_entities_t*
-recv_play_clientbound_entity_destroy_entities(bot_t* bot)
+recv_play_clientbound_entity_destroy_entities(bot_t* bot, void *packet)
 {
     play_clientbound_entity_destroy_entities_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_destroy_entities_t));
     p->format = "vv*v";
     p->packet_id = 0x13;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_entity_t*
-recv_play_clientbound_entity(bot_t* bot)
+recv_play_clientbound_entity(bot_t* bot, void *packet)
 {
     play_clientbound_entity_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_t));
     p->format = "vv";
     p->packet_id = 0x14;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_entity_move_t*
-recv_play_clientbound_entity_move(bot_t* bot)
+recv_play_clientbound_entity_move(bot_t* bot, void *packet)
 {
     play_clientbound_entity_move_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_move_t));
     p->format = "vvbbbb";
     p->packet_id = 0x15;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_entity_look_t*
-recv_play_clientbound_entity_look(bot_t* bot)
+recv_play_clientbound_entity_look(bot_t* bot, void *packet)
 {
     play_clientbound_entity_look_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_look_t));
     p->format = "vvbbbb";
     p->packet_id = 0x16;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_entity_look_move_t*
-recv_play_clientbound_entity_look_move(bot_t* bot)
+recv_play_clientbound_entity_look_move(bot_t* bot, void *packet)
 {
     play_clientbound_entity_look_move_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_look_move_t));
     p->format = "vvbbbbbb";
     p->packet_id = 0x17;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_entity_teleport_t*
-recv_play_clientbound_entity_teleport(bot_t* bot)
+recv_play_clientbound_entity_teleport(bot_t* bot, void *packet)
 {
     play_clientbound_entity_teleport_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_teleport_t));
     p->format = "vvwwwbbb";
     p->packet_id = 0x18;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_entity_head_look_t*
-recv_play_clientbound_entity_head_look(bot_t* bot)
+recv_play_clientbound_entity_head_look(bot_t* bot, void *packet)
 {
     play_clientbound_entity_head_look_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_head_look_t));
     p->format = "vvb";
     p->packet_id = 0x19;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_entity_status_t*
-recv_play_clientbound_entity_status(bot_t* bot)
+recv_play_clientbound_entity_status(bot_t* bot, void *packet)
 {
     play_clientbound_entity_status_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_status_t));
     p->format = "vwb";
     p->packet_id = 0x1A;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_entity_attach_t*
-recv_play_clientbound_entity_attach(bot_t* bot)
+recv_play_clientbound_entity_attach(bot_t* bot, void *packet)
 {
     play_clientbound_entity_attach_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_attach_t));
     p->format = "vwwb";
     p->packet_id = 0x1B;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_entity_effect_t*
-recv_play_clientbound_entity_effect(bot_t* bot)
+recv_play_clientbound_entity_effect(bot_t* bot, void *packet)
 {
     play_clientbound_entity_effect_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_effect_t));
     p->format = "vvbbvb";
     p->packet_id = 0x1D;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_entity_clear_effect_t*
-recv_play_clientbound_entity_clear_effect(bot_t* bot)
+recv_play_clientbound_entity_clear_effect(bot_t* bot, void *packet)
 {
     play_clientbound_entity_clear_effect_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_clear_effect_t));
     p->format = "vvb";
     p->packet_id = 0x1E;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_entity_properties_t*
-recv_play_clientbound_entity_properties(bot_t* bot)
+recv_play_clientbound_entity_properties(bot_t* bot, void *packet)
 {
     play_clientbound_entity_properties_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_properties_t));
     p->format = "vvw*w";
     p->packet_id = 0x20;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_set_xp_t*
-recv_play_clientbound_set_xp(bot_t* bot)
+recv_play_clientbound_set_xp(bot_t* bot, void *packet)
 {
     play_clientbound_set_xp_t *p;
     p = calloc(1, sizeof(play_clientbound_set_xp_t));
     p->format = "vwww";
     p->packet_id = 0x1F;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_chunk_data_t*
-recv_play_clientbound_chunk_data(bot_t* bot)
+recv_play_clientbound_chunk_data(bot_t* bot, void *packet)
 {
     play_clientbound_chunk_data_t *p;
     p = calloc(1, sizeof(play_clientbound_chunk_data_t));
     p->format = "vwwbhv*b";
     p->packet_id = 0x21;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_multi_block_change_t*
-recv_play_clientbound_multi_block_change(bot_t* bot)
+recv_play_clientbound_multi_block_change(bot_t* bot, void *packet)
 {
     play_clientbound_multi_block_change_t *p;
     p = calloc(1, sizeof(play_clientbound_multi_block_change_t));
     p->format = "vwwv*w";
     p->packet_id = 0x22;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_block_change_t*
-recv_play_clientbound_block_change(bot_t* bot)
+recv_play_clientbound_block_change(bot_t* bot, void *packet)
 {
     play_clientbound_block_change_t *p;
     p = calloc(1, sizeof(play_clientbound_block_change_t));
     p->format = "vlv";
     p->packet_id = 0x23;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_block_action_t*
-recv_play_clientbound_block_action(bot_t* bot)
+recv_play_clientbound_block_action(bot_t* bot, void *packet)
 {
     play_clientbound_block_action_t *p;
     p = calloc(1, sizeof(play_clientbound_block_action_t));
     p->format = "vlbbv";
     p->packet_id = 0x24;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_block_break_animation_t*
-recv_play_clientbound_block_break_animation(bot_t* bot)
+recv_play_clientbound_block_break_animation(bot_t* bot, void *packet)
 {
     play_clientbound_block_break_animation_t *p;
     p = calloc(1, sizeof(play_clientbound_block_break_animation_t));
     p->format = "vvlb";
     p->packet_id = 0x25;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_chunk_bulk_t*
-recv_play_clientbound_chunk_bulk(bot_t* bot)
+recv_play_clientbound_chunk_bulk(bot_t* bot, void *packet)
 {
     play_clientbound_chunk_bulk_t *p;
     p = calloc(1, sizeof(play_clientbound_chunk_bulk_t));
     p->format = "vbvwwh*b";
     p->packet_id = 0x26;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_explosion_t*
-recv_play_clientbound_explosion(bot_t* bot)
+recv_play_clientbound_explosion(bot_t* bot, void *packet)
 {
     play_clientbound_explosion_t *p;
     p = calloc(1, sizeof(play_clientbound_explosion_t));
     p->format = "vwwwww*wwww";
     p->packet_id = 0x27;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_effect_t*
-recv_play_clientbound_effect(bot_t* bot)
+recv_play_clientbound_effect(bot_t* bot, void *packet)
 {
     play_clientbound_effect_t *p;
     p = calloc(1, sizeof(play_clientbound_effect_t));
     p->format = "vwlwb";
     p->packet_id = 0x28;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_sound_effect_t*
-recv_play_clientbound_sound_effect(bot_t* bot)
+recv_play_clientbound_sound_effect(bot_t* bot, void *packet)
 {
     play_clientbound_sound_effect_t *p;
     p = calloc(1, sizeof(play_clientbound_sound_effect_t));
     p->format = "vswwwwb";
     p->packet_id = 0x29;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_particle_t*
-recv_play_clientbound_particle(bot_t* bot)
+recv_play_clientbound_particle(bot_t* bot, void *packet)
 {
     play_clientbound_particle_t *p;
     p = calloc(1, sizeof(play_clientbound_particle_t));
     p->format = "vvbwwwwwwww*v";
     p->packet_id = 0x2A;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_entity_spawn_global_t*
-recv_play_clientbound_entity_spawn_global(bot_t* bot)
+recv_play_clientbound_entity_spawn_global(bot_t* bot, void *packet)
 {
     play_clientbound_entity_spawn_global_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_spawn_global_t));
     p->format = "vvbwww";
     p->packet_id = 0x2C;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_update_sign_t*
-recv_play_clientbound_update_sign(bot_t* bot)
+recv_play_clientbound_update_sign(bot_t* bot, void *packet)
 {
     play_clientbound_update_sign_t *p;
     p = calloc(1, sizeof(play_clientbound_update_sign_t));
     p->format = "vlssss";
     p->packet_id = 0x33;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_plugin_message_t*
-recv_play_clientbound_plugin_message(bot_t* bot)
+recv_play_clientbound_plugin_message(bot_t* bot, void *packet)
 {
     play_clientbound_plugin_message_t *p;
     p = calloc(1, sizeof(play_clientbound_plugin_message_t));
     p->format = "vs*b";
     p->packet_id = 0x3F;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_plugin_disconnect_t*
-recv_play_clientbound_plugin_disconnect(bot_t* bot)
+recv_play_clientbound_plugin_disconnect(bot_t* bot, void *packet)
 {
     play_clientbound_plugin_disconnect_t *p;
     p = calloc(1, sizeof(play_clientbound_plugin_disconnect_t));
     p->format = "vs";
     p->packet_id = 0x40;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_plugin_difficulty_t*
-recv_play_clientbound_plugin_difficulty(bot_t* bot)
+recv_play_clientbound_plugin_difficulty(bot_t* bot, void *packet)
 {
     play_clientbound_plugin_difficulty_t *p;
     p = calloc(1, sizeof(play_clientbound_plugin_difficulty_t));
     p->format = "vb";
     p->packet_id = 0x41;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
 play_clientbound_set_compression_t*
-recv_play_clientbound_set_compression(bot_t* bot)
+recv_play_clientbound_set_compression(bot_t* bot, void *packet)
 {
     play_clientbound_set_compression_t *p;
     p = calloc(1, sizeof(play_clientbound_set_compression_t));
     p->format = "vv";
     p->packet_id = 0x46;
 
-    decode_packet(bot, bot->buf, p);
+    decode_packet(bot, packet, p);
 
     return p;
 }
 
-void callback_decode(bot_t *bot) {
-    uint32_t pid = receive_packet(bot);
-    function *func = bot->callbacks[bot->current_state][pid];
-    void *recv_struct;
-    switch (bot->current_state) {
-        case HANDSHAKE:
-            switch (pid) {
-            }
-            break;
-        case LOGIN:
-            switch (pid) {
-                case 0x00:
-                    recv_struct = recv_login_clientbound_disconnect(bot);
-                    CASTING_LIST(func, recv_struct, login_clientbound_disconnect_t);
-                case 0x02:
-                    recv_struct = recv_login_clientbound_success(bot);
-                    CASTING_LIST(func, recv_struct, login_clientbound_success_t);
-                case 0x03:
-                    recv_struct = recv_login_clientbound_set_compression(bot);
-                    CASTING_LIST(func, recv_struct, login_clientbound_set_compression_t);
-            }
-            break;
-        case STATUS:
-            switch (pid) {
-                case 0x00:
-                    recv_struct = recv_status_clientbound_response(bot);
-                    CASTING_LIST(func, recv_struct, status_clientbound_response_t);
-                    break;
-                case 0x01:
-                    recv_struct = recv_status_clientbound_ping(bot);
-                    CASTING_LIST(func, recv_struct, status_clientbound_ping_t);
-                    break;
-            }
-            break;
-        case PLAY:
-            switch (pid) {
-                case 0x00:
-                    recv_struct = recv_play_clientbound_keepalive(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_keepalive_t);
-                    break;
-                case 0x01:
-                    recv_struct = recv_play_clientbound_join_game(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_join_game_t);
-                    break;
-                case 0x02:
-                    recv_struct = recv_play_clientbound_chat(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_chat_t);
-                    break;
-                case 0x03:
-                    recv_struct = recv_play_clientbound_time_update(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_time_update_t);
-                    break;
-                case 0x04:
-                    recv_struct = recv_play_clientbound_entity_equipment(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_entity_equipment_t);
-                    break;
-                case 0x05:
-                    recv_struct = recv_play_clientbound_spawn_position(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_spawn_position_t);
-                    break;
-                case 0x06:
-                    recv_struct = recv_play_clientbound_update_health(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_update_health_t);
-                    break;
-                case 0x07:
-                    recv_struct = recv_play_clientbound_respawn(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_respawn_t);
-                    break;
-                case 0x08:
-                    recv_struct = recv_play_clientbound_position(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_position_t);
-                    break;
-                case 0x09:
-                    recv_struct = recv_play_clientbound_item_change(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_item_change_t);
-                    break;
-                case 0x0A:
-                    recv_struct = recv_play_clientbound_use_bed(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_use_bed_t);
-                    break;
-                case 0x0B:
-                    recv_struct = recv_play_clientbound_animation(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_animation_t);
-                    break;
-                case 0x0C:
-                    recv_struct = recv_play_clientbound_spawn_player(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_spawn_player_t);
-                    break;
-                case 0x0D:
-                    recv_struct = recv_play_clientbound_collect(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_collect_t);
-                    break;
-                case 0x0E:
-                    recv_struct = recv_play_clientbound_spawn_object(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_spawn_object_t);
-                    break;
-                case 0x0F:
-                    recv_struct = recv_play_clientbound_spawn_mob(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_spawn_mob_t);
-                    break;
-                case 0x10:
-                    recv_struct = recv_play_clientbound_spawn_painting(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_spawn_painting_t);
-                    break;
-                case 0x11:
-                    recv_struct = recv_play_clientbound_spawn_xp(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_spawn_xp_t);
-                    break;
-                case 0x12:
-                    recv_struct = recv_play_clientbound_entity_velocity(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_entity_velocity_t);
-                    break;
-                case 0x13:
-                    recv_struct = recv_play_clientbound_entity_destroy_entities(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_entity_destroy_entities_t);
-                    break;
-                case 0x14:
-                    recv_struct = recv_play_clientbound_entity(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_entity_t);
-                    break;
-                case 0x15:
-                    recv_struct = recv_play_clientbound_entity_move(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_entity_move_t);
-                    break;
-                case 0x16:
-                    recv_struct = recv_play_clientbound_entity_look(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_entity_look_t);
-                    break;
-                case 0x17:
-                    recv_struct = recv_play_clientbound_entity_look_move(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_entity_look_move_t);
-                    break;
-                case 0x18:
-                    recv_struct = recv_play_clientbound_entity_teleport(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_entity_teleport_t);
-                    break;
-                case 0x19:
-                    recv_struct = recv_play_clientbound_entity_head_look(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_entity_head_look_t);
-                    break;
-                case 0x1A:
-                    recv_struct = recv_play_clientbound_entity_status(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_entity_status_t);
-                    break;
-                case 0x1B:
-                    recv_struct = recv_play_clientbound_entity_attach(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_entity_attach_t);
-                    break;
-                case 0x1D:
-                    recv_struct = recv_play_clientbound_entity_effect(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_entity_effect_t);
-                    break;
-                case 0x1E:
-                    recv_struct = recv_play_clientbound_entity_clear_effect(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_entity_clear_effect_t);
-                    break;
-                case 0x20:
-                    recv_struct = recv_play_clientbound_entity_properties(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_entity_properties_t);
-                    break;
-                case 0x1F:
-                    recv_struct = recv_play_clientbound_set_xp(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_set_xp_t);
-                    break;
-                case 0x21:
-                    recv_struct = recv_play_clientbound_chunk_data(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_chunk_data_t);
-                    break;
-                case 0x22:
-                    recv_struct = recv_play_clientbound_multi_block_change(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_multi_block_change_t);
-                    break;
-                case 0x23:
-                    recv_struct = recv_play_clientbound_block_change(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_block_change_t);
-                    break;
-                case 0x24:
-                    recv_struct = recv_play_clientbound_block_action(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_block_action_t);
-                    break;
-                case 0x25:
-                    recv_struct = recv_play_clientbound_block_break_animation(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_block_break_animation_t);
-                    break;
-                case 0x26:
-                    recv_struct = recv_play_clientbound_chunk_bulk(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_chunk_bulk_t);
-                    break;
-                case 0x27:
-                    recv_struct = recv_play_clientbound_explosion(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_explosion_t);
-                    break;
-                case 0x28:
-                    recv_struct = recv_play_clientbound_effect(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_effect_t);
-                    break;
-                case 0x29:
-                    recv_struct = recv_play_clientbound_sound_effect(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_sound_effect_t);
-                    break;
-                case 0x2A:
-                    recv_struct = recv_play_clientbound_particle(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_particle_t);
-                    break;
-                case 0x2C:
-                    recv_struct = recv_play_clientbound_entity_spawn_global(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_entity_spawn_global_t);
-                    break;
-                case 0x33:
-                    recv_struct = recv_play_clientbound_update_sign(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_update_sign_t);
-                    break;
-                case 0x3F:
-                    recv_struct = recv_play_clientbound_plugin_message(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_plugin_message_t);
-                    break;
-                case 0x40:
-                    recv_struct = recv_play_clientbound_plugin_disconnect(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_plugin_disconnect_t);
-                    break;
-                case 0x41:
-                    recv_struct = recv_play_clientbound_plugin_difficulty(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_plugin_difficulty_t);
-                    break;
-                case 0x46:
-                    recv_struct = recv_play_clientbound_set_compression(bot);
-                    CASTING_LIST(func, recv_struct, play_clientbound_set_compression_t);
-                    break;
-            }
-            break;
-        default:
-            break;
-    }
+void init_decode_table(void) {
+    decode_table = calloc(NUM_STATES, sizeof(void*));
+    decode_table[HANDSHAKE] = calloc(HANDSHAKE_PACKETS, sizeof(void*));
+    decode_table[LOGIN] = calloc(LOGIN_PACKETS, sizeof(void*));
+    decode_table[STATUS] = calloc(STATUS_PACKETS, sizeof(void*));
+    decode_table[PLAY] = calloc(PLAY_PACKETS, sizeof(void*));
+
+    decode_table[LOGIN][0x00] = recv_login_clientbound_disconnect;
+    decode_table[LOGIN][0x02] = recv_login_clientbound_success;
+    decode_table[LOGIN][0x03] = recv_login_clientbound_set_compression;
+
+    decode_table[STATUS][0x00] = recv_status_clientbound_response;
+    decode_table[STATUS][0x01] = recv_status_clientbound_ping;
+
+    decode_table[PLAY][0x00] = recv_play_clientbound_keepalive;
+    decode_table[PLAY][0x01] = recv_play_clientbound_join_game;
+    decode_table[PLAY][0x02] = recv_play_clientbound_chat;
+    decode_table[PLAY][0x03] = recv_play_clientbound_time_update;
+    decode_table[PLAY][0x04] = recv_play_clientbound_entity_equipment;
+    decode_table[PLAY][0x05] = recv_play_clientbound_spawn_position;
+    decode_table[PLAY][0x06] = recv_play_clientbound_update_health;
+    decode_table[PLAY][0x07] = recv_play_clientbound_respawn;
+    decode_table[PLAY][0x08] = recv_play_clientbound_position;
+    decode_table[PLAY][0x09] = recv_play_clientbound_item_change;
+    decode_table[PLAY][0x0A] = recv_play_clientbound_use_bed;
+    decode_table[PLAY][0x0B] = recv_play_clientbound_animation;
+    decode_table[PLAY][0x0C] = recv_play_clientbound_spawn_player;
+    decode_table[PLAY][0x0D] = recv_play_clientbound_collect;
+    decode_table[PLAY][0x0E] = recv_play_clientbound_spawn_object;
+    decode_table[PLAY][0x0F] = recv_play_clientbound_spawn_mob;
+    decode_table[PLAY][0x10] = recv_play_clientbound_spawn_painting;
+    decode_table[PLAY][0x11] = recv_play_clientbound_spawn_xp;
+    decode_table[PLAY][0x12] = recv_play_clientbound_entity_velocity;
+    decode_table[PLAY][0x13] = recv_play_clientbound_entity_destroy_entities;
+    decode_table[PLAY][0x14] = recv_play_clientbound_entity;
+    decode_table[PLAY][0x15] = recv_play_clientbound_entity_move;
+    decode_table[PLAY][0x16] = recv_play_clientbound_entity_look;
+    decode_table[PLAY][0x17] = recv_play_clientbound_entity_look_move;
+    decode_table[PLAY][0x18] = recv_play_clientbound_entity_teleport;
+    decode_table[PLAY][0x19] = recv_play_clientbound_entity_head_look;
+    decode_table[PLAY][0x1A] = recv_play_clientbound_entity_status;
+    decode_table[PLAY][0x1B] = recv_play_clientbound_entity_attach;
+    decode_table[PLAY][0x1D] = recv_play_clientbound_entity_effect;
+    decode_table[PLAY][0x1E] = recv_play_clientbound_entity_clear_effect;
+    decode_table[PLAY][0x20] = recv_play_clientbound_entity_properties;
+    decode_table[PLAY][0x1F] = recv_play_clientbound_set_xp;
+    decode_table[PLAY][0x21] = recv_play_clientbound_chunk_data;
+    decode_table[PLAY][0x22] = recv_play_clientbound_multi_block_change;
+    decode_table[PLAY][0x23] = recv_play_clientbound_block_change;
+    decode_table[PLAY][0x24] = recv_play_clientbound_block_action;
+    decode_table[PLAY][0x25] = recv_play_clientbound_block_break_animation;
+    decode_table[PLAY][0x26] = recv_play_clientbound_chunk_bulk;
+    decode_table[PLAY][0x27] = recv_play_clientbound_explosion;
+    decode_table[PLAY][0x28] = recv_play_clientbound_effect;
+    decode_table[PLAY][0x29] = recv_play_clientbound_sound_effect;
+    decode_table[PLAY][0x2A] = recv_play_clientbound_particle;
+    decode_table[PLAY][0x2C] = recv_play_clientbound_entity_spawn_global;
+    decode_table[PLAY][0x33] = recv_play_clientbound_update_sign;
+    decode_table[PLAY][0x3F] = recv_play_clientbound_plugin_message;
+    decode_table[PLAY][0x40] = recv_play_clientbound_plugin_disconnect;
+    decode_table[PLAY][0x41] = recv_play_clientbound_plugin_difficulty;
+    decode_table[PLAY][0x46] = recv_play_clientbound_set_compression;
 }
