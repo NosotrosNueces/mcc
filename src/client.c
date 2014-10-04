@@ -40,6 +40,7 @@ void client_run(bot_t *bots, uint32_t num) {
     pthread_create(&event_listener, NULL, receiver, NULL);
 
     // create all the bot threads
+    bot_threads = calloc(num_bots, sizeof(pthread_t));
     for(i = 0; i < num; i++) {
         pthread_create(bot_threads + i, NULL, bot_thread, bot_list + i); 
     }
