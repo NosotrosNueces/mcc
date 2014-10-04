@@ -61,24 +61,9 @@ int random_fmt(char *str, int len){
     int index = rand() % sizeof(fmt_specifiers);
     while(i < len && (size += format_sizeof(fmt_specifiers[index])) < STRUCT_SIZE) {
         str[i++] = fmt_specifiers[index];
-        int index = rand() % sizeof(fmt_specifiers);
+        index = rand() % sizeof(fmt_specifiers);
     }
     str[i] = 0;
     return size;
 }
 
-int main(int argc, char **argv){
-    if(argc < 2) {
-        fprintf(stderr, "Please specify how many tests\n");
-        return 1;
-    }
-    f = fopen("/dev/urandom", "r");
-    int seed;
-    fread(&seed, 1, sizeof(int), f);
-    srand(seed);
-    test_no_pointers(~0lu);
-    fclose(f);
-    //char varint[100];
-    //printf("%d bytes written\n", varint32_encode(-1, varint, 100));
-    //printf("%hhX %hhX %hhX %hhX %hhX\n", varint[0], varint[1], varint[2], varint[3], varint[4]);
-}
