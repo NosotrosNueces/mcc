@@ -18,6 +18,7 @@ typedef struct bot {
     char *name;
     state current_state;
     /* registered callbacks */
+    void (*bot_main)(void *);
     function ***callbacks; // triple indirection hooray!
 } bot_t;
 
