@@ -51,6 +51,7 @@ void client_run(bot_t *bots, uint32_t num) {
     for(i = 0; i < num; i++) {
         pthread_join(bot_threads[i], NULL);
     }
+    free(bot_threads);
 }
 
 void *bot_thread(void *bot) {
