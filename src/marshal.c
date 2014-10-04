@@ -5,11 +5,6 @@
 #include "bot.h"
 #include "protocol.h"
 
-#define expect_more(x) (x & 0x80)
-// align pointer x to y
-// y is assumed to be a power of 2
-#define align(x, y) ((void *)((size_t)(x + y - 1) & (~y + 1)))
-
 // returns the number of bytes read from data
 int varint64(char *data, int64_t *value){
     int64_t result = 0;
@@ -88,7 +83,8 @@ void reverse(void *number, int len){
             case sizeof(int64_t):
                 *((uint64_t *)number) = __builtin_bswap64(*((uint64_t *)number));
                 break;
-            case sizeof(__int128_t):{
+            case sizeof(__int128_t):
+                ;
                 uint64_t *l = number;
                 uint64_t *h = number + sizeof(int64_t);
                 *l = __builtin_bswap64(*l);
@@ -97,7 +93,6 @@ void reverse(void *number, int len){
                 *h ^= *l;
                 *l ^= *h;
                 break;
-            }
             default:
                 fprintf(stderr, "Bad word size\n");
                 return;
@@ -142,7 +137,7 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
     char varint[5];
     size_t size;
 
-    void *packet_raw = calloc(bot -> packet_threshold, sizeof(int8_t));
+    void *packet_raw = calloc(bot->packet_threshold, sizeof(int8_t));
     char *fmt = *((char **)packet_data);
     packet_data += sizeof(void *);
 
@@ -150,7 +145,8 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
         size = format_sizeof(*fmt);
         packet_data = align(packet_data, size);
         switch(*fmt){
-            case 's':{ // string (null terminated)
+            case 's': // string (null terminated)
+                ;
                 char *str = *((char **)packet_data);
                 value = strlen(str);
                 varlen = varint32_encode(value, varint, 5);
@@ -160,8 +156,8 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
                 memcpy(packet_raw + index + varlen, str, value);
                 index += value + varlen;
                 break;
-            }
-            case 'v':{ // varint32_t
+            case 'v': // varint32_t
+                ;
                 value = *((uint32_t *)packet_data);
                 arr_len = value;
                 varlen = varint32_encode(value, varint, 5);
@@ -170,8 +166,8 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
                 memcpy(packet_raw + index, varint, varlen);
                 index += varlen;
                 break;
-            }
-            case '*':{ // pointer/array
+            case '*': // pointer/array
+                ;
                 fmt++;
                 size_t size_elem = format_sizeof(*fmt);
                 if(index + size_elem * arr_len > len)
@@ -183,8 +179,8 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
                 }
                 index += arr_len * size_elem;
                 break;
-            }
-            default:{
+            default:
+                ;
                 size_t size = format_sizeof(*fmt);
                 if(index + size > len)
                     return -1; // TODO: compression
@@ -193,7 +189,6 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
                 arr_len = *((int *)packet_data);
                 index += size;
                 break;
-            }
         }
         packet_data += size;
         fmt++;
@@ -252,13 +247,13 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
                 *((void **)packet_data) = arr;
                 packet_raw += arr_len * size_elem;
                 break;
-            default:{
+            default:
+                ;
                 memcpy(packet_data, packet_raw, size);
                 reverse(packet_data, size);
                 arr_len = *((int *)packet_data);
                 packet_raw += size;
                 break;
-            }
         }
         packet_data += size;
         fmt++;
@@ -280,41 +275,16 @@ vint32_t peek_packet(bot_t *bot, void *packet_raw){
 void free_packet(void *packet_data){
     char *fmt = *((char **)packet_data);
     packet_data += sizeof(void *);
-    switch(*fmt){
-        case 'b':
-            packet_data = align(packet_data, sizeof(int8_t));
-            packet_data += sizeof(int8_t);
-            break;
-        case 'h':
-            packet_data = align(packet_data, sizeof(int16_t));
-            packet_data += sizeof(int16_t);
-            break;
-        case 'w': case 'v':
-            packet_data = align(packet_data, sizeof(int32_t));
-            packet_data += sizeof(int32_t);
-            break;
-        case 'l':
-            packet_data = align(packet_data, sizeof(int64_t));
-            packet_data += sizeof(int64_t);
-            break;
-        case 'q':
-            packet_data = align(packet_data, sizeof(__int128_t));
-            packet_data += sizeof(__int128_t);
-            break;
-        case 's':
-            packet_data = align(packet_data, sizeof(void *));
+    while (*fmt) {
+        size_t size = format_sizeof(*fmt);
+        packet_data = align(packet_data, size);
+        if (*fmt == 's' || *fmt == '*') {
             free(*((void **)packet_data));
-            packet_data += sizeof(void *);
-            break;
-        case '*':
-            packet_data = align(packet_data, sizeof(void *));
-            free(*((void **)packet_data));
-            packet_data += sizeof(void *);
-            fmt++;
-            break;
-        default:
-            break;
+            if(*fmt == '*')
+                fmt++;
+        }
+        packet_data += sizeof(void *);
+        fmt++;
     }
-    fmt++;
-}
 
+}
