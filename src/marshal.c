@@ -208,13 +208,12 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
     // packet_data = struct containing packet data
     uint32_t len;
     vint32_t value;
-    uint32_t arr_len;
+    uint32_t arr_len = -1;
     size_t size;
 
     char *fmt = *((char **)packet_data);
+    assert(fmt != 0);
     packet_data += sizeof(void *);
-
-    /* printf("%s\n", fmt); */
 
     int32_t packet_size;
     int packet_size_len = varint32(packet_raw, &packet_size);
@@ -241,7 +240,8 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
             case '*':
                 fmt++;
                 size_t size_elem = format_sizeof(*fmt);
-                assert(arr_len > 0);
+                assert(arr_len != -1);
+                assert(arr_len != 0);
                 void *arr = calloc(arr_len, size_elem);
                 for(int i = 0; i < arr_len * size_elem; i += size_elem){
                     memcpy(arr + i, packet_raw + i, size_elem);

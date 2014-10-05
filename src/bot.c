@@ -144,13 +144,17 @@ int receive_packet(bot_t *bot) {
         ret = peek_packet(bot, bot->buf);
         return ret;
     } else {
-        // read in a huge buffer, but throw it away
-        while (received < packet_size) {
+        // read in a huge buffer, packet_threshold at a time
+        while (received < packet_size - bot->packet_threshold) {
             ret = receive_raw(bot, bot->buf, bot->packet_threshold);
             if (ret <= 0)
                 return -1;
             received += ret;
         }
+        // read the last portion of the packet
+        ret = receive_raw(bot, bot->buf, packet_size - received);
+        if (ret <= 0)
+            return -1;
         return -2;
     }
 }
