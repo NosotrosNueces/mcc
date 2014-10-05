@@ -25,4 +25,5 @@
 # Herps
 *.gch
 *.sw*
-test_bot
+
+/bin

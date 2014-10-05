@@ -10,7 +10,7 @@
 
 char fmt_specifiers[6] = {'b', 'h', 'w', 'l', 'q', 'v'};
 
-char *random_fmt();
+int random_fmt(char *, int);
 
 FILE *f;
 FILE *original_f;
@@ -20,14 +20,15 @@ void test_no_pointers(uint64_t trials){ // test
     void *test = malloc(STRUCT_SIZE);
     void *decoded = malloc(STRUCT_SIZE);
     uint64_t i;
+    char fmt[STRUCT_SIZE + 1];
     for(i = 0; i < trials; i++){
         memset(decoded, 0, STRUCT_SIZE);
         fread(test, sizeof(int8_t), STRUCT_SIZE, f);
-        char *str = random_fmt();
+        random_fmt(fmt, STRUCT_SIZE + 1);
         //printf("format string: %s\n", str);
 
-        *((char **)test) = str;
-        *((char **)decoded) = str;
+        *((char **)test) = fmt;
+        *((char **)decoded) = fmt;
 
         // encode packet
         void *packet_raw;
@@ -45,7 +46,6 @@ void test_no_pointers(uint64_t trials){ // test
         // check to make sure they match
         assert(len_decode == len);
         assert(!memcmp(packet_raw, packet_raw_decode, len));
-        free(str);
         free(packet_raw);
         free(packet_raw_decode);
     }
@@ -53,24 +53,16 @@ void test_no_pointers(uint64_t trials){ // test
     free(decoded);
 }
 
-char *random_fmt(){
-    char *str = calloc(STRUCT_SIZE / 32, sizeof(char));
-    int i = 0;
-    for(; i < STRUCT_SIZE / 32 - 1; i++){
-        int index = rand() % sizeof(fmt_specifiers);
-        str[i] = fmt_specifiers[index];
-    }
-    return str;
-}
 
-int main(){
-    //f = fopen("/dev/urandom", "r");
-    //int seed;
-    //fread(&seed, 1, sizeof(int), f);
-    //srand(seed);
-    //test_no_pointers(~0lu);
-    //fclose(f);
-    char varint[100];
-    printf("%d bytes written\n", varint32_encode(-1, varint, 100));
-    printf("%hhX %hhX %hhX %hhX %hhX\n", varint[0], varint[1], varint[2], varint[3], varint[4]);
+
+int random_fmt(char *str, int len){
+    size_t size = 0; // size that the fmt specifier string represents
+    int i = 0; // index within str
+    int index = rand() % sizeof(fmt_specifiers);
+    while(i < len && (size += format_sizeof(fmt_specifiers[index])) < STRUCT_SIZE) {
+        str[i++] = fmt_specifiers[index];
+        index = rand() % sizeof(fmt_specifiers);
+    }
+    str[i] = 0;
+    return size;
 }
