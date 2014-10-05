@@ -2,5 +2,5 @@
 #include "packet_test.h"
 
 int main() {
-
+    test_no_pointers(1<<20); 
 }

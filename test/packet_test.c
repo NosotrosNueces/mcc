@@ -12,10 +12,11 @@ char fmt_specifiers[6] = {'b', 'h', 'w', 'l', 'q', 'v'};
 
 int random_fmt(char *, int);
 
-FILE *f;
-FILE *original_f;
-FILE *decoded_f;
 void test_no_pointers(uint64_t trials){ // test
+    FILE *f = fopen("/dev/urandom", "r"); 
+    int seed;
+    fread(&seed, sizeof(int), 1, f);
+    srand(seed);
     bot_t an_bot = {0, STRUCT_SIZE};
     void *test = malloc(STRUCT_SIZE);
     void *decoded = malloc(STRUCT_SIZE);
@@ -51,6 +52,7 @@ void test_no_pointers(uint64_t trials){ // test
     }
     free(test);
     free(decoded);
+    printf("format_packet() and decode_packet() passed %lu random test cases .\n", trials);
 }
 
 
@@ -59,7 +61,7 @@ int random_fmt(char *str, int len){
     size_t size = 0; // size that the fmt specifier string represents
     int i = 0; // index within str
     int index = rand() % sizeof(fmt_specifiers);
-    while(i < len && (size += format_sizeof(fmt_specifiers[index])) < STRUCT_SIZE) {
+    while(i < len && (size += format_sizeof(fmt_specifiers[index])) < STRUCT_SIZE / 2) {
         str[i++] = fmt_specifiers[index];
         index = rand() % sizeof(fmt_specifiers);
     }
