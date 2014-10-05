@@ -241,7 +241,9 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
                 fmt++;
                 size_t size_elem = format_sizeof(*fmt);
                 assert(arr_len != -1);
-                assert(arr_len != 0);
+                if(arr_len != 0) {
+                    break;
+                }
                 void *arr = calloc(arr_len, size_elem);
                 for(int i = 0; i < arr_len * size_elem; i += size_elem){
                     memcpy(arr + i, packet_raw + i, size_elem);
