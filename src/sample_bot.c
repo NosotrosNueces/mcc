@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
+#include <unistd.h>
 #include "bot.h"
 #include "client.h"
 
@@ -12,9 +14,10 @@ void sample_main(void* bot) {
     //join_server(bot, "25567", "10.10.2.16", "25565");
     //send_handshaking_serverbound_handshake(bot, 47, "localhost", 25565, 2);
     //send_login_serverbound_login(bot, bot->name);
-
+    
     while(1) {
-        printf("Doing something???");
+        const void* buf = (const void*) ".\n";
+        write(STDOUT_FILENO, buf, strlen(buf));
         nanosleep(&req, &rem);
     }
 }
