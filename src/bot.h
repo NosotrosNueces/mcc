@@ -17,7 +17,7 @@ struct bot {
     state current_state;
     /* registered callbacks */
     void (*bot_main)(void *);
-    function ***callbacks; // triple indirection hooray!
+    function **callbacks;
 };
 
 struct _function {

@@ -639,7 +639,7 @@ _render_recv(play_clientbound_set_compression, "vv", 0x46);
 void callback_decode(bot_t *bot) {
     int32_t pid = receive_packet(bot);
     if (pid < 0) return;
-    function *func = bot->callbacks[bot->current_state][pid];
+    function *func = &bot->callbacks[bot->current_state][pid];
     void *recv_struct;
     switch (bot->current_state) {
         case HANDSHAKE:

@@ -25,10 +25,10 @@ bot_t *init_bot(char *name, void (*bot_main)(void *)){
     strncpy(bot->name, name, len + 1);
     bot->bot_main = bot_main;
     // initialize the callback data structure
-    bot->callbacks = calloc(NUM_STATES, sizeof(function **));
-    bot->callbacks[HANDSHAKE] = calloc(HANDSHAKE_PACKETS, sizeof(function *));
-    bot->callbacks[LOGIN] = calloc(LOGIN_PACKETS, sizeof(function *));
-    bot->callbacks[PLAY] = calloc(PLAY_PACKETS, sizeof(function *));
+    bot->callbacks = calloc(NUM_STATES, sizeof(function *));
+    bot->callbacks[HANDSHAKE] = calloc(HANDSHAKE_PACKETS, sizeof(function));
+    bot->callbacks[LOGIN] = calloc(LOGIN_PACKETS, sizeof(function));
+    bot->callbacks[PLAY] = calloc(PLAY_PACKETS, sizeof(function));
     return bot;
 }
 
@@ -38,15 +38,15 @@ void free_bot(bot_t *bot){
     // unrolled outer loop just cuz
     int i;
     for(i = 0; i < HANDSHAKE_PACKETS; i++){
-        function *func = bot->callbacks[HANDSHAKE][i];
+        function *func = &bot->callbacks[HANDSHAKE][i];
         free_list(func);
     }
     for(i = 0; i < LOGIN_PACKETS; i++){
-        function *func = bot->callbacks[LOGIN][i];
+        function *func = &bot->callbacks[LOGIN][i];
         free_list(func);
     }
     for(i = 0; i < PLAY_PACKETS; i++){
-        function *func = bot->callbacks[PLAY][i];
+        function *func = &bot->callbacks[PLAY][i];
         free_list(func);
     }
     free(bot);
@@ -61,11 +61,12 @@ void free_list(function *list){
 
 void register_event(bot_t *bot, uint32_t state, uint32_t packet_id, 
         void (*f)(bot_t *, void *)){
-    function *current = bot->callbacks[state][packet_id];
-    while(current)
-        current = current->next;
-    current = calloc(1, sizeof(function));
-    current->f = f;
+    function *parent = &bot->callbacks[state][packet_id];
+    while(parent->next)
+        parent = parent->next;
+    function *child = calloc(1, sizeof(function));
+    child->f = f;
+    parent->next = child;
 }
 
 // initializes a bot structure with a socket. The socket is bound to the local address on
