@@ -72,37 +72,19 @@ void register_event(bot_t *bot, uint32_t state, uint32_t packet_id,
 // the socket descriptor is returned by the function. If -1 is returned, then an error
 // occured, and a message will have been printed out.
 
-int join_server(bot_t *your_bot, char *local_port, char* server_host,
-                char* server_port){
-    int status;
+int join_server(bot_t *your_bot, char* server_host, char* server_port){
     struct addrinfo hints, *res;
     int sockfd;
-    memset(&hints, 0, sizeof(hints));
+    // first, load up address structs with getaddrinfo():
+    memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    if((status = getaddrinfo(NULL, local_port, &hints, &res))){
-        fprintf(stderr, "Your computer is literally haunted: %s\n",
-                gai_strerror(status));
-        return -1;
-    }
-    if((sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1){
-        fprintf(stderr, "Could not create socket for unknown reason.\n");
-        return -1;
-    }
-    freeaddrinfo(res);
-    // socket bound to local address/port
+    getaddrinfo(server_host, server_port, &hints, &res);
 
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    if((status = getaddrinfo(server_host, server_port, &hints, &res))){
-        fprintf(stderr, "Server could not be resolved: %s\n",
-                gai_strerror(status));
-        return -1;
-    }
+    // make a socket and connect
+    sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     connect(sockfd, res->ai_addr, res->ai_addrlen);
-    freeaddrinfo(res);
-    // connected to server
+
     your_bot->socketfd = sockfd;
     return sockfd;
 }

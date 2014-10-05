@@ -6,17 +6,19 @@
 #include <unistd.h>
 #include "bot.h"
 #include "client.h"
+#include "protocol.h"
 
-void sample_main(void* bot) {
+void sample_main(void* vbot) {
+    bot_t *bot = (bot_t *)vbot;
     struct timespec req = {1, 50000000};
     struct timespec rem;
 
-    //join_server(bot, "25567", "10.10.2.16", "25565");
-    //send_handshaking_serverbound_handshake(bot, 47, "localhost", 25565, 2);
-    //send_login_serverbound_login(bot, bot->name);
-    
+    join_server(bot, "lf.lc", "25565");
+    send_handshaking_serverbound_handshake(bot, 47, "localhost", 25565, 2);
+    send_login_serverbound_login(bot, bot->name);
+
     while(1) {
-        const void* buf = (const void*) ".\n";
+        const void* buf = (const void*) ".";
         write(STDOUT_FILENO, buf, strlen(buf));
         nanosleep(&req, &rem);
     }

@@ -51,11 +51,9 @@ void register_event(bot_t *bot, uint32_t state, uint32_t packet_id, void (*f)(vo
 
 /** \brief Open a socket to the specified server
  *
- *  Open a socket connection to a specific server for a particular bot. It is 
- *  possible, but not useful, to choose the local bind port. A local_port value
- *  of NULL should choose a random, open port.
+ *  Open a socket connection to a specific server for a particular bot.
  */
-int join_server(bot_t *bot, char *local_port, char* server_host, char* server_port);
+int join_server(bot_t *bot, char* server_host, char* server_port);
 
 /** \brief Sends a string across the network using a bot's socket
  *
