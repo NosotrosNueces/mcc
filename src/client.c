@@ -31,8 +31,8 @@ void *bot_thread(void *bot);
 void client_run(bot_t *bots, uint32_t num) {
     // create 1 thread for receiving packets, and 1 for each bot
     int i;
-    bot_list = bots;
     num_bots = num;
+    bot_list = bots;
     pthread_key_create(&bot_key, NULL);
    
     // create & start listener thread

@@ -6,17 +6,17 @@
 #include "client.h"
 
 void sample_main(void* bot) {
-    //struct timespec req = {1, 50000000};
-    //struct timespec rem;
+    struct timespec req = {1, 50000000};
+    struct timespec rem;
 
     //join_server(bot, "25567", "10.10.2.16", "25565");
     //send_handshaking_serverbound_handshake(bot, 47, "localhost", 25565, 2);
     //send_login_serverbound_login(bot, bot->name);
 
-    //while(1) {
-    //    printf("Doing something???");
-    //    nanosleep(&req, &rem);
-    //}
+    while(1) {
+        printf("Doing something???");
+        nanosleep(&req, &rem);
+    }
 }
 
 int main() {
