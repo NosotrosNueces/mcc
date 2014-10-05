@@ -181,7 +181,6 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
                 break;
             default:
                 ;
-                size_t size = format_sizeof(*fmt);
                 if(index + size > len)
                     return -1; // TODO: compression
                 memcpy(packet_raw + index, packet_data, size);

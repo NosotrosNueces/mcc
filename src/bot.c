@@ -131,7 +131,7 @@ int receive_packet(bot_t *bot) {
     assert(i != len);
 
     packet_size += len;
-    received = len + 1;
+    received = i + 1;
     if (packet_size <= bot->packet_threshold) {
         while (received < packet_size) {
             ret = receive_raw(bot, bot->buf + received, packet_size - received);

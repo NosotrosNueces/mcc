@@ -38,9 +38,9 @@ void sample_main(void* vbot) {
 }
 
 int main() {
-    bot_t *an_bot = init_bot("an_bot", *sample_main);
+    bot_t *an_bot = init_bot("an_segfault", *sample_main);
     register_event(an_bot, PLAY, 0x0, sample_keepalive_handler);
-    register_event(an_bot, HANDSHAKE, 0x0, sample_login_handler);
+    register_event(an_bot, LOGIN, 0x2, sample_login_handler);
     join_server(an_bot, "lf.lc", "25565");
     client_run(an_bot, 1);
     return 0;
