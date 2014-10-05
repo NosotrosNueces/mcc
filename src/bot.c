@@ -152,9 +152,12 @@ int receive_packet(bot_t *bot) {
             received += ret;
         }
         // read the last portion of the packet
-        ret = receive_raw(bot, bot->buf, packet_size - received);
-        if (ret <= 0)
-            return -1;
+        while (received < packet_size) {
+            ret = receive_raw(bot, bot->buf, packet_size - received);
+            if (ret <= 0)
+                return -1;
+            received += ret;
+        }
         return -2;
     }
 }
