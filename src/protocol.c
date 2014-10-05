@@ -23,6 +23,12 @@
     break;                                                              \
 }
 
+// Macro to send packets to server
+#define _render_send(BOT, PACKET)                             \
+    int8_t packet[BOT->packet_threshold];                     \
+    length = format_packet(BOT, &PACKET, (void *) &packet);   \
+    send_raw(bot, packet, length);                            \
+
 /*
  * Handshaking serverbound functions
  */
@@ -45,10 +51,7 @@ int32_t send_handshaking_serverbound_handshake(
     p.server_port = server_port;
     p.next_state = next_state;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -69,10 +72,7 @@ int32_t send_login_serverbound_login(
 
     p.username = username;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -90,10 +90,7 @@ int32_t send_status_serverbound_request(
     p.format = "v";
     p.packet_id = 0x00;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -110,10 +107,7 @@ int32_t send_status_serverbound_ping(
 
     p.time = time;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -134,10 +128,7 @@ int32_t send_play_serverbound_keepalive(
 
     p.keepalive_id = keepalive_id;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -154,10 +145,7 @@ int32_t send_play_serverbound_chat(
 
     p.message = message;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -180,10 +168,7 @@ int32_t send_play_serverbound_entity_use(
     p.y = y;
     p.z = z;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -200,10 +185,7 @@ int32_t send_play_serverbound_player(
 
     p.on_ground = on_ground;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -226,10 +208,7 @@ int32_t send_play_serverbound_player_move(
     p.z = z;
     p.on_ground = on_ground;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -250,10 +229,7 @@ int32_t send_play_serverbound_player_look(
     p.pitch = pitch;
     p.on_ground = on_ground;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -280,10 +256,7 @@ int32_t send_play_serverbound_player_move_look(
     p.pitch = pitch;
     p.on_ground = on_ground;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -304,10 +277,7 @@ int32_t send_play_serverbound_player_dig(
     p.location = location;
     p.face = face;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -334,10 +304,7 @@ int32_t send_play_serverbound_player_block_place(
     p.y = y;
     p.z = z;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -354,10 +321,7 @@ int32_t send_play_serverbound_item_change(
 
     p.slot = slot;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -371,10 +335,7 @@ int32_t send_play_serverbound_animation(
     p.format = "v";
     p.packet_id = 0x0A;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -395,10 +356,7 @@ int32_t send_play_serverbound_entity_action(
     p.action_id = action_id;
     p.jump_boost = jump_boost;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -419,10 +377,7 @@ int32_t send_play_serverbound_steer_vehicle(
     p.forward = forward;
     p.flags = flags;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -447,10 +402,7 @@ int32_t send_play_serverbound_update_sign(
     p.line3 = line3;
     p.line4 = line4;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -471,10 +423,7 @@ int32_t send_play_serverbound_player_abilities(
     p.flying_speed = flying_speed;
     p.walking_speed = walking_speed;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -499,10 +448,7 @@ int32_t send_play_serverbound_client_settings(
     p.chat_colors = chat_colors;
     p.skin = skin;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -519,10 +465,7 @@ int32_t send_play_serverbound_player_status(
 
     p.action_id = action_id;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -541,10 +484,7 @@ int32_t send_play_serverbound_plugin_message(
     p.channel = channel;
     p.data = data;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
@@ -561,10 +501,7 @@ int32_t send_play_serverbound_spectate(
 
     p.target = target;
 
-    void *packet;
-    length = format_packet(bot, &p, &packet);
-    send_raw(bot, packet, length);
-    free(packet);
+    _render_send(bot, p);
 
     return length;
 }
