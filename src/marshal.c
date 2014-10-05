@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "marshal.h"
 #include "bot.h"
 #include "protocol.h"
@@ -213,6 +214,8 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
     char *fmt = *((char **)packet_data);
     packet_data += sizeof(void *);
 
+    /* printf("%s\n", fmt); */
+
     int32_t packet_size;
     int packet_size_len = varint32(packet_raw, &packet_size);
     packet_raw += packet_size_len;
@@ -238,6 +241,7 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
             case '*':
                 fmt++;
                 size_t size_elem = format_sizeof(*fmt);
+                assert(arr_len > 0);
                 void *arr = calloc(arr_len, size_elem);
                 for(int i = 0; i < arr_len * size_elem; i += size_elem){
                     memcpy(arr + i, packet_raw + i, size_elem);

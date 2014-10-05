@@ -69,7 +69,7 @@ int main() {
     register_event(an_bot, LOGIN, 0x02, sample_login_handler);
     register_event(an_bot, PLAY, 0x03, time_update_checker);
 
-    join_server(an_bot, SERVER_NAME, "25565");
+    join_server(an_bot, "localhost", "25565");
 
     bot_t* test_bots = calloc(1, sizeof(bot_t));
     test_bots[0] = *an_bot;
