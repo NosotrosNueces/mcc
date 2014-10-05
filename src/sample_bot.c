@@ -31,8 +31,6 @@ void sample_main(void* vbot) {
     send_login_serverbound_login(bot, bot->name);
 
     while(1) {
-        const void* buf = (const void*) ".";
-        write(STDOUT_FILENO, buf, strlen(buf));
         nanosleep(&req, &rem);
     }
 }

@@ -15,8 +15,8 @@
 // Macro to fill structs in the callback switch
 #define _render_callback(NAME) {                                        \
     recv_struct = recv_ ## NAME(bot);                                   \
-    while(func) {                                                       \
-        ((void (*)(NAME ## _t *))func->f)((NAME ## _t *) recv_struct);   \
+    while(func->next) {                                                 \
+        (func->f)(bot, recv_struct);                                    \
         func = func->next;                                              \
     }                                                                   \
     break;                                                              \

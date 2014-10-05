@@ -65,7 +65,7 @@ void register_event(bot_t *bot, uint32_t state, uint32_t packet_id,
     while(parent->next)
         parent = parent->next;
     function *child = calloc(1, sizeof(function));
-    child->f = f;
+    parent->f = f;
     parent->next = child;
 }
 
