@@ -7,11 +7,13 @@ TEST_DIR = test
 LIB_FILES= $(patsubst %,$(LIB_DIR)/%,$(_LIB_FILES))
 TEST_FILES= $(patsubst %,$(TEST_DIR)/%,$(_TEST_FILES))
 CFLAGS=-Wall --std=gnu99 -Wfatal-errors
-tests:
+tests: bin
 	$(CC) -o bin/tests $(LIB_FILES) $(TEST_FILES) -I $(LIB_DIR) $(CFLAGS)
 	./bin/tests
-sample:
+sample: bin
 	$(CC) -o bin/sample_bot src/sample_bot.c $(LIB_FILES) $(CFLAGS)
+bin:
+	mkdir bin
 check:
 	$(SA) make build
 clean:
