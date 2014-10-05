@@ -6,12 +6,10 @@
 
 typedef enum {HANDSHAKE, LOGIN, STATUS, PLAY, NUM_STATES} state;
 
-typedef struct _function {
-    void (*f)(void *);
-    struct _function *next;
-} function;
+typedef struct bot bot_t;
+typedef struct _function function;
 
-typedef struct bot {
+struct bot {
     int socketfd;
     size_t packet_threshold;
     char *buf;
@@ -20,7 +18,12 @@ typedef struct bot {
     /* registered callbacks */
     void (*bot_main)(void *);
     function ***callbacks; // triple indirection hooray!
-} bot_t;
+};
+
+struct _function {
+    void (*f)(bot_t *, void *);
+    struct _function *next;
+};
 
 extern struct bot context;
 
@@ -47,7 +50,7 @@ void free_bot(bot_t *);
  *  is recieved.
  *  Note: Currently there is no way to "un-register" a callback.
  */
-void register_event(bot_t *bot, uint32_t state, uint32_t packet_id, void (*f)(void *));
+void register_event(bot_t *bot, uint32_t state, uint32_t packet_id, void (*f)(bot_t *, void *));
 
 /** \brief Open a socket to the specified server
  *

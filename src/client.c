@@ -56,6 +56,16 @@ void client_run(bot_t *bots, uint32_t num) {
 
 void *bot_thread(void *bot) {
     pthread_setspecific(bot_key, bot);
+
+    struct sigaction sa;
+    sa.sa_handler = signal_handler;
+    sa.sa_flags = SA_RESTART;
+    sigemptyset(&sa.sa_mask);
+    if (sigaction(SIGUSR1, &sa, NULL) == -1) {
+        perror("sigaction");
+        exit(1);
+    }
+
     ((bot_t *)bot)->bot_main(bot);
     return NULL;
 }

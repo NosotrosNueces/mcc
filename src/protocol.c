@@ -1,4 +1,3 @@
-
 #include "protocol.h"
 #include "marshal.h"
 #include "bot.h"

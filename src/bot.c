@@ -19,6 +19,7 @@ bot_t *init_bot(char *name, void (*bot_main)(void *)){
     // set the bot name
     bot_t *bot = calloc(1, sizeof(bot_t));
     bot->packet_threshold = DEFAULT_THRESHOLD;
+    bot->buf = calloc(1, DEFAULT_THRESHOLD);
     size_t len = strlen(name);
     bot->name = calloc(len + 1, sizeof(char));
     strncpy(bot->name, name, len + 1);
@@ -59,7 +60,7 @@ void free_list(function *list){
 
 
 void register_event(bot_t *bot, uint32_t state, uint32_t packet_id, 
-        void (*f)(void *)){
+        void (*f)(bot_t *, void *)){
     function *current = bot->callbacks[state][packet_id];
     while(current)
         current = current->next;
