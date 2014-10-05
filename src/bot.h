@@ -6,12 +6,10 @@
 
 typedef enum {HANDSHAKE, LOGIN, STATUS, PLAY, NUM_STATES} state;
 
-typedef struct _function {
-    void (*f)(void *);
-    struct _function *next;
-} function;
+typedef struct bot bot_t;
+typedef struct _function function;
 
-typedef struct bot {
+struct bot {
     int socketfd;
     size_t packet_threshold;
     char *buf;
@@ -19,8 +17,13 @@ typedef struct bot {
     state current_state;
     /* registered callbacks */
     void (*bot_main)(void *);
-    function ***callbacks; // triple indirection hooray!
-} bot_t;
+    function **callbacks;
+};
+
+struct _function {
+    void (*f)(bot_t *, void *);
+    struct _function *next;
+};
 
 extern struct bot context;
 
@@ -47,15 +50,13 @@ void free_bot(bot_t *);
  *  is recieved.
  *  Note: Currently there is no way to "un-register" a callback.
  */
-void register_event(bot_t *bot, uint32_t state, uint32_t packet_id, void (*f)(void *));
+void register_event(bot_t *bot, uint32_t state, uint32_t packet_id, void (*f)(bot_t *, void *));
 
 /** \brief Open a socket to the specified server
  *
- *  Open a socket connection to a specific server for a particular bot. It is 
- *  possible, but not useful, to choose the local bind port. A local_port value
- *  of NULL should choose a random, open port.
+ *  Open a socket connection to a specific server for a particular bot.
  */
-int join_server(bot_t *bot, char *local_port, char* server_host, char* server_port);
+int join_server(bot_t *bot, char* server_host, char* server_port);
 
 /** \brief Sends a string across the network using a bot's socket
  *

@@ -1,4 +1,4 @@
-
+#include <stdio.h>
 #include "protocol.h"
 #include "marshal.h"
 #include "bot.h"
@@ -16,8 +16,8 @@
 // Macro to fill structs in the callback switch
 #define _render_callback(NAME) {                                        \
     recv_struct = recv_ ## NAME(bot);                                   \
-    while(func) {                                                       \
-        ((void (*)(NAME ## _t *))func->f)((NAME ## _t *) recv_struct);   \
+    while(func->next) {                                                 \
+        (func->f)(bot, recv_struct);                                    \
         func = func->next;                                              \
     }                                                                   \
     break;                                                              \
@@ -629,7 +629,6 @@ _render_recv(play_clientbound_chunk_bulk, "vbvwwh*b", 0x26);
 _render_recv(play_clientbound_explosion, "vwwwww*wwww", 0x27);
 _render_recv(play_clientbound_effect, "vwlwb", 0x28);
 _render_recv(play_clientbound_sound_effect, "vswwwwb", 0x29);
-_render_recv(play_clientbound_particle, "vvbwwwwwwww*v", 0x2A);
 _render_recv(play_clientbound_entity_spawn_global, "vvbwww", 0x2C);
 _render_recv(play_clientbound_update_sign, "vlssss", 0x33);
 _render_recv(play_clientbound_plugin_message, "vs*b", 0x3F);
@@ -638,8 +637,12 @@ _render_recv(play_clientbound_plugin_difficulty, "vb", 0x41);
 _render_recv(play_clientbound_set_compression, "vv", 0x46);
 
 void callback_decode(bot_t *bot) {
-    uint32_t pid = receive_packet(bot);
-    function *func = bot->callbacks[bot->current_state][pid];
+    int32_t pid = receive_packet(bot);
+    if (pid < 0) {
+        if (pid == -1) exit(123);
+        return;
+    }
+    function *func = &bot->callbacks[bot->current_state][pid];
     void *recv_struct;
     switch (bot->current_state) {
         case HANDSHAKE:
@@ -702,7 +705,6 @@ void callback_decode(bot_t *bot) {
                 case 0x27: _render_callback(play_clientbound_explosion);
                 case 0x28: _render_callback(play_clientbound_effect);
                 case 0x29: _render_callback(play_clientbound_sound_effect);
-                case 0x2A: _render_callback(play_clientbound_particle);
                 case 0x2C: _render_callback(play_clientbound_entity_spawn_global);
                 case 0x33: _render_callback(play_clientbound_update_sign);
                 case 0x3F: _render_callback(play_clientbound_plugin_message);

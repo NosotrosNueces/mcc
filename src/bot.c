@@ -19,15 +19,16 @@ bot_t *init_bot(char *name, void (*bot_main)(void *)){
     // set the bot name
     bot_t *bot = calloc(1, sizeof(bot_t));
     bot->packet_threshold = DEFAULT_THRESHOLD;
+    bot->buf = calloc(1, DEFAULT_THRESHOLD);
     size_t len = strlen(name);
     bot->name = calloc(len + 1, sizeof(char));
     strncpy(bot->name, name, len + 1);
     bot->bot_main = bot_main;
     // initialize the callback data structure
-    bot->callbacks = calloc(NUM_STATES, sizeof(function **));
-    bot->callbacks[HANDSHAKE] = calloc(HANDSHAKE_PACKETS, sizeof(function *));
-    bot->callbacks[LOGIN] = calloc(LOGIN_PACKETS, sizeof(function *));
-    bot->callbacks[PLAY] = calloc(PLAY_PACKETS, sizeof(function *));
+    bot->callbacks = calloc(NUM_STATES, sizeof(function *));
+    bot->callbacks[HANDSHAKE] = calloc(HANDSHAKE_PACKETS, sizeof(function));
+    bot->callbacks[LOGIN] = calloc(LOGIN_PACKETS, sizeof(function));
+    bot->callbacks[PLAY] = calloc(PLAY_PACKETS, sizeof(function));
     return bot;
 }
 
@@ -37,15 +38,15 @@ void free_bot(bot_t *bot){
     // unrolled outer loop just cuz
     int i;
     for(i = 0; i < HANDSHAKE_PACKETS; i++){
-        function *func = bot->callbacks[HANDSHAKE][i];
+        function *func = &bot->callbacks[HANDSHAKE][i];
         free_list(func);
     }
     for(i = 0; i < LOGIN_PACKETS; i++){
-        function *func = bot->callbacks[LOGIN][i];
+        function *func = &bot->callbacks[LOGIN][i];
         free_list(func);
     }
     for(i = 0; i < PLAY_PACKETS; i++){
-        function *func = bot->callbacks[PLAY][i];
+        function *func = &bot->callbacks[PLAY][i];
         free_list(func);
     }
     free(bot);
@@ -59,12 +60,13 @@ void free_list(function *list){
 
 
 void register_event(bot_t *bot, uint32_t state, uint32_t packet_id, 
-        void (*f)(void *)){
-    function *current = bot->callbacks[state][packet_id];
-    while(current)
-        current = current->next;
-    current = calloc(1, sizeof(function));
-    current->f = f;
+        void (*f)(bot_t *, void *)){
+    function *parent = &bot->callbacks[state][packet_id];
+    while(parent->next)
+        parent = parent->next;
+    function *child = calloc(1, sizeof(function));
+    parent->f = f;
+    parent->next = child;
 }
 
 // initializes a bot structure with a socket. The socket is bound to the local address on
@@ -72,37 +74,19 @@ void register_event(bot_t *bot, uint32_t state, uint32_t packet_id,
 // the socket descriptor is returned by the function. If -1 is returned, then an error
 // occured, and a message will have been printed out.
 
-int join_server(bot_t *your_bot, char *local_port, char* server_host,
-                char* server_port){
-    int status;
+int join_server(bot_t *your_bot, char* server_host, char* server_port){
     struct addrinfo hints, *res;
     int sockfd;
-    memset(&hints, 0, sizeof(hints));
+    // first, load up address structs with getaddrinfo():
+    memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    if((status = getaddrinfo(NULL, local_port, &hints, &res))){
-        fprintf(stderr, "Your computer is literally haunted: %s\n",
-                gai_strerror(status));
-        return -1;
-    }
-    if((sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1){
-        fprintf(stderr, "Could not create socket for unknown reason.\n");
-        return -1;
-    }
-    freeaddrinfo(res);
-    // socket bound to local address/port
+    getaddrinfo(server_host, server_port, &hints, &res);
 
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    if((status = getaddrinfo(server_host, server_port, &hints, &res))){
-        fprintf(stderr, "Server could not be resolved: %s\n",
-                gai_strerror(status));
-        return -1;
-    }
+    // make a socket and connect
+    sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     connect(sockfd, res->ai_addr, res->ai_addrlen);
-    freeaddrinfo(res);
-    // connected to server
+
     your_bot->socketfd = sockfd;
     return sockfd;
 }
@@ -148,7 +132,7 @@ int receive_packet(bot_t *bot) {
     assert(i != len);
 
     packet_size += len;
-    received = len + 1;
+    received = i + 1;
     if (packet_size <= bot->packet_threshold) {
         while (received < packet_size) {
             ret = receive_raw(bot, bot->buf + received, packet_size - received);
@@ -160,13 +144,17 @@ int receive_packet(bot_t *bot) {
         ret = peek_packet(bot, bot->buf);
         return ret;
     } else {
-        // read in a huge buffer, but throw it away
-        while (received < packet_size) {
+        // read in a huge buffer, packet_threshold at a time
+        while (received < packet_size - bot->packet_threshold) {
             ret = receive_raw(bot, bot->buf, bot->packet_threshold);
             if (ret <= 0)
                 return -1;
             received += ret;
         }
+        // read the last portion of the packet
+        ret = receive_raw(bot, bot->buf, packet_size - received);
+        if (ret <= 0)
+            return -1;
         return -2;
     }
 }

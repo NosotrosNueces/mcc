@@ -31,29 +31,41 @@ void *bot_thread(void *bot);
 void client_run(bot_t *bots, uint32_t num) {
     // create 1 thread for receiving packets, and 1 for each bot
     int i;
-    bot_list = bots;
     num_bots = num;
+    bot_list = bots;
     pthread_key_create(&bot_key, NULL);
-   
+
     // create & start listener thread
     pthread_t event_listener;
     pthread_create(&event_listener, NULL, receiver, NULL);
 
     // create all the bot threads
+    bot_threads = calloc(num_bots, sizeof(pthread_t));
     for(i = 0; i < num; i++) {
-        pthread_create(bot_threads + i, NULL, bot_thread, bot_list + i); 
+        pthread_create(bot_threads + i, NULL, bot_thread, bot_list + i);
     }
-   
+
     // wait for all threads to finish
     // TODO: support for exit codes
     pthread_join(event_listener, NULL);
     for(i = 0; i < num; i++) {
         pthread_join(bot_threads[i], NULL);
     }
+    free(bot_threads);
 }
 
 void *bot_thread(void *bot) {
     pthread_setspecific(bot_key, bot);
+
+    struct sigaction sa;
+    sa.sa_handler = signal_handler;
+    sa.sa_flags = SA_RESTART;
+    sigemptyset(&sa.sa_mask);
+    if (sigaction(SIGUSR1, &sa, NULL) == -1) {
+        perror("sigaction");
+        exit(1);
+    }
+
     ((bot_t *)bot)->bot_main(bot);
     return NULL;
 }

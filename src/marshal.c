@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "marshal.h"
 #include "bot.h"
 #include "protocol.h"
@@ -181,7 +182,6 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
                 break;
             default:
                 ;
-                size_t size = format_sizeof(*fmt);
                 if(index + size > len)
                     return -1; // TODO: compression
                 memcpy(packet_raw + index, packet_data, size);
@@ -208,10 +208,11 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
     // packet_data = struct containing packet data
     uint32_t len;
     vint32_t value;
-    uint32_t arr_len;
+    uint32_t arr_len = -1;
     size_t size;
 
     char *fmt = *((char **)packet_data);
+    assert(fmt != 0);
     packet_data += sizeof(void *);
 
     int32_t packet_size;
@@ -239,6 +240,10 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
             case '*':
                 fmt++;
                 size_t size_elem = format_sizeof(*fmt);
+                assert(arr_len != -1);
+                if(arr_len != 0) {
+                    break;
+                }
                 void *arr = calloc(arr_len, size_elem);
                 for(int i = 0; i < arr_len * size_elem; i += size_elem){
                     memcpy(arr + i, packet_raw + i, size_elem);

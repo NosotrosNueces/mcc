@@ -531,23 +531,6 @@ typedef struct play_clientbound_sound_effect {
     uint8_t       pitch;
 } play_clientbound_sound_effect_t;
 
-typedef struct play_clientbound_particle {
-    char*         format;
-    vint32_t      packet_id;
-
-    vint32_t      particle_id;
-    bool          long_distance;
-    float         x;
-    float         y;
-    float         z;
-    float         dx;
-    float         dy;
-    float         dz;
-    float         particle_data;
-    int32_t       count;
-    vint32_t*     data;
-} play_clientbound_particle_t;
-
 typedef struct play_clientbound_entity_spawn_global {
     char*         format;
     vint32_t      packet_id;
@@ -1095,9 +1078,6 @@ recv_play_clientbound_effect(bot_t* bot);
 
 play_clientbound_sound_effect_t*
 recv_play_clientbound_sound_effect(bot_t* bot);
-
-play_clientbound_particle_t*
-recv_play_clientbound_particle(bot_t* bot);
 
 play_clientbound_entity_spawn_global_t*
 recv_play_clientbound_entity_spawn_global(bot_t* bot);
