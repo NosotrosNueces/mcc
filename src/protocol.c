@@ -629,7 +629,6 @@ _render_recv(play_clientbound_chunk_bulk, "vbvwwh*b", 0x26);
 _render_recv(play_clientbound_explosion, "vwwwww*wwww", 0x27);
 _render_recv(play_clientbound_effect, "vwlwb", 0x28);
 _render_recv(play_clientbound_sound_effect, "vswwwwb", 0x29);
-_render_recv(play_clientbound_particle, "vvbwwwwwwww*v", 0x2A);
 _render_recv(play_clientbound_entity_spawn_global, "vvbwww", 0x2C);
 _render_recv(play_clientbound_update_sign, "vlssss", 0x33);
 _render_recv(play_clientbound_plugin_message, "vs*b", 0x3F);
@@ -706,7 +705,6 @@ void callback_decode(bot_t *bot) {
                 case 0x27: _render_callback(play_clientbound_explosion);
                 case 0x28: _render_callback(play_clientbound_effect);
                 case 0x29: _render_callback(play_clientbound_sound_effect);
-                case 0x2A: _render_callback(play_clientbound_particle);
                 case 0x2C: _render_callback(play_clientbound_entity_spawn_global);
                 case 0x33: _render_callback(play_clientbound_update_sign);
                 case 0x3F: _render_callback(play_clientbound_plugin_message);
