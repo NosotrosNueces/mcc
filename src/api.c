@@ -1,10 +1,10 @@
+#include <time.h>
 #include "bot.h"
 #include "protocol.h"
 #include "handlers.h"
 
 #define DEFAULT_PROTOCOL_VERSION 47
 
-#include <time.h>
 int msleep(unsigned long ms) {
     struct timespec req = {0};
     time_t sec = (int)(ms/1000);
