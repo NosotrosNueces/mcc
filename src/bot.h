@@ -56,7 +56,7 @@ void register_event(bot_t *bot, uint32_t state, uint32_t packet_id, void (*f)(bo
  *
  *  Open a socket connection to a specific server for a particular bot.
  */
-int join_server(bot_t *bot, char* server_host, char* server_port);
+int join_server(bot_t *bot, char* server_host, int server_port);
 
 /** \brief Sends a string across the network using a bot's socket
  *
