@@ -14,6 +14,7 @@ struct bot {
     size_t packet_threshold;
     char *buf;
     char *name;
+    unsigned int eid;
     state current_state;
     /* registered callbacks */
     void (*bot_main)(void *);

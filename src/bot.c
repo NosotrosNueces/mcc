@@ -24,6 +24,7 @@ bot_t *init_bot(char *name, void (*bot_main)(void *)){
     bot->name = calloc(len + 1, sizeof(char));
     strncpy(bot->name, name, len + 1);
     bot->current_state = LOGIN;
+    bot->eid = -1;
     bot->bot_main = bot_main;
     // initialize the callback data structure
     bot->callbacks = calloc(NUM_STATES, sizeof(function *));
