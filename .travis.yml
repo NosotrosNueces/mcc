@@ -1,7 +1,3 @@
 language: c
 compiler: clang
 script: make
-notifications:
-  hipchat:
-    rooms:
-      secure: fwz9kB0RLJeXRvUWb1aik3D/wuNtQVC6colDu2ae6iKeBb61E6p5nRaamXw9JVBAaM1LRcK1nQucQWRb04wEGY4rC94rdj5OzBE5/Pirx2caoU2+Byy+BRHbh50p7oIbVn70UxFP9TYeri0uXifGfzpdrv39lKJRulIupLrqVhs=
