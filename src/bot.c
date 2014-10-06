@@ -23,6 +23,7 @@ bot_t *init_bot(char *name, void (*bot_main)(void *)){
     size_t len = strlen(name);
     bot->name = calloc(len + 1, sizeof(char));
     strncpy(bot->name, name, len + 1);
+    bot->current_state = LOGIN;
     bot->bot_main = bot_main;
     // initialize the callback data structure
     bot->callbacks = calloc(NUM_STATES, sizeof(function *));
@@ -74,13 +75,15 @@ void register_event(bot_t *bot, uint32_t state, uint32_t packet_id,
 // the socket descriptor is returned by the function. If -1 is returned, then an error
 // occured, and a message will have been printed out.
 
-int join_server(bot_t *your_bot, char* server_host, char* server_port){
+int join_server(bot_t *your_bot, char* server_host, int port_number){
     struct addrinfo hints, *res;
     int sockfd;
+    char server_port[8];
     // first, load up address structs with getaddrinfo():
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
+    sprintf(server_port, "%d", port_number);
     getaddrinfo(server_host, server_port, &hints, &res);
 
     // make a socket and connect
