@@ -9,14 +9,10 @@
 
 void sample_main(void *vbot) {
     bot_t *bot = (bot_t *)vbot;
-    struct timespec req = {0, 500000000}; //tv_sec, tv_nsec
-    struct timespec rem;
-   
     register_defaults(bot);
 
     while(1) {
-        // Broken: time intervals are irregular.
-        nanosleep(&req, &rem);
+        msleep(500);
     }
 }
 

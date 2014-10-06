@@ -4,6 +4,17 @@
 
 #define DEFAULT_PROTOCOL_VERSION 47
 
+#include <time.h>
+int msleep(unsigned long ms) {
+    struct timespec req = {0};
+    time_t sec = (int)(ms/1000);
+    ms = ms - (sec*1000);
+    req.tv_sec = sec;
+    req.tv_nsec = ms*1000000L;
+    while(nanosleep(&req, &req)== -1) continue;
+    return 1;
+}
+
 void register_defaults(bot_t *bot) {
     // Basic event handling that you should always want
     register_event(bot, LOGIN, 0x02, login_success_handler);
