@@ -8,6 +8,7 @@ void register_defaults(bot_t *bot) {
     // Basic event handling that you should always want
     register_event(bot, LOGIN, 0x02, login_success_handler);
     register_event(bot, PLAY, 0x00, keepalive_handler);
+    register_event(bot, PLAY, 0x01, join_game_handler);
     register_event(bot, PLAY, 0x08, position_handler);
 }
 

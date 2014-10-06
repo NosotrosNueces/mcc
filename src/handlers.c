@@ -16,6 +16,11 @@ void keepalive_handler(bot_t *bot, void *vp) {
     send_play_serverbound_keepalive(bot, p->keepalive_id);
 }
 
+void join_game_handler(bot_t *bot, void *vp) { 
+    play_clientbound_join_game_t *p = (play_clientbound_join_game_t *)vp;
+    bot->eid = p->entity_id;
+}
+
 void position_handler(bot_t *bot, void *vp) {
     play_clientbound_position_t *p =
         (play_clientbound_position_t *)vp;
