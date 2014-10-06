@@ -1,5 +1,11 @@
 #include "bot.h"
 
+/* \brief suspend thread execution for an interval measured in ms
+ *
+ *	Call nanosleep(2) until it successfully sleeps for the required interval.
+ */
+int msleep(unsigned long ms);
+
 /*
  * Registers
  *      keepalive_handler,

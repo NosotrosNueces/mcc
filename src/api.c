@@ -1,8 +1,19 @@
+#include <time.h>
 #include "bot.h"
 #include "protocol.h"
 #include "handlers.h"
 
 #define DEFAULT_PROTOCOL_VERSION 47
+
+int msleep(unsigned long ms) {
+    struct timespec req = {0};
+    time_t sec = (int)(ms/1000);
+    ms = ms - (sec*1000);
+    req.tv_sec = sec;
+    req.tv_nsec = ms*1000000L;
+    while(nanosleep(&req, &req)== -1) continue;
+    return 1;
+}
 
 void register_defaults(bot_t *bot) {
     // Basic event handling that you should always want
