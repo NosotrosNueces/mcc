@@ -32,13 +32,13 @@ void test_no_pointers(uint64_t trials){ // test
         *((char **)decoded) = fmt;
 
         // encode packet
-        void *packet_raw;
+        uint8_t packet_raw[STRUCT_SIZE];
         int len = format_packet(&an_bot, test, &packet_raw);
         //fwrite(test, 1, STRUCT_SIZE, original_f);
 
         // decode packet
         decode_packet(NULL, packet_raw, decoded);
-        void *packet_raw_decode;
+        uint8_t packet_raw_decode[STRUCT_SIZE];
 
         // re-encode packet
         int len_decode = format_packet(&an_bot, decoded, &packet_raw_decode);
@@ -47,8 +47,6 @@ void test_no_pointers(uint64_t trials){ // test
         // check to make sure they match
         assert(len_decode == len);
         assert(!memcmp(packet_raw, packet_raw_decode, len));
-        free(packet_raw);
-        free(packet_raw_decode);
     }
     free(test);
     free(decoded);
