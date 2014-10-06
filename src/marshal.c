@@ -129,7 +129,7 @@ size_t format_sizeof(char c) {
 // puts the raw packet data from the struct packet_data into packet_raw
 // returns the number of bytes written to packet_raw, or -1 if packet_raw
 // is not a long enough array
-int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
+int format_packet(bot_t *bot, void *packet_data, void *packet_raw){
     uint32_t len = bot->packet_threshold;
     uint32_t index = 0;
     uint32_t value = 0;
@@ -138,7 +138,6 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
     char varint[5];
     size_t size;
 
-    void *packet_raw = calloc(bot->packet_threshold, sizeof(int8_t));
     char *fmt = *((char **)packet_data);
     packet_data += sizeof(void *);
 
@@ -199,7 +198,6 @@ int format_packet(bot_t *bot, void *packet_data, void **packet_raw_ptr){
         return -1; // TODO: compression
     memmove(packet_raw + varlen, packet_raw, index);
     memcpy(packet_raw, varint, varlen);
-    *packet_raw_ptr = packet_raw;
     return index + varlen;
 }
 
