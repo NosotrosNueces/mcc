@@ -5,77 +5,74 @@
 #include "protocol.h"
 #include "api.h"
 
-#define SERVER_NAME "localhost"
+#define SERVER_NAME "10.10.2.16"
 #define DEFAULT_SERVER_PORT 25565
-#define ZOMBIE_NUMBER 65536
-double x = 0;
-double y = 0;
-double z = 0;
-int32_t zombies[ZOMBIE_NUMBER][4];
+
+typedef struct entity_node {
+    vint32_t entity;
+    struct entity_node *next;
+} entity_node_t;
+
+entity_node_t targets;
+
+void insert_target(vint32_t eid) {
+    entity_node_t *p = &targets;
+    while (p->next) {
+        p = p->next;
+    }
+    p->entity = eid;
+    p->next = calloc(1, sizeof(entity_node_t));
+}
+
+void remove_target(vint32_t eid) {
+    entity_node_t *p = &targets;
+    while (p->next) {
+        if (p->next->entity == eid) {
+            p->next = p->next->next;
+        }
+        p = p->next;
+    }    
+}
+
+bool exists_target(vint32_t eid) {
+    entity_node_t *p = &targets;
+    while (p->next) {
+        if (p->entity == eid) return true;
+        p = p->next;
+    }
+    return false;
+}
 
 void location_handler(bot_t *bot, void *vp) {
     play_clientbound_position_t *p = (play_clientbound_position_t *)vp;
-    /* printf("I'm at %f %f %f\n", p->x, p->y, p->z); */
-    x = p->x;
-    y = p->y;
-    z = p->z;
     send_play_serverbound_player_move(bot, p->x, p->y, p->z, true);
 }
 
 void health_handler(bot_t *bot, void *vp) {
     play_clientbound_update_health_t *p = (play_clientbound_update_health_t *)vp;
-    char words[500];
-    /* sprintf(words, "health: %f\n", p->health); */
-    /* say(bot, words); */
-    printf("health: %f\n", p->health);
     if(p->health == 0) {
         send_play_serverbound_player_status(bot, 0);
-        send_play_serverbound_chat(bot, "I'm back!");
     }
 }
 
-void protect(bot_t *bot, int32_t *zombie) {
-    double zx = ((double) zombie[1] )/ 32;
-    double zy = ((double) zombie[2] )/ 32;
-    double zz = ((double) zombie[3] )/ 32;
-
-    double dist = fabs(x - zx) + fabs(y - zy) + fabs(z - zz);
-    /* printf("P->x:%f,y:%f,z:%f Z->x:%f,y:%f,z:%f D->%f\n", */
-    /*     x, y, z, zx, zy, zz, dist); */
-    if(dist < 4) {
-        send_play_serverbound_player_look(bot, 0, 0, true);
-        char words[500];
-        sprintf(words, "attack!!! (e:%d d:%f)\n", zombie[0], dist);
-        /* say(bot, words); */
-        send_play_serverbound_entity_use(bot, zombie[0], 1, 0, 0, 0);
-    }
+void protect(bot_t *bot, vint32_t eid) {
+    send_play_serverbound_player_look(bot, 0, 0, true);
+    send_play_serverbound_entity_use(bot, eid, 1, 0, 0, 0);
 }
 
 void entity_handler(bot_t *bot, void *vp) {
     play_clientbound_spawn_mob_t *p = (play_clientbound_spawn_mob_t *) vp;
-    if(p->type == 54) {
-        /* char words[500]; */
-        /* sprintf(words, "Zombie %d spawned\n", p->entity_id); */
-        /* say(bot, words); */
-        int32_t *loc = zombies[p->entity_id % ZOMBIE_NUMBER];
-        loc[0] = p->entity_id;
-        loc[1] = p->x;
-        loc[2] = p->y;
-        loc[3] = p->z;
-        protect(bot, loc);
-    }
+    if (p->type >= 50) insert_target(p->entity_id);
 }
 
 void entity_move_handler(bot_t *bot, void *vp) {
     play_clientbound_entity_move_t *p = (play_clientbound_entity_move_t *) vp;
-    /* printf("Entity %d moved\n", p->entity_id); */
-    if(zombies[p->entity_id % ZOMBIE_NUMBER][0] == p->entity_id) {
-        int32_t *loc = zombies[p->entity_id % ZOMBIE_NUMBER];
-        loc[1] += p->dx;
-        loc[2] += p->dy;
-        loc[3] += p->dz;
-        protect(bot, loc);
-    }
+    if (exists_target(p->entity_id)) protect(bot, p->entity_id);
+}
+
+void entity_status_handler(bot_t *bot, void *vp) {
+    play_clientbound_entity_status_t *p = (play_clientbound_entity_status_t *) vp;
+    if (p->status == 3) remove_target(p->entity_id);
 }
 
 void sample_main(void *vbot) {
@@ -84,6 +81,7 @@ void sample_main(void *vbot) {
 
     while(1) {
         msleep(500);
+        send_play_serverbound_player_status(bot, 0);
     }
 }
 
@@ -93,6 +91,7 @@ int main() {
     register_event(bot, PLAY, 0x06, health_handler);
     register_event(bot, PLAY, 0x0F, entity_handler);
     register_event(bot, PLAY, 0x15, entity_move_handler);
+    register_event(bot, PLAY, 0x1A, entity_status_handler);
     login(bot, SERVER_NAME, DEFAULT_SERVER_PORT);
     client_run(bot, 1);
     free_bot(bot);
