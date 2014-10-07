@@ -164,6 +164,8 @@ int32_t send_play_serverbound_entity_use(
     p.format = "vvvwww";
     p.packet_id = 0x02;
 
+    p.target = target;
+    p.type = type;
     p.x = x;
     p.y = y;
     p.z = z;
