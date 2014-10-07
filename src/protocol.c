@@ -161,7 +161,11 @@ int32_t send_play_serverbound_entity_use(
 {
     uint32_t length;
     play_serverbound_entity_use_t p;
-    p.format = "vvvwww";
+    if(type == 2) {
+        p.format = "vvvwww";
+    } else {
+        p.format = "vvv";
+    }
     p.packet_id = 0x02;
 
     p.target = target;
