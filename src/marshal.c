@@ -130,7 +130,7 @@ size_t format_sizeof(char c) {
 // returns the number of bytes written to packet_raw, or -1 if packet_raw
 // is not a long enough array
 int format_packet(bot_t *bot, void *packet_data, void *packet_raw){
-    uint32_t len = bot->packet_threshold;
+    uint32_t len = bot->_data->packet_threshold;
     uint32_t index = 0;
     uint32_t value = 0;
     uint32_t varlen = 0;

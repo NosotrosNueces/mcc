@@ -66,7 +66,7 @@ void *bot_thread(void *bot) {
         exit(1);
     }
 
-    ((bot_t *)bot)->bot_main(bot);
+    ((bot_t *)bot)->_data->bot_main(bot);
     return NULL;
 }
 
@@ -75,7 +75,7 @@ void *receiver(void *ignore) {
     int ready;
     struct pollfd *fds = calloc(num_bots, sizeof(struct pollfd));
     for (i = 0; i < num_bots; i++) {
-        fds[i].fd = bot_list[i].socketfd;
+        fds[i].fd = bot_list[i]._data->socketfd;
         fds[i].events = POLLIN;
     }
     while (1) {

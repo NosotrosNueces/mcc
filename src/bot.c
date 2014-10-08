@@ -14,23 +14,24 @@
 
 void free_list(function *);
 
-// initializes the bot with defaults given a name and a main function.
+// Initializes the bot with defaults given a name and a main function.
 bot_t *init_bot(char *name, void (*bot_main)(void *)){
-    // set the bot name
+    // Set the bot name
     bot_t *bot = calloc(1, sizeof(bot_t));
-    bot->packet_threshold = DEFAULT_THRESHOLD;
-    bot->buf = calloc(1, DEFAULT_THRESHOLD);
+    bot->eid = -1;
     size_t len = strlen(name);
     bot->name = calloc(len + 1, sizeof(char));
     strncpy(bot->name, name, len + 1);
-    bot->current_state = LOGIN;
-    bot->eid = -1;
-    bot->bot_main = bot_main;
-    // initialize the callback data structure
-    bot->callbacks = calloc(NUM_STATES, sizeof(function *));
-    bot->callbacks[HANDSHAKE] = calloc(HANDSHAKE_PACKETS, sizeof(function));
-    bot->callbacks[LOGIN] = calloc(LOGIN_PACKETS, sizeof(function));
-    bot->callbacks[PLAY] = calloc(PLAY_PACKETS, sizeof(function));
+    bot->_data = calloc(1, sizeof(bot_internal));
+    bot->_data->packet_threshold = DEFAULT_THRESHOLD;
+    bot->_data->buf = calloc(1, DEFAULT_THRESHOLD);
+    bot->_data->current_state = LOGIN;
+    bot->_data->bot_main = bot_main;
+    // Initialize the callback data structure
+    bot->_data->callbacks = calloc(NUM_STATES, sizeof(function *));
+    bot->_data->callbacks[HANDSHAKE] = calloc(HANDSHAKE_PACKETS, sizeof(function));
+    bot->_data->callbacks[LOGIN] = calloc(LOGIN_PACKETS, sizeof(function));
+    bot->_data->callbacks[PLAY] = calloc(PLAY_PACKETS, sizeof(function));
     return bot;
 }
 
@@ -40,15 +41,15 @@ void free_bot(bot_t *bot){
     // unrolled outer loop just cuz
     int i;
     for(i = 0; i < HANDSHAKE_PACKETS; i++){
-        function *func = &bot->callbacks[HANDSHAKE][i];
+        function *func = &bot->_data->callbacks[HANDSHAKE][i];
         free_list(func);
     }
     for(i = 0; i < LOGIN_PACKETS; i++){
-        function *func = &bot->callbacks[LOGIN][i];
+        function *func = &bot->_data->callbacks[LOGIN][i];
         free_list(func);
     }
     for(i = 0; i < PLAY_PACKETS; i++){
-        function *func = &bot->callbacks[PLAY][i];
+        function *func = &bot->_data->callbacks[PLAY][i];
         free_list(func);
     }
     free(bot);
@@ -63,7 +64,7 @@ void free_list(function *list){
 
 void register_event(bot_t *bot, uint32_t state, uint32_t packet_id, 
         void (*f)(bot_t *, void *)){
-    function *parent = &bot->callbacks[state][packet_id];
+    function *parent = &bot->_data->callbacks[state][packet_id];
     while(parent->next)
         parent = parent->next;
     function *child = calloc(1, sizeof(function));
@@ -76,7 +77,7 @@ void register_event(bot_t *bot, uint32_t state, uint32_t packet_id,
 // the socket descriptor is returned by the function. If -1 is returned, then an error
 // occured, and a message will have been printed out.
 
-int join_server(bot_t *your_bot, char* server_host, int port_number){
+int join_server(bot_t *bot, char* server_host, int port_number){
     struct addrinfo hints, *res;
     int sockfd;
     char server_port[8];
@@ -91,26 +92,26 @@ int join_server(bot_t *your_bot, char* server_host, int port_number){
     sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     connect(sockfd, res->ai_addr, res->ai_addrlen);
 
-    your_bot->socketfd = sockfd;
+    bot->_data->socketfd = sockfd;
     return sockfd;
 }
 
-int disconnect(bot_t *your_bot){
-    return close(your_bot->socketfd);
+int disconnect(bot_t *bot){
+    return close(bot->_data->socketfd);
 }
 
-int send_str(bot_t *your_bot, char *str){
+int send_str(bot_t *bot, char *str){
     //TODO: send is not guaranteed to send all the data. Need to make loop
     size_t len = strlen(str) + 1; // to include null character
-    return send(your_bot->socketfd, str, len, 0);
+    return send(bot->_data->socketfd, str, len, 0);
 }
 
-int send_raw(bot_t *your_bot, void *data, size_t len){
-    return send(your_bot->socketfd, data, len, 0);
+int send_raw(bot_t *bot, void *data, size_t len){
+    return send(bot->_data->socketfd, data, len, 0);
 }
 
-int receive_raw(bot_t *your_bot, void *data, size_t len){
-    return recv(your_bot->socketfd, data, len, 0);
+int receive_raw(bot_t *bot, void *data, size_t len){
+    return recv(bot->_data->socketfd, data, len, 0);
 }
 
 int receive_packet(bot_t *bot) {
@@ -120,16 +121,16 @@ int receive_packet(bot_t *bot) {
     uint32_t len;
     uint32_t i;
 
-    memset(bot->buf, 0, bot->packet_threshold);
+    memset(bot->_data->buf, 0, bot->_data->packet_threshold);
     for (i = 0; i < 5; i++) {
-        ret = receive_raw(bot, bot->buf + i, 1);
+        ret = receive_raw(bot, bot->_data->buf + i, 1);
         if (ret <= 0)
             return -1;
-        if (!expect_more(bot->buf[i]))
+        if (!expect_more(bot->_data->buf[i]))
             break;
     }
 
-    len = varint32(bot->buf, &packet_size);
+    len = varint32(bot->_data->buf, &packet_size);
     if (packet_size == 0)
         return -2;
 
@@ -137,27 +138,27 @@ int receive_packet(bot_t *bot) {
 
     packet_size += len;
     received = i + 1;
-    if (packet_size <= bot->packet_threshold) {
+    if (packet_size <= bot->_data->packet_threshold) {
         while (received < packet_size) {
-            ret = receive_raw(bot, bot->buf + received, packet_size - received);
+            ret = receive_raw(bot, bot->_data->buf + received, packet_size - received);
             if (ret <= 0)
                 return -1;
             received += ret;
         }
 
-        ret = peek_packet(bot, bot->buf);
+        ret = peek_packet(bot, bot->_data->buf);
         return ret;
     } else {
         // read in a huge buffer, packet_threshold at a time
-        while (received < packet_size - bot->packet_threshold) {
-            ret = receive_raw(bot, bot->buf, bot->packet_threshold);
+        while (received < packet_size - bot->_data->packet_threshold) {
+            ret = receive_raw(bot, bot->_data->buf, bot->_data->packet_threshold);
             if (ret <= 0)
                 return -1;
             received += ret;
         }
         // read the last portion of the packet
         while (received < packet_size) {
-            ret = receive_raw(bot, bot->buf, packet_size - received);
+            ret = receive_raw(bot, bot->_data->buf, packet_size - received);
             if (ret <= 0)
                 return -1;
             received += ret;
