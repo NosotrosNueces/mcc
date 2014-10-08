@@ -17,7 +17,7 @@ void sample_main(void *vbot) {
 }
 
 int main() {
-    bot_t *bot = init_bot("an_guy", *sample_main);
+    bot_t *bot = init_bot("an_hero", *sample_main);
     login(bot, SERVER_NAME, DEFAULT_SERVER_PORT);
     client_run(bot, 1);
     free_bot(bot);
