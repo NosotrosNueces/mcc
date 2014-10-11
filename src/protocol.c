@@ -9,7 +9,7 @@
     p = calloc(1, sizeof(NAME ## _t));                                        \
     p->format = FORMAT;                                                       \
     p->packet_id = ID;                                                        \
-    decode_packet(bot, bot->buf, p);                                          \
+    decode_packet(bot, bot->_data->buf, p);                                   \
     return p;                                                                 \
 }
 
@@ -25,7 +25,7 @@
 
 // Macro to send packets to server
 #define _render_send(BOT, PACKET)                             \
-    int8_t packet[BOT->packet_threshold];                     \
+    int8_t packet[BOT->_data->packet_threshold];              \
     length = format_packet(BOT, &PACKET, (void *) &packet);   \
     send_raw(bot, packet, length);                            \
 
@@ -585,9 +585,9 @@ void callback_decode(bot_t *bot) {
         if (pid == -1) exit(123);
         return;
     }
-    function *func = &bot->callbacks[bot->current_state][pid];
+    function *func = &bot->_data->callbacks[bot->_data->current_state][pid];
     void *recv_struct;
-    switch (bot->current_state) {
+    switch (bot->_data->current_state) {
         case HANDSHAKE:
             switch (pid) {
             }

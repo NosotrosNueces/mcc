@@ -74,7 +74,7 @@ void test_random_protocol() {
 	test_protocol_t test_decode;
 	
 	bot_t test_bot;
-	test_bot.packet_threshold = 8192;
+	test_bot._data->packet_threshold = 8192;
 
 	void* test_output;
 
