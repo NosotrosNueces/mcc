@@ -17,7 +17,9 @@ void test_no_pointers(uint64_t trials){ // test
     int seed;
     fread(&seed, sizeof(int), 1, f);
     srand(seed);
-    bot_t an_bot = {0, STRUCT_SIZE};
+    bot_t bot;
+    bot_internal bot_int = {0, STRUCT_SIZE};
+    bot._data = &bot_int;
     void *test = malloc(STRUCT_SIZE);
     void *decoded = malloc(STRUCT_SIZE);
     uint64_t i;
@@ -33,7 +35,7 @@ void test_no_pointers(uint64_t trials){ // test
 
         // encode packet
         uint8_t packet_raw[STRUCT_SIZE];
-        int len = format_packet(&an_bot, test, &packet_raw);
+        int len = format_packet(&bot, test, &packet_raw);
         //fwrite(test, 1, STRUCT_SIZE, original_f);
 
         // decode packet
@@ -41,7 +43,7 @@ void test_no_pointers(uint64_t trials){ // test
         uint8_t packet_raw_decode[STRUCT_SIZE];
 
         // re-encode packet
-        int len_decode = format_packet(&an_bot, decoded, &packet_raw_decode);
+        int len_decode = format_packet(&bot, decoded, &packet_raw_decode);
         //fwrite(decoded, 1, STRUCT_SIZE, decoded_f);
 
         // check to make sure they match
