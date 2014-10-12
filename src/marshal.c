@@ -125,6 +125,58 @@ size_t format_sizeof(char c) {
     }
 }
 
+// data writes in the same direction as the buffer is growing pushes the data,
+// then returns the address where the next datum is to be pushed
+void *push(void *buffer, void *data, size_t size) {
+    switch(size) {
+        case sizeof(int8_t):
+            *(int8_t *)buffer = *(int8_t *)data;
+            buffer += size;
+            break;
+        case sizeof(int16_t):
+            *(int16_t *)buffer = *(int16_t *)data;
+            buffer += size;
+            break;
+        case sizeof(int32_t):
+            *(int32_t *)buffer = *(int32_t *)data;
+            buffer += size;
+            break;
+        case sizeof(int64_t):
+            *(int64_t *)buffer = *(int64_t *)data;
+            buffer += size;
+            break;
+        case sizeof(__int128_t):
+            *(__int128_t *)buffer = *(__int128_t *)data;
+            buffer += size;
+            break;
+    }
+    return buffer;
+}
+__int128_t value_at(void *buf, size_t size) {
+    switch(size) {
+        case sizeof(int8_t):
+            return *(int8_t *)buf;
+        case sizeof(int16_t):
+            return *(int16_t *)buf;
+        case sizeof(int32_t):
+            return *(int32_t *)buf;
+        case sizeof(int64_t):
+            return *(int64_t *)buf;
+        case sizeof(__int128_t):
+            return *(__int128_t *)buf;
+    }
+    assert(0);
+}
+
+void reentrant_memmove(void *dest, void *src, size_t len) {
+    if(dest < src)
+        while(len--)
+            *(uint8_t *)dest++ = *(uint8_t *)src++;
+    else
+        while(len--)
+            *(uint8_t *)(dest + len) = *(uint8_t *)(src + len);
+
+}
 
 // puts the raw packet data from the struct packet_data into packet_raw
 // returns the number of bytes written to packet_raw, or -1 if packet_raw
@@ -134,16 +186,16 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw){
     uint32_t index = 0;
     uint32_t value = 0;
     uint32_t varlen = 0;
-    uint32_t arr_len = 0;
+    size_t arr_len = 0;
     char varint[5];
     size_t size;
 
     char *fmt = *((char **)packet_data);
     packet_data += sizeof(void *);
-
+    void *save = packet_raw;
     while(*fmt){
         size = format_sizeof(*fmt);
-        packet_data = align(packet_data, size);
+        packet_data = (void *)align(packet_data, size);
         switch(*fmt){
             case 's': // string (null terminated)
                 ;
@@ -152,8 +204,10 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw){
                 varlen = varint32_encode(value, varint, 5);
                 if(index + varlen + value > len)
                     return -1; // TODO: compression
-                memcpy(packet_raw + index, varint, varlen);
-                memcpy(packet_raw + index + varlen, str, value);
+                reentrant_memmove(packet_raw, varint, varlen);
+                packet_raw += varlen;
+                reentrant_memmove(packet_raw, str, value);
+                packet_raw += value;
                 index += value + varlen;
                 break;
             case 'v': // varint32_t
@@ -163,7 +217,8 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw){
                 varlen = varint32_encode(value, varint, 5);
                 if(index + varlen > len)
                     return -1; // TODO: compression
-                memcpy(packet_raw + index, varint, varlen);
+                reentrant_memmove(packet_raw, varint, varlen);
+                packet_raw += varlen;
                 index += varlen;
                 break;
             case '*': // pointer/array
@@ -174,8 +229,8 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw){
                     return -1; // TODO: compression
                 void *arr = *((void **)packet_data);
                 for(int i = 0; i < arr_len * size_elem; i += size_elem){
-                    memcpy(packet_raw + index + i, arr + i, size_elem);
-                    reverse(packet_raw + index + i, size_elem);
+                    packet_raw = push(packet_raw, arr + i, size_elem);
+                    reverse(packet_raw - size_elem, size_elem);
                 }
                 index += arr_len * size_elem;
                 break;
@@ -183,9 +238,9 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw){
                 ;
                 if(index + size > len)
                     return -1; // TODO: compression
-                memcpy(packet_raw + index, packet_data, size);
-                reverse(packet_raw + index, size);
-                arr_len = *((int *)packet_data);
+                packet_raw = push(packet_raw, packet_data, size);
+                reverse(packet_raw - size, size);
+                arr_len = value_at(packet_data, size);
                 index += size;
                 break;
         }
@@ -196,8 +251,8 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw){
     varlen = varint32_encode(index, varint, 5);
     if(index + varlen > len)
         return -1; // TODO: compression
-    memmove(packet_raw + varlen, packet_raw, index);
-    memcpy(packet_raw, varint, varlen);
+    reentrant_memmove(save + varlen, save, index);
+    reentrant_memmove(save, varint, varlen);
     return index + varlen;
 }
 
@@ -219,32 +274,29 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
 
     while(*fmt){
         size = format_sizeof(*fmt);
-        packet_data = align(packet_data, size);
+        packet_data = (void *)align(packet_data, size);
         switch(*fmt){
             case 's': // varint followed by string
                 len = varint32(packet_raw, &value);
                 packet_raw += len;
                 char *str = calloc(value + 1, sizeof(char)); // null terminated
-                memcpy(str, packet_raw, value);
+                reentrant_memmove(str, packet_raw, value);
                 *((char **)packet_data) = str;
                 packet_raw += value;
                 break;
             case 'v': // varint
                 len = varint32(packet_raw, &value);
                 arr_len = value;
-                memcpy(packet_data, &value, sizeof(vint32_t));
+                reentrant_memmove(packet_data, &value, sizeof(vint32_t));
                 packet_raw += len;
                 break;
             case '*':
                 fmt++;
                 size_t size_elem = format_sizeof(*fmt);
                 assert(arr_len != -1);
-                if(arr_len != 0) {
-                    break;
-                }
                 void *arr = calloc(arr_len, size_elem);
                 for(int i = 0; i < arr_len * size_elem; i += size_elem){
-                    memcpy(arr + i, packet_raw + i, size_elem);
+                    reentrant_memmove(arr + i, packet_raw + i, size_elem);
                     reverse(arr + i, size_elem);
                 }
                 *((void **)packet_data) = arr;
@@ -252,7 +304,7 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
                 break;
             default:
                 ;
-                memcpy(packet_data, packet_raw, size);
+                reentrant_memmove(packet_data, packet_raw, size);
                 reverse(packet_data, size);
                 arr_len = *((int *)packet_data);
                 packet_raw += size;
@@ -280,13 +332,13 @@ void free_packet(void *packet_data){
     packet_data += sizeof(void *);
     while (*fmt) {
         size_t size = format_sizeof(*fmt);
-        packet_data = align(packet_data, size);
+        packet_data = (void *)align(packet_data, size);
         if (*fmt == 's' || *fmt == '*') {
             free(*((void **)packet_data));
             if(*fmt == '*')
                 fmt++;
         }
-        packet_data += sizeof(void *);
+        packet_data += size;
         fmt++;
     }
 
