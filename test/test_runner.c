@@ -12,5 +12,11 @@ int print_str(char *str) {
 int main() {
     char fmt[LEN + 1] = {0};
     // prints out every possible format string of length LEN
-    for_each(fmt, LEN, print_str, 0);
+    //for_each(fmt, LEN, print_str, 0);
+    init_random();
+    printf("Testing every format string of length %d\n", LEN);
+    if(for_each(fmt, LEN, test_fmt_str, 0))
+        printf("Passed every test\n");
+    else
+        printf("Format string %s failed\n", fmt);
 }

@@ -125,6 +125,34 @@ size_t format_sizeof(char c) {
     }
 }
 
+// data writes in the same direction as the buffer is growing pushes the data,
+// then returns the address where the next datum is to be pushed
+void *push(void *buffer, intptr_t data, size_t size) {
+    switch(size) {
+        case sizeof(int8_t):
+            *(int8_t *)buffer = data;
+            buffer += size;
+            break;
+        case sizeof(int16_t):
+            *(int16_t *)buffer = data;
+            buffer += size;
+            break;
+        case sizeof(int32_t):
+            *(int32_t *)buffer = data;
+            buffer += size;
+            break;
+        case sizeof(int64_t):
+            *(int64_t *)buffer = data;
+            buffer += size;
+            break;
+        case sizeof(__int128_t):
+            *(__int128_t *)buffer = data;
+            buffer += size;
+            break;
+
+    }
+    return buffer;
+}
 
 // puts the raw packet data from the struct packet_data into packet_raw
 // returns the number of bytes written to packet_raw, or -1 if packet_raw
@@ -134,16 +162,17 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw){
     uint32_t index = 0;
     uint32_t value = 0;
     uint32_t varlen = 0;
-    uint32_t arr_len = 0;
+    size_t arr_len = 0;
     char varint[5];
     size_t size;
 
     char *fmt = *((char **)packet_data);
+    //printf("fmt: %s\n", fmt);
     packet_data += sizeof(void *);
 
     while(*fmt){
         size = format_sizeof(*fmt);
-        packet_data = align(packet_data, size);
+        packet_data = (void *)align(packet_data, size);
         switch(*fmt){
             case 's': // string (null terminated)
                 ;
@@ -170,6 +199,7 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw){
                 ;
                 fmt++;
                 size_t size_elem = format_sizeof(*fmt);
+                printf("format_packet array len %lu, size_elem: %lu\n", arr_len, size_elem);
                 if(index + size_elem * arr_len > len)
                     return -1; // TODO: compression
                 void *arr = *((void **)packet_data);
@@ -219,7 +249,7 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
 
     while(*fmt){
         size = format_sizeof(*fmt);
-        packet_data = align(packet_data, size);
+        packet_data = (void *)align(packet_data, size);
         switch(*fmt){
             case 's': // varint followed by string
                 len = varint32(packet_raw, &value);
@@ -280,13 +310,13 @@ void free_packet(void *packet_data){
     packet_data += sizeof(void *);
     while (*fmt) {
         size_t size = format_sizeof(*fmt);
-        packet_data = align(packet_data, size);
+        packet_data = (void *)align(packet_data, size);
         if (*fmt == 's' || *fmt == '*') {
             free(*((void **)packet_data));
             if(*fmt == '*')
                 fmt++;
         }
-        packet_data += sizeof(void *);
+        packet_data += size;
         fmt++;
     }
 
