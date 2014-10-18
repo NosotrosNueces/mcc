@@ -152,6 +152,9 @@ void *push(void *buffer, void *data, size_t size) {
     }
     return buffer;
 }
+
+// Read size bytes from buf as an integer and 
+// returns the 128 bit integer at the top of the buffer
 __int128_t value_at(void *buf, size_t size) {
     switch(size) {
         case sizeof(int8_t):
@@ -165,14 +168,17 @@ __int128_t value_at(void *buf, size_t size) {
         case sizeof(__int128_t):
             return *(__int128_t *)buf;
     }
+    // if you're here, you're wrong
     assert(0);
 }
 
 void reentrant_memmove(void *dest, void *src, size_t len) {
-    if(dest < src)
+    // shift backwards, read forwards
+    if(dest < src) 
         while(len--)
             *(uint8_t *)dest++ = *(uint8_t *)src++;
-    else
+    // shift forwards, read backwards
+    else 
         while(len--)
             *(uint8_t *)(dest + len) = *(uint8_t *)(src + len);
 
@@ -183,7 +189,6 @@ void reentrant_memmove(void *dest, void *src, size_t len) {
 // is not a long enough array
 int format_packet(bot_t *bot, void *packet_data, void *packet_raw){
     uint32_t len = bot->_data->packet_threshold;
-    uint32_t index = 0;
     uint32_t value = 0;
     uint32_t varlen = 0;
     size_t arr_len = 0;
@@ -202,58 +207,54 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw){
                 char *str = *((char **)packet_data);
                 value = strlen(str);
                 varlen = varint32_encode(value, varint, 5);
-                if(index + varlen + value > len)
+                if(packet_raw - save + varlen + value > len)
                     return -1; // TODO: compression
                 reentrant_memmove(packet_raw, varint, varlen);
                 packet_raw += varlen;
                 reentrant_memmove(packet_raw, str, value);
                 packet_raw += value;
-                index += value + varlen;
                 break;
             case 'v': // varint32_t
                 ;
                 value = *((uint32_t *)packet_data);
                 arr_len = value;
                 varlen = varint32_encode(value, varint, 5);
-                if(index + varlen > len)
+                if(packet_raw - save + varlen > len)
                     return -1; // TODO: compression
                 reentrant_memmove(packet_raw, varint, varlen);
                 packet_raw += varlen;
-                index += varlen;
                 break;
             case '*': // pointer/array
                 ;
                 fmt++;
                 size_t size_elem = format_sizeof(*fmt);
-                if(index + size_elem * arr_len > len)
+                if(packet_raw - save + size_elem * arr_len > len)
                     return -1; // TODO: compression
                 void *arr = *((void **)packet_data);
                 for(int i = 0; i < arr_len * size_elem; i += size_elem){
                     packet_raw = push(packet_raw, arr + i, size_elem);
                     reverse(packet_raw - size_elem, size_elem);
                 }
-                index += arr_len * size_elem;
                 break;
             default:
                 ;
-                if(index + size > len)
+                if(packet_raw - save + size > len)
                     return -1; // TODO: compression
                 packet_raw = push(packet_raw, packet_data, size);
                 reverse(packet_raw - size, size);
                 arr_len = value_at(packet_data, size);
-                index += size;
                 break;
         }
         packet_data += size;
         fmt++;
     }
 
-    varlen = varint32_encode(index, varint, 5);
-    if(index + varlen > len)
+    varlen = varint32_encode(packet_raw - save, varint, 5);
+    if(packet_raw - save + varlen > len)
         return -1; // TODO: compression
-    reentrant_memmove(save + varlen, save, index);
+    reentrant_memmove(save + varlen, save, packet_raw - save);
     reentrant_memmove(save, varint, varlen);
-    return index + varlen;
+    return packet_raw - save + varlen;
 }
 
 int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
