@@ -191,7 +191,6 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw){
     size_t size;
 
     char *fmt = *((char **)packet_data);
-    //printf("format_packet fmt: %s\n", fmt);
     packet_data += sizeof(void *);
     void *save = packet_raw;
     while(*fmt){
@@ -202,7 +201,6 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw){
                 ;
                 char *str = *((char **)packet_data);
                 value = strlen(str);
-                //printf("format_packet str_len: %lu\n", value);
                 varlen = varint32_encode(value, varint, 5);
                 if(index + varlen + value > len)
                     return -1; // TODO: compression
@@ -227,12 +225,10 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw){
                 ;
                 fmt++;
                 size_t size_elem = format_sizeof(*fmt);
-                //printf("format_packet array len %lu, size_elem: %lu\n", arr_len, size_elem);
                 if(index + size_elem * arr_len > len)
                     return -1; // TODO: compression
                 void *arr = *((void **)packet_data);
                 for(int i = 0; i < arr_len * size_elem; i += size_elem){
-                    //memcpy(packet_raw + index + i, arr + i, size_elem);
                     packet_raw = push(packet_raw, arr + i, size_elem);
                     reverse(packet_raw - size_elem, size_elem);
                 }
@@ -242,11 +238,9 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw){
                 ;
                 if(index + size > len)
                     return -1; // TODO: compression
-                //memcpy(packet_raw + index, packet_data, size);
                 packet_raw = push(packet_raw, packet_data, size);
                 reverse(packet_raw - size, size);
                 arr_len = value_at(packet_data, size);
-                //printf("format_packet integer: %lu\n", arr_len);
                 index += size;
                 break;
         }
@@ -271,7 +265,6 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
     size_t size;
 
     char *fmt = *((char **)packet_data);
-    //printf("decode_packet fmt: %s\n", fmt);
     assert(fmt != 0);
     packet_data += sizeof(void *);
 
@@ -282,12 +275,10 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
     while(*fmt){
         size = format_sizeof(*fmt);
         packet_data = (void *)align(packet_data, size);
-        //printf("fmt char: %c\n", *fmt);
         switch(*fmt){
             case 's': // varint followed by string
                 len = varint32(packet_raw, &value);
                 packet_raw += len;
-                //printf("decode_packet string len: %lu\n", value);
                 char *str = calloc(value + 1, sizeof(char)); // null terminated
                 reentrant_memmove(str, packet_raw, value);
                 *((char **)packet_data) = str;
@@ -303,9 +294,6 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
                 fmt++;
                 size_t size_elem = format_sizeof(*fmt);
                 assert(arr_len != -1);
-                //if(!arr_len)
-                //    break;
-                //printf("decode_packet array len: %lu\n", arr_len);
                 void *arr = calloc(arr_len, size_elem);
                 for(int i = 0; i < arr_len * size_elem; i += size_elem){
                     reentrant_memmove(arr + i, packet_raw + i, size_elem);
@@ -319,7 +307,6 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
                 reentrant_memmove(packet_data, packet_raw, size);
                 reverse(packet_data, size);
                 arr_len = *((int *)packet_data);
-                //printf("decode_packet integer: %lu\n", arr_len);
                 packet_raw += size;
                 break;
         }
