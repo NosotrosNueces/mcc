@@ -8,7 +8,7 @@
 
 #define STRUCT_SIZE 4096
 #define NUM_FMT_SPECS 8
-#define MAX_ARR_SIZE 128
+#define MAX_ARR_SIZE 8
 
 char fmt_specifiers[NUM_FMT_SPECS] = {'s', 'b', 'h', 'w', 'v', 'l', 'q', '*'};
 
@@ -62,31 +62,19 @@ void init_random() {
     urandom = fopen("/dev/urandom", "r");
     int seed;
     fread(&seed, sizeof(int), 1, urandom);
+    //printf("seed: %d\n", seed);
+    //getchar();
     srand(seed);
 }
-__int128_t value(void *buf, size_t size) {
-    switch(size) {
-        case sizeof(int8_t):
-            return *(int8_t *)buf;
-        case sizeof(int16_t):
-            return *(int16_t *)buf;
-        case sizeof(int32_t):
-            return *(int32_t *)buf;
-        case sizeof(int64_t):
-            return *(int64_t *)buf;
-        case sizeof(__int128_t):
-            return *(__int128_t *)buf;
-    }
-    assert(0);
-}
+
 
 int packet_equals(void *p1, void *p2) {
     char *fmt = *(char **)p1;
     p1 += sizeof(void *);
     p2 += sizeof(void *);
-    printf("packet equals: fmt: %s\n", fmt);
+    //printf("packet equals: fmt: %s\n", fmt);
     size_t size;
-    size_t arr_size = -1;
+    __int128_t arr_size = -1;
     while(*fmt) {
         size = format_sizeof(*fmt);
         p1 = (void *)align(p1, size);
@@ -95,18 +83,30 @@ int packet_equals(void *p1, void *p2) {
             case 's':
                 //hexDump("str1: ", *(char **)p1, strlen(*(char **)p1));
                 //hexDump("str2: ", *(char **)p2, strlen(*(char **)p2));
-                if(strcmp(*(char **)p1, *(char **)p2))
+                if(strcmp(*(char **)p1, *(char **)p2)) {
+                    printf("String mismatch\n");
                     return 0;
+                }
                 break;
             case '*':
                 fmt++;
                 size_t elem_size = format_sizeof(*fmt);
-                if(memcmp(*(void **)p1, *(void **)p2, arr_size * elem_size))
+                if(memcmp(*(void **)p1, *(void **)p2, arr_size * elem_size)){
+                    printf("Array mismatch\n");
                     return 0;
+                }
                 break;
             default:
-                if((arr_size = value(p1, size)) != value(p2, size))
+                if((arr_size = value_at(p1, size)) != value_at(p2, size)) {
+                    printf("Integer/Varint mismatch\n");
+                    //printf("%lu\n", sizeof(arr_size));
+                    //printf("%lu\n", sizeof(value_at(p1, size)));
+                    //printf("%lu\n", sizeof(value_at(p2, size)));
+                    //printf("arr_size: %lu\n", arr_size);
+                    //printf("value 1: %lu\n", value_at(p1, size));
+                    //printf("value 2: %lu\n", value_at(p2, size));
                     return 0;
+                }
                 break;
         }
         p1 += size;
@@ -119,7 +119,7 @@ int packet_equals(void *p1, void *p2) {
 int test_fmt_str(char *fmt) {
     char test[STRUCT_SIZE];
     char decoded[STRUCT_SIZE];
-    
+
     bot_t bot;
     bot_internal bot_int = {0, STRUCT_SIZE};
     bot._data = &bot_int;
@@ -138,6 +138,7 @@ int test_fmt_str(char *fmt) {
     while(*fmt) {
         size = format_sizeof(*fmt);
         tmp = (void *)align(tmp, size);
+        char var[5];
         switch(*fmt) {
             case 's': // varint followed by string
                 // push random array size onto tmp
@@ -145,18 +146,20 @@ int test_fmt_str(char *fmt) {
                 char *str = malloc(MAX_ARR_SIZE);
                 //fread(str, sizeof(char), MAX_ARR_SIZE, urandom);
                 str[MAX_ARR_SIZE - 1] = 0;
-                tmp = push(tmp, (intptr_t)str, size);
+                tmp = push(tmp, &str, size);
                 break;
             case '*': // array
                 fmt++;
                 size_t elem_size = format_sizeof(*fmt);
-                printf("Array size: %lu\n", arr_size);
+                //printf("Array size: %lu\n", arr_size);
                 void *arr = malloc(elem_size * arr_size);
-                tmp = push(tmp, (intptr_t)arr, size);
+                tmp = push(tmp, &arr, size);
                 break;
             default:
                 arr_size = rand() % MAX_ARR_SIZE;
-                tmp = push(tmp, arr_size, size); 
+                //printf("tmp pre_push: %p\n", tmp);
+                tmp = push(tmp, &arr_size, size); 
+                //printf("tmp post_push: %p\n", tmp);
                 break;
         }
         fmt++;
@@ -164,18 +167,23 @@ int test_fmt_str(char *fmt) {
 
     // encode packet
     uint8_t packet_raw[STRUCT_SIZE];
-    int len = format_packet(&bot, test, &packet_raw);
+    int len = format_packet(&bot, test, packet_raw);
+    //printf("len: %d\n", len);
+    //hexDump("test", packet_raw, len);
     //fwrite(test, 1, STRUCT_SIZE, original_f);
 
     // decode packet
     decode_packet(NULL, packet_raw, decoded);
     uint8_t packet_raw_decode[STRUCT_SIZE];
 
+
+
     // re-encode packet
-    int len_decode = format_packet(&bot, decoded, &packet_raw_decode);
-    printf("len: %d, len_decode: %d\n", len, len_decode);
-    int8_t equals = ((len == len_decode) && 
-            packet_equals(test, decoded));
+    int len_decode = format_packet(&bot, decoded, packet_raw_decode);
+    //hexDump("decoded", packet_raw_decode, len_decode);
+    //printf("len: %d, len_decode: %d\n", len, len_decode);
+    int8_t equals = ((len == len_decode) && packet_equals(test, decoded) &&
+            !memcmp(packet_raw, packet_raw_decode, len));
     free_packet(test);
     free_packet(decoded);
     return equals;
