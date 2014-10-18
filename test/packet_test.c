@@ -106,8 +106,9 @@ int packet_equals(void *p1, void *p2) {
 }
 
 int test_fmt_str(char *fmt) {
-    char test[STRUCT_SIZE];
-    char decoded[STRUCT_SIZE];
+    // structs
+    char *test = malloc(STRUCT_SIZE);
+    char *decoded = malloc(STRUCT_SIZE);
 
     bot_t bot;
     bot_internal bot_int = {0, STRUCT_SIZE};
