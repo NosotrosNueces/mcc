@@ -1,6 +1,6 @@
 #include "bot.h"
 
-void client_run(bot_t *, uint32_t);
+void client_run(bot_t **, uint32_t);
 
 void *bot_thread(void *);
 

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <time.h>
 #include "bot.h"
-#include "client.h"
 #include "protocol.h"
 #include "api.h"
 
@@ -15,44 +14,46 @@ typedef struct entity_node {
 
 entity_node_t targets;
 
-void insert_target(vint32_t eid) {
-    entity_node_t *p = &targets;
+typedef struct bot_globals {
+    entity_node_t targets;
+} bot_globals_t;
+
+void insert_target(bot_t *bot, vint32_t eid) {
+    pthread_mutex_lock(&bot->bot_mutex);
+    entity_node_t *p = &((bot_globals_t *)bot->item)->targets;
     while (p->next) {
         p = p->next;
     }
     p->entity = eid;
     p->next = calloc(1, sizeof(entity_node_t));
+    pthread_mutex_unlock(&bot->bot_mutex);
 }
 
-void remove_target(vint32_t eid) {
-    entity_node_t *p = &targets;
+void remove_target(bot_t *bot, vint32_t eid) {
+    pthread_mutex_lock(&bot->bot_mutex);
+    entity_node_t *p = &((bot_globals_t *)bot->item)->targets;
     while (p->next) {
         if (p->next->entity == eid) {
             p->next = p->next->next;
         }
         p = p->next;
-    }    
+    }
+    pthread_mutex_unlock(&bot->bot_mutex);
 }
 
-bool exists_target(vint32_t eid) {
-    entity_node_t *p = &targets;
+bool exists_target(bot_t *bot, vint32_t eid) {
+    bool ret = false;
+    pthread_mutex_lock(&bot->bot_mutex);
+    entity_node_t *p = &((bot_globals_t *)bot->item)->targets;
     while (p->next) {
-        if (p->entity == eid) return true;
+        if (p->entity == eid) {
+            ret = true;
+            break;
+        }
         p = p->next;
     }
-    return false;
-}
-
-void location_handler(bot_t *bot, void *vp) {
-    play_clientbound_position_t *p = (play_clientbound_position_t *)vp;
-    send_play_serverbound_player_move(bot, p->x, p->y, p->z, true);
-}
-
-void health_handler(bot_t *bot, void *vp) {
-    play_clientbound_update_health_t *p = (play_clientbound_update_health_t *)vp;
-    if(p->health == 0) {
-        send_play_serverbound_player_status(bot, 0);
-    }
+    pthread_mutex_unlock(&bot->bot_mutex);
+    return ret;
 }
 
 void protect(bot_t *bot, vint32_t eid) {
@@ -62,22 +63,21 @@ void protect(bot_t *bot, vint32_t eid) {
 
 void entity_handler(bot_t *bot, void *vp) {
     play_clientbound_spawn_mob_t *p = (play_clientbound_spawn_mob_t *) vp;
-    if (p->type >= 50) insert_target(p->entity_id);
+    if (p->type >= 50) insert_target(bot, p->entity_id);
 }
 
 void entity_move_handler(bot_t *bot, void *vp) {
     play_clientbound_entity_move_t *p = (play_clientbound_entity_move_t *) vp;
-    if (exists_target(p->entity_id)) protect(bot, p->entity_id);
+    if (exists_target(bot, p->entity_id)) protect(bot, p->entity_id);
 }
 
 void entity_status_handler(bot_t *bot, void *vp) {
     play_clientbound_entity_status_t *p = (play_clientbound_entity_status_t *) vp;
-    if (p->status == 3) remove_target(p->entity_id);
+    if (p->status == 3) remove_target(bot, p->entity_id);
 }
 
-void sample_main(void *vbot) {
+void defender_main(void *vbot) {
     bot_t *bot = (bot_t *)vbot;
-    register_defaults(bot);
 
     while(1) {
         msleep(500);
@@ -85,15 +85,16 @@ void sample_main(void *vbot) {
     }
 }
 
-int main() {
-    bot_t *bot = init_bot("plants", *sample_main);
-    register_event(bot, PLAY, 0x08, location_handler);
-    register_event(bot, PLAY, 0x06, health_handler);
+bot_t *defender_init(char *name) {
+    bot_t *bot = init_bot(name, *defender_main);
+    bot->item = calloc(1, sizeof(bot_globals_t));
+
+    register_defaults(bot);
     register_event(bot, PLAY, 0x0F, entity_handler);
     register_event(bot, PLAY, 0x15, entity_move_handler);
     register_event(bot, PLAY, 0x1A, entity_status_handler);
+
     login(bot, SERVER_NAME, DEFAULT_SERVER_PORT);
-    client_run(bot, 1);
-    free_bot(bot);
-    return 0;
+
+    return bot;
 }
