@@ -15,7 +15,8 @@
 void free_list(function *);
 
 // Initializes the bot with defaults given a name and a main function.
-bot_t *init_bot(char *name, void (*bot_main)(void *)){
+bot_t *init_bot(char *name, void (*bot_main)(void *))
+{
     // Set the bot name
     bot_t *bot = calloc(1, sizeof(bot_t));
     bot->eid = -1;
@@ -38,7 +39,8 @@ bot_t *init_bot(char *name, void (*bot_main)(void *)){
     return bot;
 }
 
-void free_bot(bot_t *bot){
+void free_bot(bot_t *bot)
+{
     free(bot->name);
 
     free(bot->_data->buf);
@@ -56,13 +58,14 @@ void free_bot(bot_t *bot){
     free(bot->_data->callbacks);
 
     free(bot->_data);
-    
+
     pthread_mutex_destroy(&bot->bot_mutex);
 
     free(bot);
 }
 
-void free_list(function *list){
+void free_list(function *list)
+{
     if (list) {
         free_list(list->next);
         free(list);
@@ -70,8 +73,9 @@ void free_list(function *list){
 }
 
 
-void register_event(bot_t *bot, uint32_t state, uint32_t packet_id, 
-        void (*f)(bot_t *, void *)){
+void register_event(bot_t *bot, uint32_t state, uint32_t packet_id,
+                    void (*f)(bot_t *, void *))
+{
     function *parent = &bot->_data->callbacks[state][packet_id];
     while(parent->next)
         parent = parent->next;
@@ -85,7 +89,8 @@ void register_event(bot_t *bot, uint32_t state, uint32_t packet_id,
 // the socket descriptor is returned by the function. If -1 is returned, then an error
 // occured, and a message will have been printed out.
 
-int join_server(bot_t *bot, char* server_host, int port_number){
+int join_server(bot_t *bot, char* server_host, int port_number)
+{
     struct addrinfo hints, *res;
     int sockfd;
     char server_port[8];
@@ -104,25 +109,30 @@ int join_server(bot_t *bot, char* server_host, int port_number){
     return sockfd;
 }
 
-int disconnect(bot_t *bot){
+int disconnect(bot_t *bot)
+{
     return close(bot->_data->socketfd);
 }
 
-int send_str(bot_t *bot, char *str){
+int send_str(bot_t *bot, char *str)
+{
     //TODO: send is not guaranteed to send all the data. Need to make loop
     size_t len = strlen(str) + 1; // to include null character
     return send(bot->_data->socketfd, str, len, 0);
 }
 
-int send_raw(bot_t *bot, void *data, size_t len){
+int send_raw(bot_t *bot, void *data, size_t len)
+{
     return send(bot->_data->socketfd, data, len, 0);
 }
 
-int receive_raw(bot_t *bot, void *data, size_t len){
+int receive_raw(bot_t *bot, void *data, size_t len)
+{
     return recv(bot->_data->socketfd, data, len, 0);
 }
 
-int receive_packet(bot_t *bot) {
+int receive_packet(bot_t *bot)
+{
     vint32_t packet_size;
     uint32_t received;
     uint32_t ret;

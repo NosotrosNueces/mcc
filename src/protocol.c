@@ -18,7 +18,7 @@
     int8_t packet[BOT->_data->packet_threshold];              \
     length = format_packet(BOT, &PACKET, (void *) &packet);   \
     send_raw(bot, packet, length);                            \
-
+ 
 /*
  * Handshaking serverbound functions
  */
@@ -569,7 +569,8 @@ _render_recv(play_clientbound_plugin_disconnect, "vs", 0x40);
 _render_recv(play_clientbound_plugin_difficulty, "vb", 0x41);
 _render_recv(play_clientbound_set_compression, "vv", 0x46);
 
-void *protocol_decode(bot_t *bot) {
+void *protocol_decode(bot_t *bot)
+{
     int32_t pid = receive_packet(bot);
     if (pid < 0) {
         if (pid == -1) exit(123);
@@ -577,76 +578,180 @@ void *protocol_decode(bot_t *bot) {
     }
     void *recv_struct = NULL;
     switch (bot->_data->current_state) {
-        case HANDSHAKE:
-            switch (pid) {
-            }
+    case HANDSHAKE:
+        switch (pid) {
+        }
+        break;
+    case LOGIN:
+        switch (pid) {
+        case 0x00:
+            recv_struct = recv_login_clientbound_disconnect(bot);
             break;
-        case LOGIN:
-            switch (pid) {
-                case 0x00: recv_struct = recv_login_clientbound_disconnect(bot); break;
-                case 0x02: recv_struct = recv_login_clientbound_success(bot); break;
-                case 0x03: recv_struct = recv_login_clientbound_set_compression(bot); break;
-            }
+        case 0x02:
+            recv_struct = recv_login_clientbound_success(bot);
             break;
-        case STATUS:
-            switch (pid) {
-                case 0x00: recv_struct = recv_status_clientbound_response(bot); break;
-                case 0x01: recv_struct = recv_status_clientbound_ping(bot); break;
-            }
+        case 0x03:
+            recv_struct = recv_login_clientbound_set_compression(bot);
             break;
-        case PLAY:
-            switch (pid) {
-                case 0x00: recv_struct = recv_play_clientbound_keepalive(bot); break;
-                case 0x01: recv_struct = recv_play_clientbound_join_game(bot); break;
-                case 0x02: recv_struct = recv_play_clientbound_chat(bot); break;
-                case 0x03: recv_struct = recv_play_clientbound_time_update(bot); break;
-                case 0x04: recv_struct = recv_play_clientbound_entity_equipment(bot); break;
-                case 0x05: recv_struct = recv_play_clientbound_spawn_position(bot); break;
-                case 0x06: recv_struct = recv_play_clientbound_update_health(bot); break;
-                case 0x07: recv_struct = recv_play_clientbound_respawn(bot); break;
-                case 0x08: recv_struct = recv_play_clientbound_position(bot); break;
-                case 0x09: recv_struct = recv_play_clientbound_item_change(bot); break;
-                case 0x0A: recv_struct = recv_play_clientbound_use_bed(bot); break;
-                case 0x0B: recv_struct = recv_play_clientbound_animation(bot); break;
-                case 0x0C: recv_struct = recv_play_clientbound_spawn_player(bot); break;
-                case 0x0D: recv_struct = recv_play_clientbound_collect(bot); break;
-                case 0x0E: recv_struct = recv_play_clientbound_spawn_object(bot); break;
-                case 0x0F: recv_struct = recv_play_clientbound_spawn_mob(bot); break;
-                case 0x10: recv_struct = recv_play_clientbound_spawn_painting(bot); break;
-                case 0x11: recv_struct = recv_play_clientbound_spawn_xp(bot); break;
-                case 0x12: recv_struct = recv_play_clientbound_entity_velocity(bot); break;
-                case 0x13: recv_struct = recv_play_clientbound_entity_destroy_entities(bot); break;
-                case 0x14: recv_struct = recv_play_clientbound_entity(bot); break;
-                case 0x15: recv_struct = recv_play_clientbound_entity_move(bot); break;
-                case 0x16: recv_struct = recv_play_clientbound_entity_look(bot); break;
-                case 0x17: recv_struct = recv_play_clientbound_entity_look_move(bot); break;
-                case 0x18: recv_struct = recv_play_clientbound_entity_teleport(bot); break;
-                case 0x19: recv_struct = recv_play_clientbound_entity_head_look(bot); break;
-                case 0x1A: recv_struct = recv_play_clientbound_entity_status(bot); break;
-                case 0x1B: recv_struct = recv_play_clientbound_entity_attach(bot); break;
-                case 0x1D: recv_struct = recv_play_clientbound_entity_effect(bot); break;
-                case 0x1E: recv_struct = recv_play_clientbound_entity_clear_effect(bot); break;
-                case 0x20: recv_struct = recv_play_clientbound_entity_properties(bot); break;
-                case 0x1F: recv_struct = recv_play_clientbound_set_xp(bot); break;
-                case 0x21: recv_struct = recv_play_clientbound_chunk_data(bot); break;
-                case 0x22: recv_struct = recv_play_clientbound_multi_block_change(bot); break;
-                case 0x23: recv_struct = recv_play_clientbound_block_change(bot); break;
-                case 0x24: recv_struct = recv_play_clientbound_block_action(bot); break;
-                case 0x25: recv_struct = recv_play_clientbound_block_break_animation(bot); break;
-                case 0x26: recv_struct = recv_play_clientbound_chunk_bulk(bot); break;
-                case 0x27: recv_struct = recv_play_clientbound_explosion(bot); break;
-                case 0x28: recv_struct = recv_play_clientbound_effect(bot); break;
-                case 0x29: recv_struct = recv_play_clientbound_sound_effect(bot); break;
-                case 0x2C: recv_struct = recv_play_clientbound_entity_spawn_global(bot); break;
-                case 0x33: recv_struct = recv_play_clientbound_update_sign(bot); break;
-                case 0x3F: recv_struct = recv_play_clientbound_plugin_message(bot); break;
-                case 0x40: recv_struct = recv_play_clientbound_plugin_disconnect(bot); break;
-                case 0x41: recv_struct = recv_play_clientbound_plugin_difficulty(bot); break;
-                case 0x46: recv_struct = recv_play_clientbound_set_compression(bot); break;
-            }
+        }
+        break;
+    case STATUS:
+        switch (pid) {
+        case 0x00:
+            recv_struct = recv_status_clientbound_response(bot);
             break;
-        default:
+        case 0x01:
+            recv_struct = recv_status_clientbound_ping(bot);
             break;
+        }
+        break;
+    case PLAY:
+        switch (pid) {
+        case 0x00:
+            recv_struct = recv_play_clientbound_keepalive(bot);
+            break;
+        case 0x01:
+            recv_struct = recv_play_clientbound_join_game(bot);
+            break;
+        case 0x02:
+            recv_struct = recv_play_clientbound_chat(bot);
+            break;
+        case 0x03:
+            recv_struct = recv_play_clientbound_time_update(bot);
+            break;
+        case 0x04:
+            recv_struct = recv_play_clientbound_entity_equipment(bot);
+            break;
+        case 0x05:
+            recv_struct = recv_play_clientbound_spawn_position(bot);
+            break;
+        case 0x06:
+            recv_struct = recv_play_clientbound_update_health(bot);
+            break;
+        case 0x07:
+            recv_struct = recv_play_clientbound_respawn(bot);
+            break;
+        case 0x08:
+            recv_struct = recv_play_clientbound_position(bot);
+            break;
+        case 0x09:
+            recv_struct = recv_play_clientbound_item_change(bot);
+            break;
+        case 0x0A:
+            recv_struct = recv_play_clientbound_use_bed(bot);
+            break;
+        case 0x0B:
+            recv_struct = recv_play_clientbound_animation(bot);
+            break;
+        case 0x0C:
+            recv_struct = recv_play_clientbound_spawn_player(bot);
+            break;
+        case 0x0D:
+            recv_struct = recv_play_clientbound_collect(bot);
+            break;
+        case 0x0E:
+            recv_struct = recv_play_clientbound_spawn_object(bot);
+            break;
+        case 0x0F:
+            recv_struct = recv_play_clientbound_spawn_mob(bot);
+            break;
+        case 0x10:
+            recv_struct = recv_play_clientbound_spawn_painting(bot);
+            break;
+        case 0x11:
+            recv_struct = recv_play_clientbound_spawn_xp(bot);
+            break;
+        case 0x12:
+            recv_struct = recv_play_clientbound_entity_velocity(bot);
+            break;
+        case 0x13:
+            recv_struct = recv_play_clientbound_entity_destroy_entities(bot);
+            break;
+        case 0x14:
+            recv_struct = recv_play_clientbound_entity(bot);
+            break;
+        case 0x15:
+            recv_struct = recv_play_clientbound_entity_move(bot);
+            break;
+        case 0x16:
+            recv_struct = recv_play_clientbound_entity_look(bot);
+            break;
+        case 0x17:
+            recv_struct = recv_play_clientbound_entity_look_move(bot);
+            break;
+        case 0x18:
+            recv_struct = recv_play_clientbound_entity_teleport(bot);
+            break;
+        case 0x19:
+            recv_struct = recv_play_clientbound_entity_head_look(bot);
+            break;
+        case 0x1A:
+            recv_struct = recv_play_clientbound_entity_status(bot);
+            break;
+        case 0x1B:
+            recv_struct = recv_play_clientbound_entity_attach(bot);
+            break;
+        case 0x1D:
+            recv_struct = recv_play_clientbound_entity_effect(bot);
+            break;
+        case 0x1E:
+            recv_struct = recv_play_clientbound_entity_clear_effect(bot);
+            break;
+        case 0x20:
+            recv_struct = recv_play_clientbound_entity_properties(bot);
+            break;
+        case 0x1F:
+            recv_struct = recv_play_clientbound_set_xp(bot);
+            break;
+        case 0x21:
+            recv_struct = recv_play_clientbound_chunk_data(bot);
+            break;
+        case 0x22:
+            recv_struct = recv_play_clientbound_multi_block_change(bot);
+            break;
+        case 0x23:
+            recv_struct = recv_play_clientbound_block_change(bot);
+            break;
+        case 0x24:
+            recv_struct = recv_play_clientbound_block_action(bot);
+            break;
+        case 0x25:
+            recv_struct = recv_play_clientbound_block_break_animation(bot);
+            break;
+        case 0x26:
+            recv_struct = recv_play_clientbound_chunk_bulk(bot);
+            break;
+        case 0x27:
+            recv_struct = recv_play_clientbound_explosion(bot);
+            break;
+        case 0x28:
+            recv_struct = recv_play_clientbound_effect(bot);
+            break;
+        case 0x29:
+            recv_struct = recv_play_clientbound_sound_effect(bot);
+            break;
+        case 0x2C:
+            recv_struct = recv_play_clientbound_entity_spawn_global(bot);
+            break;
+        case 0x33:
+            recv_struct = recv_play_clientbound_update_sign(bot);
+            break;
+        case 0x3F:
+            recv_struct = recv_play_clientbound_plugin_message(bot);
+            break;
+        case 0x40:
+            recv_struct = recv_play_clientbound_plugin_disconnect(bot);
+            break;
+        case 0x41:
+            recv_struct = recv_play_clientbound_plugin_difficulty(bot);
+            break;
+        case 0x46:
+            recv_struct = recv_play_clientbound_set_compression(bot);
+            break;
+        }
+        break;
+    default:
+        break;
     }
     return recv_struct;
 }

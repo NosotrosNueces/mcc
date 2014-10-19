@@ -28,7 +28,8 @@ void *receiver(void *index);
 void *callbacker(void *index);
 void *bot_thread(void *bot);
 
-void client_run(bot_t **bots, uint32_t num) {
+void client_run(bot_t **bots, uint32_t num)
+{
     // create 1 thread for receiving packets, and 1 for each bot
     uint64_t i;
     num_bots = num;
@@ -71,12 +72,14 @@ void client_run(bot_t **bots, uint32_t num) {
     free(callbackers);
 }
 
-void *bot_thread(void *bot) {
+void *bot_thread(void *bot)
+{
     ((bot_t *)bot)->_data->bot_main(bot);
     return NULL;
 }
 
-void *receiver(void *index) {
+void *receiver(void *index)
+{
     int i = (uint64_t) index;
     bot_t *bot = bot_list[i];
     int ready;
@@ -103,7 +106,8 @@ void *receiver(void *index) {
     return NULL;
 }
 
-void *callbacker(void *index) {
+void *callbacker(void *index)
+{
     int i = (uint64_t) index;
     bot_t *bot = bot_list[i];
 

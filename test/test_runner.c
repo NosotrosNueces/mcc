@@ -5,12 +5,14 @@
 
 #define LEN 6
 
-int print_str(char *str) {
+int print_str(char *str)
+{
     printf("%s\n", str);
     return 1;
 }
 
-int main() {
+int main()
+{
     for (int j = 0; j < 10; j++) {
         bot_t *bot = init_bot("asdf", NULL);
         free_bot(bot);
