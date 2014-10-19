@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <pthread.h>
 
 typedef enum {HANDSHAKE, LOGIN, STATUS, PLAY, NUM_STATES} state;
 
@@ -44,6 +45,8 @@ struct bot {
     void* item;
 
     char *name;
+
+    pthread_mutex_t bot_mutex;
 
     bot_internal *_data; // Internal use only for networking and threading.
 };
