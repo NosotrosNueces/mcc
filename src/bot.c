@@ -37,28 +37,30 @@ bot_t *init_bot(char *name, void (*bot_main)(void *)){
 
 void free_bot(bot_t *bot){
     free(bot->name);
+
+    free(bot->_data->buf);
+
     // free all handshake callback structs
-    // unrolled outer loop just cuz
-    int i;
-    for(i = 0; i < HANDSHAKE_PACKETS; i++){
-        function *func = &bot->_data->callbacks[HANDSHAKE][i];
-        free_list(func);
-    }
-    for(i = 0; i < LOGIN_PACKETS; i++){
-        function *func = &bot->_data->callbacks[LOGIN][i];
-        free_list(func);
-    }
-    for(i = 0; i < PLAY_PACKETS; i++){
-        function *func = &bot->_data->callbacks[PLAY][i];
-        free_list(func);
-    }
+    for(int i = 0; i < HANDSHAKE_PACKETS; i++)
+        free_list(bot->_data->callbacks[HANDSHAKE][i].next);
+    for(int i = 0; i < LOGIN_PACKETS; i++)
+        free_list(bot->_data->callbacks[LOGIN][i].next);
+    for(int i = 0; i < PLAY_PACKETS; i++)
+        free_list(bot->_data->callbacks[PLAY][i].next);
+    free(bot->_data->callbacks[HANDSHAKE]);
+    free(bot->_data->callbacks[LOGIN]);
+    free(bot->_data->callbacks[PLAY]);
+    free(bot->_data->callbacks);
+
+    free(bot->_data);
     free(bot);
 }
 
 void free_list(function *list){
-    if(list)
+    if (list) {
         free_list(list->next);
-    free(list);
+        free(list);
+    }
 }
 
 

@@ -330,6 +330,7 @@ vint32_t peek_packet(bot_t *bot, void *packet_raw){
 
 void free_packet(void *packet_data){
     char *fmt = *((char **)packet_data);
+    void *save = packet_data;
     packet_data += sizeof(void *);
     while (*fmt) {
         size_t size = format_sizeof(*fmt);
@@ -342,5 +343,5 @@ void free_packet(void *packet_data){
         packet_data += size;
         fmt++;
     }
-
+    free(save);
 }

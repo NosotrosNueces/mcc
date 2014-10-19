@@ -20,13 +20,18 @@ typedef void* property_t;
 typedef void* record_t;
 typedef void* slot_t;
 
-void callback_decode(bot_t *bot);
+void *protocol_decode(bot_t *bot);
 
 /**
  **
  ** Struct declarations
  **
  **/
+
+typedef struct protocol_dummy {
+    char*         format;
+    vint32_t      packet_id;
+} protocol_dummy_t;
 
 /*
  * Handshaking serverbound structs
