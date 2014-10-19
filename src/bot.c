@@ -32,6 +32,9 @@ bot_t *init_bot(char *name, void (*bot_main)(void *)){
     bot->_data->callbacks[HANDSHAKE] = calloc(HANDSHAKE_PACKETS, sizeof(function));
     bot->_data->callbacks[LOGIN] = calloc(LOGIN_PACKETS, sizeof(function));
     bot->_data->callbacks[PLAY] = calloc(PLAY_PACKETS, sizeof(function));
+
+    // initialize pthread_mutex
+    pthread_mutex_init(&bot->bot_mutex, NULL);
     return bot;
 }
 
@@ -53,6 +56,9 @@ void free_bot(bot_t *bot){
     free(bot->_data->callbacks);
 
     free(bot->_data);
+    
+    pthread_mutex_destroy(&bot->bot_mutex);
+
     free(bot);
 }
 
