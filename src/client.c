@@ -18,19 +18,17 @@
 //bot_t *bot_net[MAX_BOTS];
 
 uint32_t num_bots;
-bot_t *bot_list;
+bot_t **bot_list;
 pthread_t *bot_threads;
 pthread_t *receivers;
 pthread_t *callbackers;
 pipe_t **pipes;
 
-void client_run(bot_t *, uint32_t);
-
 void *receiver(void *index);
 void *callbacker(void *index);
 void *bot_thread(void *bot);
 
-void client_run(bot_t *bots, uint32_t num) {
+void client_run(bot_t **bots, uint32_t num) {
     // create 1 thread for receiving packets, and 1 for each bot
     uint64_t i;
     num_bots = num;
@@ -55,7 +53,7 @@ void client_run(bot_t *bots, uint32_t num) {
     // create all the bot threads
     bot_threads = calloc(num, sizeof (pthread_t));
     for(i = 0; i < num; i++)
-        pthread_create(bot_threads + i, NULL, bot_thread, bot_list + i);
+        pthread_create(bot_threads + i, NULL, bot_thread, bot_list[i]);
 
     // wait for all threads to finish
     // TODO: support for exit codes
@@ -79,8 +77,8 @@ void *bot_thread(void *bot) {
 }
 
 void *receiver(void *index) {
-    int i = (int) index;
-    bot_t *bot = &bot_list[i];
+    int i = (uint64_t) index;
+    bot_t *bot = bot_list[i];
     int ready;
     struct pollfd fds;
     fds.fd = bot->_data->socketfd;
@@ -106,8 +104,8 @@ void *receiver(void *index) {
 }
 
 void *callbacker(void *index) {
-    int i = (int) index;
-    bot_t *bot = &bot_list[i];
+    int i = (uint64_t) index;
+    bot_t *bot = bot_list[i];
 
     int bytes_read;
     protocol_dummy_t *data;
