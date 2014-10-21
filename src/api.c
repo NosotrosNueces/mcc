@@ -5,18 +5,18 @@
 
 #define PROTOCOL_VERSION 47
 
-void nsleep(uint64_t ns)
+void msleep(uint64_t ms)
 {
     int finished;
-    struct timespec interval;
-    struct timespec remainder;
+    struct timespec req;
+    struct timespec rem;
 
-    interval.tv_sec = ns / 1000000000L;
-    interval.tv_nsec = ns % 1000000000L;
+    req.tv_sec = ms / 1000;
+    req.tv_nsec = (ms % 1000) * 1000000;
 
     do {
-        finished = nanosleep(&interval, &remainder);
-        interval = remainder;
+        finished = nanosleep(&req, &rem);
+        req = rem;
     } while (finished == -1);
 }
 
