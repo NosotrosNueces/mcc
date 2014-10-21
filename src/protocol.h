@@ -1,5 +1,4 @@
-#ifndef PROTOCOL_H
-#define PROTOCOL_H
+#pragma once
 
 #include <stdint.h>
 #include "bot.h"
@@ -1101,5 +1100,3 @@ recv_play_clientbound_plugin_difficulty(bot_t* bot);
 
 play_clientbound_set_compression_t*
 recv_play_clientbound_set_compression(bot_t* bot);
-
-#endif /* PROTOCOL_H */

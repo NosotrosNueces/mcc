@@ -1,5 +1,4 @@
-#ifndef BOT_H
-#define BOT_H
+#pragma once
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -129,5 +128,3 @@ int receive_raw(bot_t *your_bot, void *data, size_t len);
  *  packet size, this function reads the full packet, but discards the data.
  */
 int receive_packet(bot_t *bot);
-
-#endif /* BOT_H */

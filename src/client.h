@@ -1,3 +1,5 @@
+#pragma once
+
 #include "bot.h"
 
 void client_run(bot_t **, uint32_t);
