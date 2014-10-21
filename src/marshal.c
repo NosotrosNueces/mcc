@@ -307,7 +307,7 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data){
                 ;
                 reentrant_memmove(packet_data, packet_raw, size);
                 reverse(packet_data, size);
-                arr_len = *((int *)packet_data);
+                arr_len = value_at(packet_data, size);
                 packet_raw += size;
                 break;
         }
