@@ -78,8 +78,7 @@ void slave_main(void *vbot)
     bot_t *bot = (bot_t *)vbot;
 
     while(1) {
-        msleep(500);
-        //send_play_serverbound_player(bot, true);
+        nsleep(500000);
         send_play_serverbound_player_status(bot, 0);
     }
 }
