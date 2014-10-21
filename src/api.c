@@ -3,17 +3,21 @@
 #include "protocol.h"
 #include "handlers.h"
 
-#define DEFAULT_PROTOCOL_VERSION 47
+#define PROTOCOL_VERSION 47
 
-int msleep(unsigned long ms)
+void nsleep(uint64_t ns)
 {
-    struct timespec req = {0};
-    time_t sec = (int)(ms/1000);
-    ms = ms - (sec*1000);
-    req.tv_sec = sec;
-    req.tv_nsec = ms*1000000L;
-    while(nanosleep(&req, &req)== -1) continue;
-    return 1;
+    int finished;
+    struct timespec interval;
+    struct timespec remainder;
+
+    interval.tv_sec = ns / 1000000000L;
+    interval.tv_nsec = ns % 1000000000L;
+
+    do {
+        finished = nanosleep(&interval, &remainder);
+        interval = remainder;
+    } while (finished == -1);
 }
 
 void register_defaults(bot_t *bot)
@@ -29,9 +33,6 @@ void register_defaults(bot_t *bot)
 void login(bot_t *bot, char *server_address, int port)
 {
     join_server(bot, server_address, port);
-    send_handshaking_serverbound_handshake(bot, DEFAULT_PROTOCOL_VERSION,
-                                           "", port, 2);
+    send_handshaking_serverbound_handshake(bot, PROTOCOL_VERSION, "", port, 2);
     send_login_serverbound_login(bot, bot->name);
 }
-
-

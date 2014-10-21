@@ -85,7 +85,7 @@ void defender_main(void *vbot)
     bot_t *bot = (bot_t *)vbot;
 
     while(1) {
-        msleep(500);
+        nsleep(500000);
         send_play_serverbound_player_status(bot, 0);
     }
 }
