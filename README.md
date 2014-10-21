@@ -6,7 +6,9 @@ MCC is a MineCraft Client API written in C. Its purpose is to enable automation 
 [![Build Status](https://travis-ci.org/NosotrosNueces/mcc.svg?branch=travis)](https://travis-ci.org/NosotrosNueces/mcc)
 
 ## Documentation and Resources ##
-[wiki.vg](wiki.vg)
+[wiki.vg](http://wiki.vg)
+
+[mcc.lf.lc](http://mcc.lf.lc)
 
 ## Packet Format Guide ##
 
