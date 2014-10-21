@@ -1,10 +1,11 @@
-#include "marshal.h"
 #include <stdio.h>
 #include <assert.h>
-#include "bot.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "packet_test.h"
+#include "marshal.h"
+#include "bot.h"
 
 #define STRUCT_SIZE 4096
 #define NUM_FMT_SPECS 8
@@ -17,7 +18,7 @@ int random_fmt(char *, int);
 FILE *urandom;
 
 // performs function for each possible format string of length len
-int for_each(char *fmt, uint32_t len, int (*func)(const char *),
+int for_each(char *fmt, uint32_t len, int (*func)(char *),
              uint8_t arr_allowed)
 {
 
@@ -114,6 +115,9 @@ int test_fmt_str(char *fmt)
     char *test = malloc(STRUCT_SIZE);
     char *decoded = malloc(STRUCT_SIZE);
 
+    // randomize struct data
+    fread(test, STRUCT_SIZE, 1, urandom);
+
     bot_t bot;
     bot_internal bot_int = {0, STRUCT_SIZE};
     bot._data = &bot_int;
@@ -162,8 +166,6 @@ int test_fmt_str(char *fmt)
     decode_packet(NULL, packet_raw, decoded);
     uint8_t packet_raw_decode[STRUCT_SIZE];
 
-
-
     // re-encode packet
     int len_decode = format_packet(&bot, decoded, packet_raw_decode);
     int8_t equals = ((len == len_decode) && packet_equals(test, decoded) &&
@@ -171,4 +173,18 @@ int test_fmt_str(char *fmt)
     free_packet(test);
     free_packet(decoded);
     return equals;
+}
+
+void packet_test(void)
+{
+    char fmt[FORMAT_LENGTH + 1] = {0};
+    // prints out every possible format string of length FORMAT_LENGTH
+    init_random();
+    for (int i = 1; i <= FORMAT_LENGTH; i++) {
+        printf("Testing every format string of length %d\n", i);
+        if(for_each(fmt, i, test_fmt_str, 0))
+            printf("Passed every test\n");
+        else
+            printf("Format string %s failed\n", fmt);
+    }
 }

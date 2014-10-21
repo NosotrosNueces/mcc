@@ -1,7 +1,7 @@
 CC = clang
 SA = scan-build
 _LIB_FILES = marshal.c protocol.c bot.c client.c handlers.c api.c pipe.c json.c
-_TEST_FILES = packet_test.c protocol_test.c test_runner.c
+_TEST_FILES = packet_test.c test_runner.c
 _SAMPLE_FILES = bot_runner.c sample_defender.c sample_slave.c
 LIB_DIR = src
 TEST_DIR = test
