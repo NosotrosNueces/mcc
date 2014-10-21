@@ -1,10 +1,10 @@
 #include "bot.h"
 
-/* \brief suspend thread execution for an interval measured in ns
+/* Briefly suspend thread execution for an interval measured in ms
  *
- *	Call nanosleep(2) until it successfully sleeps for the required interval.
+ *	Call nanosleep until it successfully sleeps for the required interval.
  */
-void nsleep(uint64_t ns);
+void hsleep(uint64_t ns);
 
 /*
  * Registers
