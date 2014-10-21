@@ -22,3 +22,5 @@ check:
 clean:
 	rm -f bin/*
 rebuild: clean build
+format:
+	astyle -n -r --style=linux *.c *.h

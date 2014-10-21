@@ -209,8 +209,8 @@ void NO_NULL_POINTERS pipe_push_clobber(pipe_producer_t*,
  * return as soon as any elements are available.
  */
 size_t NO_NULL_POINTERS WARN_UNUSED_RESULT pipe_pop(pipe_consumer_t*,
-                                                    void* target,
-                                                    size_t count);
+        void* target,
+        size_t count);
 
 /*
  * Tries to pop `count' elements out of the pipe and into `target', returning
@@ -227,8 +227,8 @@ size_t NO_NULL_POINTERS WARN_UNUSED_RESULT pipe_pop(pipe_consumer_t*,
  * best to fill `target' first.
  */
 size_t NO_NULL_POINTERS WARN_UNUSED_RESULT pipe_pop_eager(pipe_consumer_t*,
-                                                          void* target,
-                                                          size_t count);
+        void* target,
+        size_t count);
 
 /*
  * Modifies the pipe to have room for at least `count' elements. If more room

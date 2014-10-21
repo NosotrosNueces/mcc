@@ -10,9 +10,10 @@
 #define DEFAULT_SERVER_PORT 25565
 #define NUM_BOTS 1
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     bot_t *bots[NUM_BOTS];
-    
+
     bots[0] = defender_init("plants");
 
     client_run(bots, NUM_BOTS);
