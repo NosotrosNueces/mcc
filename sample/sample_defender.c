@@ -4,9 +4,6 @@
 #include "protocol.h"
 #include "api.h"
 
-#define SERVER_NAME "10.10.2.16"
-#define DEFAULT_SERVER_PORT 25565
-
 typedef struct entity_node {
     vint32_t entity;
     struct entity_node *next;
@@ -93,7 +90,7 @@ void defender_main(void *vbot)
     }
 }
 
-bot_t *defender_init(char *name)
+bot_t *init_defender(char *name, char *server_name, int port)
 {
     bot_t *bot = init_bot(name, *defender_main);
     bot->item = calloc(1, sizeof(bot_globals_t));
@@ -103,7 +100,7 @@ bot_t *defender_init(char *name)
     register_event(bot, PLAY, 0x15, entity_move_handler);
     register_event(bot, PLAY, 0x1A, entity_status_handler);
 
-    login(bot, SERVER_NAME, DEFAULT_SERVER_PORT);
+    login(bot, server_name, port);
 
     return bot;
 }
