@@ -1,4 +1,5 @@
 CC      = clang
+SA      = scan-build
 TARGET  = mcc
 
 CFLAGS  = -Wall -Isrc
@@ -25,6 +26,9 @@ clean:
 
 bin:
 	mkdir -p $@
+
+scan:
+	$(SA) make all
 
 format:
 	astyle -n -r --style=linux *.c *.h
