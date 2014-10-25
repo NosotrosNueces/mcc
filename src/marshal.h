@@ -1,5 +1,4 @@
-#ifndef MARSHAL_H
-#define MARSHAL_H
+#pragma once
 
 #include <stdint.h>
 #include "bot.h"
@@ -24,5 +23,3 @@ vint32_t peek_packet(bot_t *, void *);
 size_t format_sizeof(char);
 void *push(void *, void *, size_t);
 __int128_t value_at(void *, size_t);
-
-#endif /* MARSHAL_H */

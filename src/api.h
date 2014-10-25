@@ -1,10 +1,12 @@
+#pragma once
+
 #include "bot.h"
 
 /* Briefly suspend thread execution for an interval measured in ms
  *
  *	Call nanosleep until it successfully sleeps for the required interval.
  */
-void hsleep(uint64_t ns);
+void msleep(uint64_t ns);
 
 /*
  * Registers
