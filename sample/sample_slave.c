@@ -77,6 +77,8 @@ void chat_handler(bot_t *bot, void *vp)
 void slave_main(void *vbot)
 {
     bot_t *bot = (bot_t *)vbot;
+    msleep(500);
+    send_play_serverbound_item_change(bot, 0);
 
     while(1) {
         msleep(500);
@@ -87,7 +89,7 @@ void slave_main(void *vbot)
 bot_t *init_slave(char *name, char *server_name, int port)
 {
     bot_t *bot = init_bot(name, *slave_main);
-    bot->item = calloc(1, sizeof(bot_globals_t));
+    bot->state = calloc(1, sizeof(bot_globals_t));
 
     register_defaults(bot);
     register_event(bot, PLAY, 0x02, chat_handler);
