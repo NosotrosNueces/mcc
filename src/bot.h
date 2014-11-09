@@ -45,6 +45,8 @@ struct bot {
 
     char *name;
 
+    void* state;
+
     pthread_mutex_t bot_mutex;
 
     bot_internal *_data; // Internal use only for networking and threading.

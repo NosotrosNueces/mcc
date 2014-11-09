@@ -18,7 +18,7 @@ typedef struct bot_globals {
 void insert_target(bot_t *bot, vint32_t eid)
 {
     pthread_mutex_lock(&bot->bot_mutex);
-    entity_node_t *p = &((bot_globals_t *)bot->item)->targets;
+    entity_node_t *p = &((bot_globals_t *)bot->state)->targets;
     while (p->next) {
         p = p->next;
     }
@@ -30,7 +30,7 @@ void insert_target(bot_t *bot, vint32_t eid)
 void remove_target(bot_t *bot, vint32_t eid)
 {
     pthread_mutex_lock(&bot->bot_mutex);
-    entity_node_t *p = &((bot_globals_t *)bot->item)->targets;
+    entity_node_t *p = &((bot_globals_t *)bot->state)->targets;
     while (p->next) {
         if (p->next->entity == eid) {
             p->next = p->next->next;
@@ -44,7 +44,7 @@ bool exists_target(bot_t *bot, vint32_t eid)
 {
     bool ret = false;
     pthread_mutex_lock(&bot->bot_mutex);
-    entity_node_t *p = &((bot_globals_t *)bot->item)->targets;
+    entity_node_t *p = &((bot_globals_t *)bot->state)->targets;
     while (p->next) {
         if (p->entity == eid) {
             ret = true;
@@ -83,6 +83,8 @@ void entity_status_handler(bot_t *bot, void *vp)
 void defender_main(void *vbot)
 {
     bot_t *bot = (bot_t *)vbot;
+    msleep(500);
+    send_play_serverbound_item_change(bot, 0);
 
     while(1) {
         msleep(500);
@@ -93,7 +95,7 @@ void defender_main(void *vbot)
 bot_t *init_defender(char *name, char *server_name, int port)
 {
     bot_t *bot = init_bot(name, *defender_main);
-    bot->item = calloc(1, sizeof(bot_globals_t));
+    bot->state = calloc(1, sizeof(bot_globals_t));
 
     register_defaults(bot);
     register_event(bot, PLAY, 0x0F, entity_handler);
