@@ -282,7 +282,7 @@ int32_t send_play_serverbound_player_block_place(
     bot_t*        bot,
     position_t    location,
     int8_t        direction,
-    slot_t        item,
+    slot_t*       item,
     int8_t        x,
     int8_t        y,
     int8_t        z

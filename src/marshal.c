@@ -352,6 +352,7 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data)
                 if (value_at(packet_raw, sizeof(uint8_t)) != 0) {
                     size_t nbt_len = bot->_data->packet_threshold - (save - packet_raw);
                     nbt_node* tree = nbt_parse(packet_raw, &nbt_len);
+                    item->nbt = tree;
                     packet_raw += nbt_len;
                 }
             }
