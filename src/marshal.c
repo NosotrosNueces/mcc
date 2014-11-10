@@ -108,13 +108,20 @@ void reverse(void *number, int len)
 
 size_t format_sizeof(char *c)
 {
-    // Special case to support multi-element arrays
+    // Special case to support struct arrays
     if(*c == '(') {
         size_t arr = 1;
+        int depth = 1;
+        c++;
         do {
-            c++;
             arr += format_sizeof(c);
-        } while(format_sizeof(c) != -1);
+            c++;
+            if(*c == '(') {
+                depth++;
+            } else if(*c == ')') {
+                depth--;
+            }
+        } while(depth > 0);
         return arr;
     }
 
@@ -135,8 +142,6 @@ size_t format_sizeof(char *c)
         return sizeof(int64_t);
     case 'q':
         return sizeof(__int128_t);
-    case ')':
-        return -1;
     default:
         fprintf(stderr, "Bad format specifier\n");
         return -1;
@@ -316,15 +321,49 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data)
             break;
         case '*':
             fmt++;
-            size_t size_elem = format_sizeof(fmt);
             assert(arr_len != -1);
+            size_t size_elem = format_sizeof(fmt);
             void *arr = calloc(arr_len, size_elem);
             for(int i = 0; i < arr_len * size_elem; i += size_elem) {
+                // decode_packet should recurse here
                 reentrant_memmove(arr + i, packet_raw + i, size_elem);
                 reverse(arr + i, size_elem);
             }
             *((void **)packet_data) = arr;
             packet_raw += arr_len * size_elem;
+            break;
+        case '[': // Count | until we're at our choice
+            fmt++;
+            assert(arr_len != -1);
+            int choice_depth = 0;
+            int nest_depth = 0;
+            while(choice_depth < arr_len) {
+                if((*fmt) == '[') {
+                    nest_depth++;
+                } else if((*fmt) == ']') {
+                    nest_depth--;
+                    if(nest_depth < 0) {
+                        printf("Not enough choices available\n");
+                        // Boom. Crash. Bad stuff.
+                    }
+                } else if((*fmt) == '|' && nest_depth == 0) {
+                    choice_depth++;
+                }
+                fmt++;
+            }
+            break;
+        case '|': // We're at the end of our choice
+            ;
+            int depth = 1;
+            do {
+                fmt++;
+                if((*fmt) == ']') {
+                    depth--;
+                } else if((*fmt) == '[') {
+                    depth++;
+                }
+            } while(depth > 0);
+        case ']': // The end of the choice block
             break;
         default:
             ;
@@ -360,6 +399,7 @@ void free_packet(void *packet_data)
     while (*fmt) {
         size_t size = format_sizeof(fmt);
         packet_data = (void *)align(packet_data, size);
+        // This leaks memory on nested arrays
         if (*fmt == 's' || *fmt == '*') {
             free(*((void **)packet_data));
             if(*fmt == '*')
