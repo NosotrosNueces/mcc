@@ -176,11 +176,65 @@ int test_fmt_str(char *fmt)
 
 void format_sizeof_test()
 {
+    size_t goal;
+    char fmt[50];
     printf("Testing format_sizeof for *()\n");
-    // Test missing
+    goal = sizeof(int8_t) + sizeof(int32_t) + sizeof(void *);
+    strcpy(fmt, "(bws)lv");
+
+    if(goal != format_sizeof(fmt)) {
+        printf("format_sizeof does not support *()\n");
+        printf("goal:%lu actual:%lu\n", goal, format_sizeof(fmt));
+        return;
+    }
+
+    goal = sizeof(int8_t) + sizeof(vint32_t) + sizeof(void *);
+    strcpy(fmt, "(bv*(ws))lv");
+
+    if(goal != format_sizeof(fmt)) {
+        printf("format_sizeof does not support nested *()\n");
+        printf("goal:%lu actual:%lu\n", goal, format_sizeof(fmt));
+        return;
+    }
 
     printf("Testing format_sizeof for []\n");
-    // Test missing
+    goal = sizeof(int32_t) + sizeof(int32_t) + sizeof(int64_t);
+    strcpy(fmt, "[bv||wwl]lv");
+
+    if(goal != format_sizeof(fmt)) {
+        printf("format_sizeof does not support []\n");
+        printf("goal:%lu actual:%lu\n", goal, format_sizeof(fmt));
+        return;
+    }
+
+    goal = sizeof(int32_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(int8_t) + sizeof(int64_t);
+    strcpy(fmt, "[bvb[|w]||wwlb[l|w]]lv");
+
+    if(goal != format_sizeof(fmt)) {
+        printf("format_sizeof does not support nested []\n");
+        printf("goal:%lu actual:%lu\n", goal, format_sizeof(fmt));
+        return;
+    }
+
+    goal = sizeof(int32_t) + sizeof(vint32_t) + sizeof(void *);
+    strcpy(fmt, "[b[|w]|wv*(ws)|b[h|w]]lv");
+
+    if(goal != format_sizeof(fmt)) {
+        printf("format_sizeof does not support *() within []\n");
+        printf("goal:%lu actual:%lu\n", goal, format_sizeof(fmt));
+        return;
+    }
+
+    goal = sizeof(int32_t) + sizeof(int8_t) + sizeof(int64_t);
+    strcpy(fmt, "(wb[h|l])lv");
+
+    if(goal != format_sizeof(fmt)) {
+        printf("format_sizeof does not support [] within *()\n");
+        printf("goal:%lu actual:%lu\n", goal, format_sizeof(fmt));
+        return;
+    }
+
+    printf("Passed all format_sizeof tests\n");
 }
 
 void packet_test(void)

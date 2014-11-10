@@ -110,19 +110,88 @@ size_t format_sizeof(char *c)
 {
     // Special case to support struct arrays
     if(*c == '(') {
-        size_t arr = 1;
+        size_t arr = 0;
         int depth = 1;
         c++;
         do {
-            arr += format_sizeof(c);
+            if(depth == 1) {
+                arr += format_sizeof(c);
+            }
             c++;
+            if(*c == '[') {
+            // When we hit a choice, add the size of it
+              arr += format_sizeof(c);
+              // Then pass over it
+              int p_depth = 0;
+              do {
+                  if(*c == '[') {
+                      p_depth++;
+                  } else if(*c == ']') {
+                      p_depth--;
+                  }
+                  c++;
+              } while(p_depth > 0);
+            }
             if(*c == '(') {
                 depth++;
-            } else if(*c == ')') {
+            }
+            // Go through all the closes at once
+            while(*c == ')') {
                 depth--;
+                c++;
             }
         } while(depth > 0);
         return arr;
+    }
+
+    // Special case to support option blocks
+    // The size of an option union is the size
+    // of the largest choice
+    if(*c == '[') {
+        size_t max = 0;
+        size_t current = 0;
+        int depth = 1;
+        c++;
+        do {
+            if(depth == 1) {
+                current += format_sizeof(c);
+            }
+            c++;
+            // Ignore the contents of any array
+            if(*c == '(') {
+              int p_depth = 0;
+              do {
+                  if(*c == '(') {
+                      p_depth++;
+                  } else if(*c == ')') {
+                      p_depth--;
+                  }
+                  c++;
+              } while(p_depth > 0);
+            }
+            if(*c == '[') {
+            // Count the largest choice in the inner block
+                depth++;
+                current += format_sizeof(c);
+            } else if(*c == '|') {
+                if(max < current) {
+                    max = current;
+                }
+                current = 0;
+            }
+            // Ignore all of these before going again
+            while(*c == '|' || *c == ']') {
+                if(*c == ']') {
+                    depth--;
+                }
+                c++;
+            }
+        } while(depth > 0);
+        // This is in case the last was the largest
+        if(max < current) {
+            max = current;
+        }
+        return max;
     }
 
     switch(*c) {
@@ -142,8 +211,10 @@ size_t format_sizeof(char *c)
         return sizeof(int64_t);
     case 'q':
         return sizeof(__int128_t);
+    case '|': // Almost a hack
+        return 0;
     default:
-        fprintf(stderr, "Bad format specifier\n");
+        fprintf(stderr, "Bad format specifier: %c\n", *c);
         return -1;
     }
 }
