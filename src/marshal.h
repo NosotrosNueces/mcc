@@ -20,6 +20,6 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw);
 int decode_packet(bot_t *bot, void *packet_raw, void *packet_data);
 void free_packet(void *);
 vint32_t peek_packet(bot_t *, void *);
-size_t format_sizeof(char);
+size_t format_sizeof(char *);
 void *push(void *, void *, size_t);
 __int128_t value_at(void *, size_t);

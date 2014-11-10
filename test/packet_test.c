@@ -77,7 +77,7 @@ int packet_equals(void *p1, void *p2)
     size_t size;
     __int128_t arr_size = -1;
     while(*fmt) {
-        size = format_sizeof(*fmt);
+        size = format_sizeof(fmt);
         p1 = (void *)align(p1, size);
         p2 = (void *)align(p2, size);
         switch(*fmt) {
@@ -89,7 +89,7 @@ int packet_equals(void *p1, void *p2)
             break;
         case '*':
             fmt++;
-            size_t elem_size = format_sizeof(*fmt);
+            size_t elem_size = format_sizeof(fmt);
             if(memcmp(*(void **)p1, *(void **)p2, arr_size * elem_size)) {
                 printf("Array mismatch\n");
                 return 0;
@@ -133,9 +133,8 @@ int test_fmt_str(char *fmt)
     void *tmp = test + sizeof(void *);
     size_t arr_size;
     while(*fmt) {
-        size = format_sizeof(*fmt);
+        size = format_sizeof(fmt);
         tmp = (void *)align(tmp, size);
-        char var[5];
         switch(*fmt) {
         case 's': // varint followed by string
             // push random array size onto tmp
@@ -146,7 +145,7 @@ int test_fmt_str(char *fmt)
             break;
         case '*': // array
             fmt++;
-            size_t elem_size = format_sizeof(*fmt);
+            size_t elem_size = format_sizeof(fmt);
             void *arr = malloc(elem_size * arr_size);
             tmp = push(tmp, &arr, size);
             break;
@@ -175,6 +174,18 @@ int test_fmt_str(char *fmt)
     return equals;
 }
 
+void format_sizeof_test()
+{
+    printf("Testing format_sizeof for *()\n");
+    size_t goal = sizeof(int8_t) + sizeof(int32_t) + sizeof(void *);
+    char *fmt = "(bws)lv";
+
+    if(goal != format_sizeof(fmt))
+        printf("format_sizeof does not support *()\n");
+    else
+        printf("format_sizeof passed\n");
+}
+
 void packet_test(void)
 {
     char fmt[FORMAT_LENGTH + 1] = {0};
@@ -187,4 +198,6 @@ void packet_test(void)
         else
             printf("Format string %s failed\n", fmt);
     }
+
+    format_sizeof_test();
 }

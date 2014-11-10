@@ -106,9 +106,19 @@ void reverse(void *number, int len)
     }
 }
 
-size_t format_sizeof(char c)
+size_t format_sizeof(char *c)
 {
-    switch(c) {
+    // Special case to support multi-element arrays
+    if(*c == '(') {
+        size_t arr = 1;
+        do {
+            c++;
+            arr += format_sizeof(c);
+        } while(format_sizeof(c) != -1);
+        return arr;
+    }
+
+    switch(*c) {
     case 's':
         return sizeof(void *);
     case 'v':
@@ -125,6 +135,8 @@ size_t format_sizeof(char c)
         return sizeof(int64_t);
     case 'q':
         return sizeof(__int128_t);
+    case ')':
+        return -1;
     default:
         fprintf(stderr, "Bad format specifier\n");
         return -1;
@@ -209,7 +221,7 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw)
     packet_data += sizeof(void *);
     void *save = packet_raw;
     while(*fmt) {
-        size = format_sizeof(*fmt);
+        size = format_sizeof(fmt);
         packet_data = (void *)align(packet_data, size);
         switch(*fmt) {
         case 's': // string (null terminated)
@@ -237,7 +249,7 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw)
         case '*': // pointer/array
             ;
             fmt++;
-            size_t size_elem = format_sizeof(*fmt);
+            size_t size_elem = format_sizeof(fmt);
             if(packet_raw - save + size_elem * arr_len > len)
                 return -1; // TODO: compression
             void *arr = *((void **)packet_data);
@@ -285,7 +297,7 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data)
     packet_raw += packet_size_len;
 
     while(*fmt) {
-        size = format_sizeof(*fmt);
+        size = format_sizeof(fmt);
         packet_data = (void *)align(packet_data, size);
         switch(*fmt) {
         case 's': // varint followed by string
@@ -304,7 +316,7 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data)
             break;
         case '*':
             fmt++;
-            size_t size_elem = format_sizeof(*fmt);
+            size_t size_elem = format_sizeof(fmt);
             assert(arr_len != -1);
             void *arr = calloc(arr_len, size_elem);
             for(int i = 0; i < arr_len * size_elem; i += size_elem) {
@@ -346,7 +358,7 @@ void free_packet(void *packet_data)
     void *save = packet_data;
     packet_data += sizeof(void *);
     while (*fmt) {
-        size_t size = format_sizeof(*fmt);
+        size_t size = format_sizeof(fmt);
         packet_data = (void *)align(packet_data, size);
         if (*fmt == 's' || *fmt == '*') {
             free(*((void **)packet_data));

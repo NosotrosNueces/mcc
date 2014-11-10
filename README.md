@@ -26,4 +26,4 @@ Structs can be serialized to bytes by defining a format string for the packet se
 | `v` | varint32 |
 | `*` | array    |
 
-Note: the array format character is a prefix to other types (e.g. `*b` for a char array).
+Note: the array format character is a prefix to other types or groups of types (e.g. `*b` for a char array).
