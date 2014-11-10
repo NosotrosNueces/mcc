@@ -342,11 +342,11 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data)
 
             if (item->item_id != -1) {
                 item->count = value_at(packet_raw, sizeof(uint8_t));
-                reverse(&item->item_id, sizeof(uint8_t));
+                reverse(&item->count, sizeof(uint8_t));
                 packet_raw += sizeof(uint8_t);
 
                 item->damage = value_at(packet_raw, sizeof(uint16_t));
-                reverse(&item->item_id, sizeof(uint16_t));
+                reverse(&item->damage, sizeof(uint16_t));
                 packet_raw += sizeof(uint16_t);
 
                 if (value_at(packet_raw, sizeof(uint8_t)) != 0) {

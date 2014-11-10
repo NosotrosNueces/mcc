@@ -117,7 +117,7 @@ void slot_handler(bot_t *bot, void *vp)
         "\t\titem:\t%d\n"
         "\t\tcount:\t%d\n"
         "\t\tdamage:\t%d\n"
-        "\t\tnbt:\t%x \n",
+        "\t\tnbt:\t%p\n",
         p->packet_id,
         p->entity_id,
         p->slot,
