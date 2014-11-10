@@ -290,7 +290,7 @@ int32_t send_play_serverbound_player_block_place(
 {
     uint32_t length;
     play_serverbound_player_block_place_t p;
-    p.format = "vlbwbbb";
+    p.format = "vlbSbbb";
     p.packet_id = 0x08;
 
     p.location = location;
@@ -525,7 +525,7 @@ _render_recv(play_clientbound_keepalive, "vv", 0x00);
 _render_recv(play_clientbound_join_game, "vwbbbbs", 0x01);
 _render_recv(play_clientbound_chat, "vsb", 0x02);
 _render_recv(play_clientbound_time_update, "vll", 0x03);
-_render_recv(play_clientbound_entity_equipment, "vvhw", 0x04);
+_render_recv(play_clientbound_entity_equipment, "vvhS", 0x04);
 _render_recv(play_clientbound_spawn_position, "vl", 0x05);
 _render_recv(play_clientbound_update_health, "vwvw", 0x06);
 _render_recv(play_clientbound_respawn, "vwbbs", 0x07);

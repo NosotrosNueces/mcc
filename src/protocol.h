@@ -1,8 +1,9 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 #include "bot.h"
-#include <stdbool.h>
+#include "nbt.h"
 
 #define DEFAULT_THRESHOLD (512)
 #define HANDSHAKE_PACKETS 0x0
@@ -17,7 +18,13 @@ typedef int32_t data_t;
 typedef void* metadata_t;
 typedef void* property_t;
 typedef void* record_t;
-typedef void* slot_t;
+
+typedef struct slot_struct {
+    int16_t       item_id;
+    uint8_t       count;
+    uint16_t      damage;
+    nbt_node*     nbt;
+} slot_t;
 
 void *protocol_decode(bot_t *bot);
 
@@ -161,8 +168,8 @@ typedef struct play_clientbound_entity_equipment {
     vint32_t      packet_id;
 
     vint32_t      entity_id;
-    int16_t       slot;
-    slot_t        item;
+    uint16_t      slot;
+    slot_t*       item;
 } play_clientbound_entity_equipment_t;
 
 typedef struct play_clientbound_spawn_position {
@@ -668,7 +675,7 @@ typedef struct play_serverbound_player_block_place {
 
     position_t    location;
     int8_t        direction;
-    slot_t        item;
+    slot_t*       item;
     int8_t        x;
     int8_t        y;
     int8_t        z;
@@ -863,7 +870,7 @@ int32_t send_play_serverbound_player_block_place(
     bot_t*        bot,
     position_t    location,
     int8_t        direction,
-    slot_t        item,
+    slot_t*       item,
     int8_t        x,
     int8_t        y,
     int8_t        z

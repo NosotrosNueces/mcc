@@ -5,6 +5,7 @@
 #include "marshal.h"
 #include "bot.h"
 #include "protocol.h"
+#include "nbt.h"
 
 // returns the number of bytes read from data
 int varint64(char *data, int64_t *value)
@@ -125,6 +126,8 @@ size_t format_sizeof(char c)
         return sizeof(int64_t);
     case 'q':
         return sizeof(__int128_t);
+    case 'S':
+        return sizeof(slot_t *);
     default:
         fprintf(stderr, "Bad format specifier\n");
         return -1;
@@ -246,6 +249,21 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw)
                 reverse(packet_raw - size_elem, size_elem);
             }
             break;
+        case 'S': // slot_t NBT structure
+            ;
+            slot_t *item = *((slot_t **)packet_data);
+            packet_raw = push(packet_raw, &item->item_id, sizeof(int16_t));
+            if (item->item_id != -1) {
+                packet_raw = push(packet_raw, &item->count, sizeof(uint8_t));
+                packet_raw = push(packet_raw, &item->damage, sizeof(uint16_t));
+                if (item->nbt) {
+                    struct buffer buf = nbt_dump_binary(item->nbt);
+                    reentrant_memmove(packet_raw, buf.data, buf.len);
+                    packet_raw += buf.len;
+                    free(buf.data);
+                }
+            }
+            break;
         default:
             ;
             if(packet_raw - save + size > len)
@@ -281,6 +299,7 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data)
     packet_data += sizeof(void *);
 
     int32_t packet_size;
+    void *save = packet_raw;
     int packet_size_len = varint32(packet_raw, &packet_size);
     packet_raw += packet_size_len;
 
@@ -313,6 +332,30 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data)
             }
             *((void **)packet_data) = arr;
             packet_raw += arr_len * size_elem;
+            break;
+        case 'S': // slot_t NBT structure
+            ;
+            slot_t* item = calloc(1, sizeof(slot_t));
+            item->item_id = value_at(packet_raw, sizeof(int16_t));
+            reverse(&item->item_id, sizeof(int16_t));
+            packet_raw += sizeof(int16_t);
+
+            if (item->item_id != -1) {
+                item->count = value_at(packet_raw, sizeof(uint8_t));
+                reverse(&item->item_id, sizeof(uint8_t));
+                packet_raw += sizeof(uint8_t);
+
+                item->damage = value_at(packet_raw, sizeof(uint16_t));
+                reverse(&item->item_id, sizeof(uint16_t));
+                packet_raw += sizeof(uint16_t);
+
+                if (value_at(packet_raw, sizeof(uint8_t)) != 0) {
+                    size_t nbt_len = bot->_data->packet_threshold - (save - packet_raw);
+                    nbt_node* tree = nbt_parse(packet_raw, &nbt_len);
+                    packet_raw += nbt_len;
+                }
+            }
+            *((slot_t **)packet_data) = item;
             break;
         default:
             ;

@@ -105,6 +105,28 @@ void chat_handler(bot_t *bot, void *vp)
     free(msg);
 }
 
+void slot_handler(bot_t *bot, void *vp)
+{
+    play_clientbound_entity_equipment_t *p =
+        (play_clientbound_entity_equipment_t *)vp;
+    printf("Slot:\n"
+        "\tpacket_id:\t%d\n"
+        "\tentity_id:\t%d\n"
+        "\tslot:\t%d\n"
+        "\tslot_t:\n"
+        "\t\titem:\t%d\n"
+        "\t\tcount:\t%d\n"
+        "\t\tdamage:\t%d\n"
+        "\t\tnbt:\t%x \n",
+        p->packet_id,
+        p->entity_id,
+        p->slot,
+        p->item->item_id,
+        p->item->count,
+        p->item->damage,
+        p->item->nbt);
+}
+
 void slave_main(void *vbot)
 {
     bot_t *bot = (bot_t *)vbot;
@@ -126,6 +148,7 @@ bot_t *init_slave(char *name, char *server_name, int port)
 
     register_defaults(bot);
     register_event(bot, PLAY, 0x02, chat_handler);
+    register_event(bot, PLAY, 0x04, slot_handler);
 
     login(bot, server_name, port);
 
