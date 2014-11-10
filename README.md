@@ -1,5 +1,6 @@
 MCC
 ==========
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/NosotrosNueces/mcc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 MCC is a MineCraft Client API written in C. Its purpose is to enable automation in Minecraft with high level functions and event-driven responses.
 
