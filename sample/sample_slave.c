@@ -11,6 +11,27 @@ typedef struct bot_globals {
     int status;
 } bot_globals_t;
 
+void exec(bot_t *bot, char *command, char *strargs)
+{
+    if (strcmp(command, "dig") == 0) {
+        char **saveptr = calloc(1, sizeof(char *));
+        int x = (int)strtol(strtok_r(strargs, " ", saveptr), NULL, 0);
+        int y = (int)strtol(strtok_r(*saveptr, " ", saveptr), NULL, 0);
+        int z = (int)strtol(strtok_r(*saveptr, " ", saveptr), NULL, 0);
+        free(saveptr);
+        printf("DIG: (%d, %d, %d)\n", x, y, z);
+        //dig(bot, x, y, z);
+    } else if (strcmp(command, "slot") == 0) {
+        char **saveptr = calloc(1, sizeof(char *));
+        int slot_no = (int)strtol(strtok_r(strargs, " ", saveptr), NULL, 0);
+        free(saveptr);
+        printf("SLOT CHANGE: (%d)\n", slot_no);
+        send_play_serverbound_item_change(bot, slot_no);
+    } else {
+        printf("Command not implemented: %s\n", command);
+    }
+}
+
 void decode_chat_json(char *raw_json, char **msg, char **sender_name)
 {
     json_value *json_data = json_parse((json_char *)raw_json, strlen(raw_json));
@@ -67,8 +88,18 @@ void chat_handler(bot_t *bot, void *vp)
     decode_chat_json(p->json, &msg, &sender);
     // Ensure that we do not echo ourselves
     if (msg && strcmp(sender, bot->name)) {
-        printf("CHAT: <%s> %s\n", sender, msg);
-        send_play_serverbound_chat(bot, msg);
+        // Commands to bots start with a backslash.
+        // Only operate on non-empty commands.
+        if (msg[0] == '\\' && msg[1]) {
+            // Parse space delimited tokens.
+            char **saveptr = calloc(1, sizeof(char *));
+            char *command = strtok_r(msg+1, " ", saveptr);
+            exec(bot, command, *saveptr);
+            //printf("COMMAND: <%s> %s\n", sender, command);
+            free(saveptr);
+        } else {
+            printf("CHAT: <%s> %s\n", sender, msg);
+        }
     }
     free(sender);
     free(msg);
@@ -80,9 +111,11 @@ void slave_main(void *vbot)
     msleep(500);
     send_play_serverbound_item_change(bot, 0);
 
+    // Timed function calls
     while(1) {
         msleep(500);
         send_play_serverbound_player_status(bot, 0);
+        send_play_serverbound_player_move(bot, bot->x, bot->y, bot->z, 1);
     }
 }
 
