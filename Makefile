@@ -12,7 +12,7 @@ SAMPLE  := $(patsubst %.c,%.o,$(wildcard sample/*.c))
 all: $(TARGET)
 
 $(TARGET): libs bin $(OBJECTS) $(SAMPLE)
-	$(CC) $(LDFLAGS) $(OBJECTS) $(SAMPLE) -o $@
+	$(CC) $(OBJECTS) $(LDFLAGS) $(SAMPLE) -o $@
 
 .PHONY: test
 test: bin $(OBJECTS) $(TEST)
