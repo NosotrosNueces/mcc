@@ -268,7 +268,6 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw)
             void *arr = *((void **)packet_data);
             for(int i = 0; i < arr_len * size_elem; i += size_elem) {
                 packet_raw = push(packet_raw, arr + i, size_elem);
-                reverse(packet_raw - size_elem, size_elem);
             }
             break;
         case 'S': // slot_t NBT structure
@@ -291,7 +290,6 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw)
             if(packet_raw - save + size > len)
                 return -1; // TODO: compression
             packet_raw = push(packet_raw, packet_data, size);
-            reverse(packet_raw - size, size);
             arr_len = value_at(packet_data, size);
             break;
         }
