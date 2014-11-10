@@ -11,24 +11,71 @@ typedef struct bot_globals {
     int status;
 } bot_globals_t;
 
+bool next_int_token(int* value, char *string, char **saveptr)
+{
+    char *token = strtok_r(string, " ", saveptr);
+    if (token) {
+        // Does not validate range or integer-ness.
+        *value = strtol(token, NULL, 0);
+        return true;
+    }
+    return false;
+}
+
 void exec(bot_t *bot, char *command, char *strargs)
 {
     if (strcmp(command, "dig") == 0) {
         char **saveptr = calloc(1, sizeof(char *));
-        int x = (int)strtol(strtok_r(strargs, " ", saveptr), NULL, 0);
-        int y = (int)strtol(strtok_r(*saveptr, " ", saveptr), NULL, 0);
-        int z = (int)strtol(strtok_r(*saveptr, " ", saveptr), NULL, 0);
+        bool valid_input = true;
+        char *token = NULL;
+        int x, y, z;
+
+        valid_input &= next_int_token(&x, strargs, saveptr);
+        valid_input &= next_int_token(&y, *saveptr, saveptr);
+        valid_input &= next_int_token(&z, *saveptr, saveptr);
+
+        // Ensure there are no trailing tokens.
+        token = strtok_r(*saveptr, " ", saveptr);
+        if (token) {
+            valid_input = false;
+        }
+
         free(saveptr);
-        printf("DIG: (%d, %d, %d)\n", x, y, z);
-        //dig(bot, x, y, z);
+        if (valid_input) {
+            printf("DIG: (%d, %d, %d)\n", x, y, z);
+            //dig(bot, x, y, z);
+        } else {
+            send_play_serverbound_chat(bot,
+                                       "Invalid arguments for DIG command "
+                                       "(x, y, z).");
+        }
     } else if (strcmp(command, "slot") == 0) {
         char **saveptr = calloc(1, sizeof(char *));
-        int slot_no = (int)strtol(strtok_r(strargs, " ", saveptr), NULL, 0);
+        bool valid_input = true;
+        char *token = NULL;
+        int slot_no;
+
+        valid_input &= next_int_token(&slot_no, strargs, saveptr);
+
+        // Ensure there are no trailing tokens.
+        token = strtok_r(*saveptr, " ", saveptr);
+        if (token) {
+            valid_input = false;
+        }
+
         free(saveptr);
-        printf("SLOT CHANGE: (%d)\n", slot_no);
-        send_play_serverbound_item_change(bot, slot_no);
+        if (valid_input) {
+            printf("SLOT CHANGE: (%d)\n", slot_no);
+            send_play_serverbound_item_change(bot, slot_no);
+        } else {
+            send_play_serverbound_chat(bot,
+                                       "Invalid arguments for SLOT command "
+                                       "(0-indexed slot).");
+        }
     } else {
         printf("Command not implemented: %s\n", command);
+        send_play_serverbound_chat(bot,
+                                   "Command not implemented.");
     }
 }
 
@@ -67,7 +114,7 @@ void decode_chat_json(char *raw_json, char **msg, char **sender_name)
                     memcpy(*msg, curr->u.string.ptr, curr->u.string.length + 1);
                     break;
                 default:
-                    printf("invalid JSON message error.");
+                    printf("Invalid JSON message error.");
                     break;
                 }
 
@@ -86,8 +133,9 @@ void chat_handler(bot_t *bot, void *vp)
     char *msg = NULL;
     char *sender = NULL;
     decode_chat_json(p->json, &msg, &sender);
-    // Ensure that we do not echo ourselves
-    if (msg && strcmp(sender, bot->name)) {
+    // Ensure that we do not echo ourselves,
+    // and that we received a chat message (not a server message).
+    if (msg && sender && strcmp(sender, bot->name)) {
         // Commands to bots start with a backslash.
         // Only operate on non-empty commands.
         if (msg[0] == '\\' && msg[1]) {
@@ -95,7 +143,6 @@ void chat_handler(bot_t *bot, void *vp)
             char **saveptr = calloc(1, sizeof(char *));
             char *command = strtok_r(msg+1, " ", saveptr);
             exec(bot, command, *saveptr);
-            //printf("COMMAND: <%s> %s\n", sender, command);
             free(saveptr);
         } else {
             printf("CHAT: <%s> %s\n", sender, msg);
