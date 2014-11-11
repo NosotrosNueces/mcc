@@ -395,10 +395,33 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data)
             assert(arr_len != -1);
             size_t size_elem = format_sizeof(fmt);
             void *arr = calloc(arr_len, size_elem);
-            for(int i = 0; i < arr_len * size_elem; i += size_elem) {
-                // decode_packet should recurse here
-                reentrant_memmove(arr + i, packet_raw + i, size_elem);
-                reverse(arr + i, size_elem);
+            if(*fmt == '(') {
+                // Find the end of this array
+                char *end = fmt;
+                int count = 0;
+                int p_depth = 1;
+                do {
+                    end++;
+                    count++;
+                    if(*end == '(') {
+                        p_depth++;
+                    } else if(*end == ')') {
+                        p_depth--;
+                    }
+                } while(p_depth > 0);
+                char sub_format[count];
+                memcpy( sub_format, &fmt[1], count);
+                sub_format[count-1] = '\0';
+                // Treat each array element as its own packet
+                for(int i = 0; i < arr_len *size_elem; i += size_elem) {
+                    decode_packet(bot, packet_raw + i, arr + i);
+                }
+            } else {
+                // Normal array behavior
+                for(int i = 0; i < arr_len * size_elem; i += size_elem) {
+                    reentrant_memmove(arr + i, packet_raw + i, size_elem);
+                    reverse(arr + i, size_elem);
+                }
             }
             *((void **)packet_data) = arr;
             packet_raw += arr_len * size_elem;
