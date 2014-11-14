@@ -11,6 +11,10 @@ typedef struct bot_globals {
     int status;
 } bot_globals_t;
 
+position_t encode_location(x, y, z) {
+    return 0;
+}
+
 bool next_int_token(int* value, char *string, char **saveptr)
 {
     char *token = strtok_r(string, " ", saveptr);
@@ -72,6 +76,13 @@ void exec(bot_t *bot, char *command, char *strargs)
                                        "Invalid arguments for SLOT command "
                                        "(0-indexed slot).");
         }
+    } else if (strcmp(command, "where") == 0) {
+        // Echo current bot location.
+        char msg[256] = {0};
+        sprintf(msg, "I'm at (%d, %d, %d)\n",
+                (int)bot->x, (int)bot->y, (int)bot->z);
+        printf(msg);
+        send_play_serverbound_chat(bot, msg);
     } else {
         printf("Command not implemented: %s\n", command);
         send_play_serverbound_chat(bot,
@@ -152,11 +163,22 @@ void chat_handler(bot_t *bot, void *vp)
     free(msg);
 }
 
-void slave_main(void *vbot)
+void builder_main(void *vbot)
 {
     bot_t *bot = (bot_t *)vbot;
     msleep(500);
     send_play_serverbound_item_change(bot, 0);
+    //2 = upwards
+    position_t location = encode_location(1+(int)bot->x, (int)bot->y, (int)bot->z);
+    // Want to send:
+    // 13 (len)
+    // 08 (packet id)
+    // 00 00 01 00 f4 00 00 02 (position)
+    // 02 (dir)
+    // 00 04 40 00 00 00 (slot, '00 04 + <no. of blocks> + 00 00 00')
+    // 00 00 00 (mouse x y z)
+    send_play_serverbound_player_block_place(bot, location, 2, (slot_t)0x000440000000,
+                                             0, 0, 0);
 
     // Timed function calls
     while(1) {
@@ -166,9 +188,9 @@ void slave_main(void *vbot)
     }
 }
 
-bot_t *init_slave(char *name, char *server_name, int port)
+bot_t *init_builder(char *name, char *server_name, int port)
 {
-    bot_t *bot = init_bot(name, *slave_main);
+    bot_t *bot = init_bot(name, *builder_main);
     bot->state = calloc(1, sizeof(bot_globals_t));
 
     register_defaults(bot);
