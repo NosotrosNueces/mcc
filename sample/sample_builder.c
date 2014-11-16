@@ -11,8 +11,31 @@ typedef struct bot_globals {
     int status;
 } bot_globals_t;
 
-position_t encode_location(x, y, z) {
-    return 0;
+char * encode_location(long x, long y, long z) {
+    //return ((x & 0x3FFFFFF) << 38) | ((y & 0xFFF) << 26) | (z & 0x3FFFFFF);
+    // Pls no
+    z += 1;
+    long long loc = ((x & 0x3FFFFFF) << 38) | ((y & 0xFFF) << 26) | (z & 0x3FFFFFF);
+    char *location = (char *)calloc(8, sizeof(char));
+    for(int i = 0; i < 8; i++) {
+        *(location+i) = 0xff & (loc >> ((7-i)*8));
+    }
+    return location;
+}
+
+void place_block(bot_t *bot, char *location) {
+    // ITS A HACK PLS 4GIF & 4GET
+    //send_play_serverbound_player_block_place(bot, location, dir, (slot_t)0x000440000000, 0, 0, 0);
+    char buf[20] = {0x13, 0x08,
+        0x00, 0x00, 0x01, 0x00, 0xf4, 0x00, 0x00, 0x02,
+        0x02, 0x00, 0x04, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    };
+    if (location) {
+        memcpy(buf+2, location, sizeof(uint64_t));
+    }
+    send_raw(bot, (void *)buf, 2+8+10);
+    
+    // 00 00 01 00 f4 00 00 02 (position)
 }
 
 bool next_int_token(int* value, char *string, char **saveptr)
@@ -83,6 +106,60 @@ void exec(bot_t *bot, char *command, char *strargs)
                 (int)bot->x, (int)bot->y, (int)bot->z);
         printf(msg);
         send_play_serverbound_chat(bot, msg);
+    } else if (strcmp(command, "up") == 0) {
+        char msg[256] = {0};
+        
+        sprintf(msg, "I think I started at (%d, %d, %d) = (%f, %f, %f).\n",
+                (int)bot->x, (int)bot->y, (int)bot->z,
+                bot->x, bot->y, bot->z);
+        //send_play_serverbound_chat(bot, msg);
+
+        pthread_mutex_lock(&bot->bot_mutex);
+        int critical_value = (int)bot->y;
+        bot->y += 1;
+        pthread_mutex_unlock(&bot->bot_mutex);
+        send_play_serverbound_player_move(bot, bot->x, bot->y, bot->z, 1);
+
+        sprintf(msg, "I think I'm at (%d, %d, %d) = (%f, %f, %f).\n",
+                (int)bot->x, (int)bot->y, (int)bot->z,
+                bot->x, bot->y, bot->z);
+        //send_play_serverbound_chat(bot, msg);
+
+        char *location = encode_location((int)bot->x, critical_value, (int)bot->z);
+        place_block(bot, location);
+        free(location);
+        sprintf(msg, "Tried placing block at (%d, %d, %d) (%llu).\n",
+                (int)bot->x, critical_value, (int)bot->z, location);
+        //send_play_serverbound_chat(bot, msg);
+
+        printf("COMMAND <UP>: %s", msg);
+    } else if (strcmp(command, "build") == 0) {
+        char **saveptr = calloc(1, sizeof(char *));
+        bool valid_input = true;
+        char *token = NULL;
+        int x, y, z;
+
+        valid_input &= next_int_token(&x, strargs, saveptr);
+        valid_input &= next_int_token(&y, *saveptr, saveptr);
+        valid_input &= next_int_token(&z, *saveptr, saveptr);
+
+        // Ensure there are no trailing tokens.
+        token = strtok_r(*saveptr, " ", saveptr);
+        if (token) {
+            valid_input = false;
+        }
+
+        free(saveptr);
+        if (valid_input) {
+            printf("BUILD: (%d, %d, %d)\n", x, y, z);
+            char *location = encode_location(x, y, z);
+            place_block(bot, location);
+            free(location);
+        } else {
+            send_play_serverbound_chat(bot,
+                                       "Invalid arguments for BUILD command "
+                                       "(x, y, z).");
+        }
     } else {
         printf("Command not implemented: %s\n", command);
         send_play_serverbound_chat(bot,
@@ -167,9 +244,8 @@ void builder_main(void *vbot)
 {
     bot_t *bot = (bot_t *)vbot;
     msleep(500);
-    send_play_serverbound_item_change(bot, 0);
+    send_play_serverbound_player_move(bot, bot->x, bot->y, bot->z, 1);
     //2 = upwards
-    position_t location = encode_location(1+(int)bot->x, (int)bot->y, (int)bot->z);
     // Want to send:
     // 13 (len)
     // 08 (packet id)
@@ -177,8 +253,6 @@ void builder_main(void *vbot)
     // 02 (dir)
     // 00 04 40 00 00 00 (slot, '00 04 + <no. of blocks> + 00 00 00')
     // 00 00 00 (mouse x y z)
-    send_play_serverbound_player_block_place(bot, location, 2, (slot_t)0x000440000000,
-                                             0, 0, 0);
 
     // Timed function calls
     while(1) {
