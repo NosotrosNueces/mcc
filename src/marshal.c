@@ -211,7 +211,7 @@ size_t format_sizeof(char *c)
         return sizeof(int64_t);
     case 'q':
         return sizeof(__int128_t);
-    case '|': // Almost a hack
+    case '|':
         return 0;
     default:
         fprintf(stderr, "Bad format specifier: %c\n", *c);
@@ -281,6 +281,27 @@ void reentrant_memmove(void *dest, void *src, size_t len)
 
 }
 
+char *get_packet_sub_fmt(char *fmt, int start_index)
+{
+    char *end = &fmt[start_index];
+    int count = 0;
+    int p_depth = 1;
+    do {
+        end++;
+        count++;
+        if(*end == '(') {
+            p_depth++;
+        } else if(*end == ')') {
+            p_depth--;
+        }
+    } while(p_depth > 0);
+    char *arr = calloc(count, sizeof(char));
+    memcpy(arr, &fmt[start_index+1], count);
+    arr[count-1] = '\0';
+    return arr;
+}
+
+
 // puts the raw packet data from the struct packet_data into packet_raw
 // returns the number of bytes written to packet_raw, or -1 if packet_raw
 // is not a long enough array
@@ -326,13 +347,53 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw)
             ;
             fmt++;
             size_t size_elem = format_sizeof(fmt);
-            if(packet_raw - save + size_elem * arr_len > len)
-                return -1; // TODO: compression
-            void *arr = *((void **)packet_data);
-            for(int i = 0; i < arr_len * size_elem; i += size_elem) {
-                packet_raw = push(packet_raw, arr + i, size_elem);
-                reverse(packet_raw - size_elem, size_elem);
+            if(*fmt == '(') {
+                for(int i = 0; i < arr_len * size_elem; i += size_elem) {
+                    // format packet should recurse
+                }
+                fmt += strlen(get_packet_sub_fmt(fmt, 1));
+            } else {
+                if(packet_raw - save + size_elem * arr_len > len)
+                    return -1; // TODO: compression
+                void *arr = *((void **)packet_data);
+                for(int i = 0; i < arr_len * size_elem; i += size_elem) {
+                    packet_raw = push(packet_raw, arr + i, size_elem);
+                    reverse(packet_raw - size_elem, size_elem);
+                }
             }
+            break;
+        case '[': // Count | until we're at our choice
+            fmt++;
+            assert(arr_len != -1);
+            int choice_depth = 0;
+            int nest_depth = 0;
+            while(choice_depth < arr_len) {
+                if((*fmt) == '[') {
+                    nest_depth++;
+                } else if((*fmt) == ']') {
+                    nest_depth--;
+                    if(nest_depth < 0) {
+                        printf("Not enough choices available\n");
+                        // Boom. Crash. Bad stuff.
+                    }
+                } else if((*fmt) == '|' && nest_depth == 0) {
+                    choice_depth++;
+                }
+                fmt++;
+            }
+            break;
+        case '|': // We're at the end of our choice
+            ;
+            int depth = 1;
+            do {
+                fmt++;
+                if((*fmt) == ']') {
+                    depth--;
+                } else if((*fmt) == '[') {
+                    depth++;
+                }
+            } while(depth > 0);
+        case ']': // The end of the choice block
             break;
         default:
             ;
@@ -396,26 +457,17 @@ int decode_packet(bot_t *bot, void *packet_raw, void *packet_data)
             size_t size_elem = format_sizeof(fmt);
             void *arr = calloc(arr_len, size_elem);
             if(*fmt == '(') {
-                // Find the end of this array
-                char *end = fmt;
-                int count = 0;
-                int p_depth = 1;
-                do {
-                    end++;
-                    count++;
-                    if(*end == '(') {
-                        p_depth++;
-                    } else if(*end == ')') {
-                        p_depth--;
-                    }
-                } while(p_depth > 0);
-                char sub_format[count];
-                memcpy( sub_format, &fmt[1], count);
-                sub_format[count-1] = '\0';
+                char *sub_fmt = get_packet_sub_fmt(fmt, 0);
+                int sub_len = strlen(sub_fmt);
                 // Treat each array element as its own packet
                 for(int i = 0; i < arr_len *size_elem; i += size_elem) {
+                    char *copy = calloc(sub_len, sizeof(char));
+                    strncpy(copy, sub_fmt, sub_len);
+                    *((void **)arr + i) = copy;
                     decode_packet(bot, packet_raw + i, arr + i);
                 }
+                free(sub_fmt);
+                fmt += sub_len;
             } else {
                 // Normal array behavior
                 for(int i = 0; i < arr_len * size_elem; i += size_elem) {
@@ -489,15 +541,66 @@ void free_packet(void *packet_data)
 {
     char *fmt = *((char **)packet_data);
     void *save = packet_data;
+    size_t arr_len = 0;
+    uint32_t value = 0;
     packet_data += sizeof(void *);
     while (*fmt) {
         size_t size = format_sizeof(fmt);
         packet_data = (void *)align(packet_data, size);
-        // This leaks memory on nested arrays
-        if (*fmt == 's' || *fmt == '*') {
-            free(*((void **)packet_data));
-            if(*fmt == '*')
+        switch (*fmt) {
+        case '[': // Count | until we're at our choice
+            fmt++;
+            assert(arr_len != -1);
+            int choice_depth = 0;
+            int nest_depth = 0;
+            while(choice_depth < arr_len) {
+                if((*fmt) == '[') {
+                    nest_depth++;
+                } else if((*fmt) == ']') {
+                    nest_depth--;
+                    if(nest_depth < 0) {
+                        printf("Not enough choices available\n");
+                        // Boom. Crash. Bad stuff.
+                    }
+                } else if((*fmt) == '|' && nest_depth == 0) {
+                    choice_depth++;
+                }
                 fmt++;
+            }
+            break;
+        case '|': // We're at the end of our choice
+            ;
+            int depth = 1;
+            do {
+                fmt++;
+                if((*fmt) == ']') {
+                    depth--;
+                } else if((*fmt) == '[') {
+                    depth++;
+                }
+            } while(depth > 0);
+        case ']': // The end of the choice block
+            break;
+        case 's':
+            free(*((void **)packet_data));
+            break;
+        case '*':
+            if(fmt[1] == '(') {
+                for(int i = 0 ; i < arr_len; i++) {
+                    free_packet(((void **)packet_data)[i]);
+                }
+                fmt += strlen(get_packet_sub_fmt(fmt, 1));
+            } else {
+                free(*((void **)packet_data));
+                fmt++;
+            }
+            break;
+        case 'v':
+            value = *((uint32_t *)packet_data);
+            arr_len = value;
+            break;
+        default:
+            arr_len = value_at(packet_data, size);
         }
         packet_data += size;
         fmt++;
