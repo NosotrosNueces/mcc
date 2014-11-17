@@ -179,62 +179,75 @@ void format_sizeof_test()
     size_t goal;
     char fmt[50];
     printf("Testing format_sizeof for *()\n");
-    goal = sizeof(int8_t) + sizeof(int32_t) + sizeof(void *);
-    strcpy(fmt, "(bws)lv");
 
-    if(goal != format_sizeof(fmt)) {
-        printf("format_sizeof does not support *()\n");
-        printf("goal:%lu actual:%lu\n", goal, format_sizeof(fmt));
-        return;
+#define _test_case(FMT, GOAL, ERROR)          \
+    goal = GOAL;                              \
+    strcpy(fmt, FMT);                         \
+    if(goal != format_sizeof(fmt)) {          \
+        printf("%s\ngoal:%lu actual:%lu\n",   \
+            ERROR, goal, format_sizeof(fmt)); \
+        return;                               \
     }
 
-    goal = sizeof(int8_t) + sizeof(vint32_t) + sizeof(void *);
-    strcpy(fmt, "(bv*(ws))lv");
+    _test_case("(bws)lv",
+        sizeof(int8_t) + sizeof(int32_t) + sizeof(void *),
+        "format_sizeof does not support *()");
 
-    if(goal != format_sizeof(fmt)) {
-        printf("format_sizeof does not support nested *()\n");
-        printf("goal:%lu actual:%lu\n", goal, format_sizeof(fmt));
-        return;
-    }
+    _test_case("(bv*(ws))lv",
+        sizeof(int8_t) + sizeof(vint32_t) + sizeof(void *),
+        "format_sizeof does not support nested *()");
 
     printf("Testing format_sizeof for []\n");
-    goal = sizeof(int32_t) + sizeof(int32_t) + sizeof(int64_t);
-    strcpy(fmt, "[bv||wwl]lv");
 
-    if(goal != format_sizeof(fmt)) {
-        printf("format_sizeof does not support []\n");
-        printf("goal:%lu actual:%lu\n", goal, format_sizeof(fmt));
-        return;
+    _test_case("[bv||wwl]lv",
+        sizeof(int32_t) + sizeof(int32_t) + sizeof(int64_t),
+        "format_sizeof does not support []");
+
+    _test_case("[bvb[|w]||wwlb[l|w]]lv",
+        sizeof(int32_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(int8_t) + sizeof(int64_t),
+        "format_sizeof does not support nested []");
+
+    _test_case("[b[|w]|wv*(ws)|b[h|w]]lv",
+        sizeof(int32_t) + sizeof(vint32_t) + sizeof(void *),
+        "format_sizeof does not support *() within []");
+
+    _test_case("(wb[h|l])lv",
+        sizeof(int32_t) + sizeof(int8_t) + sizeof(int64_t),
+        "format_sizeof does not support [] within *()");
+
+    printf("Passed all format_sizeof tests\n\n");
+
+#undef _test_case
+
+}
+
+void get_packet_sub_fmt_test()
+{
+    char fmt[50];
+    char goal[50];
+    char *sub_fmt;
+    printf("Testing get_packet_sub_fmt\n");
+
+#define _test_case(FMT, GOAL, START, ERROR)           \
+    strcpy(fmt, FMT);                                 \
+    strcpy(goal, GOAL);                               \
+    sub_fmt = get_packet_sub_fmt(fmt, START);         \
+    if(strncmp(sub_fmt, goal, strlen(GOAL)+1) != 0) { \
+        printf("%s\ngoal:%s actual:%s\n",             \
+            ERROR, goal, sub_fmt);                    \
+        return;                                       \
     }
 
-    goal = sizeof(int32_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(int8_t) + sizeof(int64_t);
-    strcpy(fmt, "[bvb[|w]||wwlb[l|w]]lv");
+    _test_case("hsv*(bws)lv", "bws", 4,
+        "get_packet_sub_fmt broke");
 
-    if(goal != format_sizeof(fmt)) {
-        printf("format_sizeof does not support nested []\n");
-        printf("goal:%lu actual:%lu\n", goal, format_sizeof(fmt));
-        return;
-    }
+    _test_case("hsv*(bwsv*(bh)h)lv", "bwsv*(bh)h", 4,
+        "get_packet_sub_fmt doesn't handle nested *()");
 
-    goal = sizeof(int32_t) + sizeof(vint32_t) + sizeof(void *);
-    strcpy(fmt, "[b[|w]|wv*(ws)|b[h|w]]lv");
+    printf("Passed all get_packet_sub_fmt tests\n\n");
 
-    if(goal != format_sizeof(fmt)) {
-        printf("format_sizeof does not support *() within []\n");
-        printf("goal:%lu actual:%lu\n", goal, format_sizeof(fmt));
-        return;
-    }
+#undef _test_case
 
-    goal = sizeof(int32_t) + sizeof(int8_t) + sizeof(int64_t);
-    strcpy(fmt, "(wb[h|l])lv");
-
-    if(goal != format_sizeof(fmt)) {
-        printf("format_sizeof does not support [] within *()\n");
-        printf("goal:%lu actual:%lu\n", goal, format_sizeof(fmt));
-        return;
-    }
-
-    printf("Passed all format_sizeof tests\n");
 }
 
 void packet_test(void)
@@ -250,5 +263,8 @@ void packet_test(void)
             printf("Format string %s failed\n", fmt);
     }
 
+    printf("\n");
+
     format_sizeof_test();
+    get_packet_sub_fmt_test();
 }

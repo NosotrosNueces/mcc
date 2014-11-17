@@ -13,7 +13,7 @@ MCC is a MineCraft Client API written in C. Its purpose is to enable automation 
 
 ## Packet Format Guide ##
 
-Structs can be serialized to bytes by defining a format string for the packet serializer. The following table describes the format guidelines.
+Structs can be serialized to bytes by defining a format string for the packet serializer. The following table contains the available element types:
 
 | fmt | type     |
 | --- | -------- |
@@ -24,6 +24,13 @@ Structs can be serialized to bytes by defining a format string for the packet se
 | `q` | 16 bytes |
 | `s` | string   |
 | `v` | varint32 |
-| `*` | array    |
 
-Note: the array format character is a prefix to other types or groups of types (e.g. `*b` for a char array).
+In addition, the format language supports the following control structures:
+
+| fmt | type |
+| --- | ---- |
+| `*` | primitive array |
+| `*()` | struct array |
+| `[|]` | choice block |
+
+Each control structure uses the value of the preceding primitive element as its count. Each member of a choice block or struct array is read as a separate format string; as such control structures can be nested (but please use caution).

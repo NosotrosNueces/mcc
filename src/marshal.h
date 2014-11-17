@@ -16,6 +16,7 @@ int varint32_encode(int32_t value, char *data, int len);
 
 void reverse(void *number, int len);
 
+char *get_packet_sub_fmt(char *fmt, int start_index);
 int format_packet(bot_t *bot, void *packet_data, void *packet_raw);
 int decode_packet(bot_t *bot, void *packet_raw, void *packet_data);
 void free_packet(void *);
