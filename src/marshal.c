@@ -110,17 +110,17 @@ size_t format_sizeof(char *c)
 {
     // Special case to support struct arrays
     if(*c == '(') {
-        size_t arr = 0;
+        size_t len = 0;
         int depth = 1;
         c++;
         do {
             if(depth == 1) {
-                arr += format_sizeof(c);
+                len += format_sizeof(c);
             }
             c++;
             if(*c == '[') {
             // When we hit a choice, add the size of it
-              arr += format_sizeof(c);
+              len += format_sizeof(c);
               // Then pass over it
               int p_depth = 0;
               do {
@@ -141,7 +141,7 @@ size_t format_sizeof(char *c)
                 c++;
             }
         } while(depth > 0);
-        return arr;
+        return len;
     }
 
     // Special case to support option blocks
@@ -283,6 +283,12 @@ void reentrant_memmove(void *dest, void *src, size_t len)
 
 char *get_packet_sub_fmt(char *fmt, int start_index)
 {
+    // If told to get sub_fmt in an invalid location,
+    // this returns the whole string
+    if(fmt[start_index] != '(') {
+        return fmt;
+    }
+
     char *end = &fmt[start_index];
     int count = 0;
     int p_depth = 1;
