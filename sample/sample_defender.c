@@ -3,6 +3,7 @@
 #include "bot.h"
 #include "protocol.h"
 #include "api.h"
+#include "timers.h"
 
 typedef struct entity_node {
     vint32_t entity;
@@ -83,6 +84,9 @@ void entity_status_handler(bot_t *bot, void *vp)
 void defender_main(void *vbot)
 {
     bot_t *bot = (bot_t *)vbot;
+    struct timeval delay = {0, 500000};
+    register_timer(bot, delay, -1, timer_echo_pos);
+
     msleep(500);
     send_play_serverbound_item_change(bot, 0);
 

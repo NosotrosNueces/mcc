@@ -112,14 +112,20 @@ void client_run(bot_t **bots, uint32_t num)
         pthread_join(bot_threads[i], NULL);
         pthread_join(receivers[i], NULL);
         pthread_join(callbackers[i], NULL);
+        pthread_join(schedulers[i], NULL);
+        pthread_join(executors[i], NULL);
     }
 
-    for (i = 0; i < num; i++)
+    for (i = 0; i < num; i++) {
         pipe_free(pipes[i]);
+        pipe_free(timer_pipes[i]);
+    }
 
     free(bot_threads);
     free(receivers);
     free(callbackers);
+    free(executors);
+    free(schedulers);
 }
 
 void *bot_thread(void *bot)
@@ -183,7 +189,6 @@ void *callbacker(void *index)
     return NULL;
 }
 
-
 void *scheduler(void *index)
 {
     int i = (uint64_t) index;
@@ -198,7 +203,8 @@ void *scheduler(void *index)
         nanosleep(&rqtp, &dummy);
         // Check for all functions that need to be called.
         timed_function *func = *(bot->_data->timers);
-        while (func->f) {
+        while (func->f &&
+               func->interval->tv_sec >= 0 && func->interval->tv_usec > 0) {
             gettimeofday(&tp, NULL);
             timeval_subtract(&dt, &tp, func->last_time_called);
             timeval_subtract(&dt, &dt, func->interval);

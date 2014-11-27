@@ -49,7 +49,7 @@ void free_bot(bot_t *bot)
 
     free(bot->_data->buf);
 
-    // free all handshake callback structs
+    // Free all handshake callback structs.
     for(int i = 0; i < HANDSHAKE_PACKETS; i++)
         free_list(bot->_data->callbacks[HANDSHAKE][i].next);
     for(int i = 0; i < LOGIN_PACKETS; i++)
@@ -60,6 +60,19 @@ void free_bot(bot_t *bot)
     free(bot->_data->callbacks[LOGIN]);
     free(bot->_data->callbacks[PLAY]);
     free(bot->_data->callbacks);
+
+    // Free all timers in the linked list.
+    timed_function *node = *bot->_data->timers;
+    timed_function *prev_node = NULL;
+    // Use free_list?
+    while(node) {
+        prev_node = node;
+        node = node->next;
+        free(prev_node->last_time_called);
+        free(prev_node->interval);
+        free(prev_node);
+    }
+    free(bot->_data->timers);
 
     free(bot->_data);
 
@@ -98,7 +111,7 @@ timed_function *register_timer(bot_t *bot, struct timeval delay,
     new_node->prev = NULL;
     new_node->last_time_called = calloc(1, sizeof(struct timeval));
     gettimeofday(new_node->last_time_called, NULL);
-    new_node->interval = calloc(1, sizeof(struct timeval *));
+    new_node->interval = calloc(1, sizeof(struct timeval));
     memcpy(new_node->interval, &delay, sizeof(struct timeval));
     new_node->repeat_count = count;
 
