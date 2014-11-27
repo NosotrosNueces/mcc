@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <stdlib.h>
@@ -33,6 +34,9 @@ bot_t *init_bot(char *name, void (*bot_main)(void *))
     bot->_data->callbacks[HANDSHAKE] = calloc(HANDSHAKE_PACKETS, sizeof(function));
     bot->_data->callbacks[LOGIN] = calloc(LOGIN_PACKETS, sizeof(function));
     bot->_data->callbacks[PLAY] = calloc(PLAY_PACKETS, sizeof(function));
+    bot->_data->timers = calloc(1, sizeof(timed_function *));
+    // Dummy tail for the timer list.
+    *(bot->_data->timers) = calloc(1, sizeof(timed_function));
 
     // initialize pthread_mutex
     pthread_mutex_init(&bot->bot_mutex, NULL);
@@ -72,7 +76,6 @@ void free_list(function *list)
     }
 }
 
-
 void register_event(bot_t *bot, uint32_t state, uint32_t packet_id,
                     void (*f)(bot_t *, void *))
 {
@@ -84,10 +87,47 @@ void register_event(bot_t *bot, uint32_t state, uint32_t packet_id,
     parent->next = child;
 }
 
-// initializes a bot structure with a socket. The socket is bound to the local address on
-// some port and is connected to the server specified by the server_host and server_port
-// the socket descriptor is returned by the function. If -1 is returned, then an error
-// occured, and a message will have been printed out.
+timed_function *register_timer(bot_t *bot, struct timeval delay,
+                               int count, void (*f)(bot_t *, void *))
+{
+    timed_function **old_head = bot->_data->timers;
+
+    timed_function *new_node = calloc(1, sizeof(timed_function));
+    new_node->f = f;
+    new_node->next = *old_head;
+    new_node->prev = NULL;
+    new_node->last_time_called = calloc(1, sizeof(struct timeval));
+    gettimeofday(new_node->last_time_called, NULL);
+    new_node->interval = calloc(1, sizeof(struct timeval *));
+    memcpy(new_node->interval, &delay, sizeof(struct timeval));
+    new_node->repeat_count = count;
+
+    // Always insert to the head.
+    (*old_head)->prev = new_node;
+    *(bot->_data->timers) = new_node;
+
+    return new_node;
+}
+
+void unregister_timer(bot_t *bot, timed_function *timer)
+{
+    if (timer->prev) {
+        timer->next->prev = timer->prev;
+        timer->prev->next = timer->next;
+    } else { // First element is a special case.
+        timer->next->prev = NULL;
+        *(bot->_data->timers) = timer->next;
+    }
+    free(timer->last_time_called);
+    free(timer->interval);
+    free(timer);
+}
+
+// Initializes a bot structure with a socket. The socket is bound to the
+// local address on some port and is connected to the server specified by the
+// server_host and server_port the socket descriptor is returned by the
+// function. If -1 is returned, then an error occured, and a message will
+// have been printed out.
 
 int join_server(bot_t *bot, char* server_host, int port_number)
 {

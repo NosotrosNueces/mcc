@@ -9,6 +9,7 @@ typedef enum {HANDSHAKE, LOGIN, STATUS, PLAY, NUM_STATES} state;
 
 typedef struct bot bot_t;
 typedef struct _function function;
+typedef struct _timed_function timed_function;
 typedef struct _bot_internal bot_internal;
 
 struct bot {
@@ -57,14 +58,25 @@ struct _bot_internal {
     size_t packet_threshold;
     char *buf;
     state current_state;
-    /* registered callbacks */
     void (*bot_main)(void *);
     function **callbacks;
+    timed_function **timers;
 };
 
 struct _function {
     void (*f)(bot_t *, void *);
     struct _function *next;
+};
+
+struct _timed_function {
+    void (*f)(bot_t *, void *);
+    struct _timed_function *next;
+    struct _timed_function *prev;
+    struct timeval *last_time_called;
+    // If interval = {0, 0}, never call the function.
+    struct timeval *interval;
+    // -1 for always repeat, 1 for exec once.
+    int repeat_count;
 };
 
 extern struct bot context;
@@ -92,7 +104,26 @@ void free_bot(bot_t *);
  *  is recieved.
  *  Note: Currently there is no way to "un-register" a callback.
  */
-void register_event(bot_t *bot, uint32_t state, uint32_t packet_id, void (*f)(bot_t *, void *));
+void register_event(bot_t *bot, uint32_t state, uint32_t packet_id,
+                    void (*f)(bot_t *, void *));
+
+/** \brief Register to set an interval or timeout function.
+ *
+ *  Registering an interval or timeout works in the same manner as in
+ *  Javascript; this function is designed to emulate setTimeout and
+ *  setInterval.
+ *  Note: Waits delay before the first call.
+ */
+timed_function *register_timer(bot_t *bot, struct timeval delay,
+                               int count, void (*f)(bot_t *, void *));
+
+/** \brief Unregister a set interval or timeout function.
+ *
+ *  Unregistering an interval or timeout works similarly to Javascript. An
+ *  "id" is given, which is really just a node in a doubly-linked list that
+ *  gets freed.
+ */
+void unregister_timer(bot_t *bot, timed_function *id);
 
 /** \brief Open a socket to the specified server
  *
