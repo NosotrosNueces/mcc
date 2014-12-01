@@ -162,8 +162,8 @@ void slave_main(void *vbot)
     msleep(500);
     send_play_serverbound_player_status(bot, 0);
     send_play_serverbound_item_change(bot, 0);
-    
-    sleep(-1);
+
+    pause();
 }
 
 bot_t *init_slave(char *name, char *server_name, int port)

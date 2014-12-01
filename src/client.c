@@ -39,31 +39,34 @@ void *bot_thread(void *bot);
 /* Subtract the ‘struct timeval’ values X and Y,
  * storing the result in RESULT.
  * Return 1 if the difference is negative, otherwise 0.
- * See: http://www.gnu.org/software/libc/manual/html_node/Elapsed-Time.html*/
+ * See: http://www.gnu.org/software/libc/manual/html_node/Elapsed-Time.html
+ */
 
 int timeval_subtract (struct timeval *result,
                       struct timeval *x,
                       struct timeval *y)
 {
+    long y_sec = y->tv_sec;
+    long y_usec = y->tv_usec;
     /* Perform the carry for the later subtraction by updating y. */
-    if (x->tv_usec < y->tv_usec) {
-        int nsec = (y->tv_usec - x->tv_usec) / 1000000 + 1;
-        y->tv_usec -= 1000000 * nsec;
-        y->tv_sec += nsec;
+    if (x->tv_usec < y_usec) {
+        int nsec = (y_usec - x->tv_usec) / 1000000 + 1;
+        y_usec -= 1000000 * nsec;
+        y_sec += nsec;
     }
-    if (x->tv_usec - y->tv_usec > 1000000) {
-        int nsec = (x->tv_usec - y->tv_usec) / 1000000;
-        y->tv_usec += 1000000 * nsec;
-        y->tv_sec -= nsec;
+    if (x->tv_usec - y_usec > 1000000) {
+        int nsec = (x->tv_usec - y_usec) / 1000000;
+        y_usec += 1000000 * nsec;
+        y_sec -= nsec;
     }
 
     /* Compute the time remaining to wait.
      *      tv_usec is certainly positive. */
-    result->tv_sec = x->tv_sec - y->tv_sec;
-    result->tv_usec = x->tv_usec - y->tv_usec;
+    result->tv_sec = x->tv_sec - y_sec;
+    result->tv_usec = x->tv_usec - y_usec;
 
     /* Return 1 if result is negative. */
-    return x->tv_sec < y->tv_sec;
+    return x->tv_sec < y_sec;
 }
 
 void client_run(bot_t **bots, uint32_t num)
@@ -194,8 +197,9 @@ void *scheduler(void *index)
     int i = (uint64_t) index;
     bot_t *bot = bot_list[i];
     pipe_producer_t *p = pipe_producer_new(timer_pipes[i]);
-    //assert(SLEEP_INTERVAL_US < 1000000);
-    struct timespec rqtp = {0, 1000*SLEEP_INTERVAL_US};
+    struct timespec rqtp = {(SLEEP_INTERVAL_US)/1000000,
+               (1000*SLEEP_INTERVAL_US)%1000000000
+    };
     struct timeval tp, dt;
     struct timespec dummy;
 
@@ -208,8 +212,8 @@ void *scheduler(void *index)
             gettimeofday(&tp, NULL);
             timeval_subtract(&dt, &tp, func->last_time_called);
             timeval_subtract(&dt, &dt, func->interval);
+            // dt = current_time - last_call_time - interval_time
             if (dt.tv_sec >= 0 && dt.tv_usec > 0) {
-                //printf("Adding timer to pipe.\n");
                 pipe_push(p, &func, 1);
             }
             func = func->next;
