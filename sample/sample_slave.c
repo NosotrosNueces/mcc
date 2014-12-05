@@ -6,6 +6,7 @@
 #include "protocol.h"
 #include "json.h"
 #include "api.h"
+#include "timers.h"
 
 typedef struct bot_globals {
     int status;
@@ -155,15 +156,14 @@ void chat_handler(bot_t *bot, void *vp)
 void slave_main(void *vbot)
 {
     bot_t *bot = (bot_t *)vbot;
+    struct timeval delay = {0, 500000};
+    register_timer(bot, delay, -1, timer_echo_pos);
+
     msleep(500);
+    send_play_serverbound_player_status(bot, 0);
     send_play_serverbound_item_change(bot, 0);
 
-    // Timed function calls
-    while(1) {
-        msleep(500);
-        send_play_serverbound_player_status(bot, 0);
-        send_play_serverbound_player_move(bot, bot->x, bot->y, bot->z, 1);
-    }
+    pause();
 }
 
 bot_t *init_slave(char *name, char *server_name, int port)

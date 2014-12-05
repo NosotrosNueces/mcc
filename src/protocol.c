@@ -18,7 +18,7 @@
     int8_t packet[BOT->_data->packet_threshold];              \
     length = format_packet(BOT, &PACKET, (void *) &packet);   \
     send_raw(bot, packet, length);                            \
- 
+
 /*
  * Handshaking serverbound functions
  */
