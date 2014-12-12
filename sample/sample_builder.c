@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -10,34 +11,6 @@
 typedef struct bot_globals {
     int status;
 } bot_globals_t;
-
-char * encode_location(long x, long y, long z) {
-    //return ((x & 0x3FFFFFF) << 38) | ((y & 0xFFF) << 26) | (z & 0x3FFFFFF);
-    // Pls no
-    long long loc = ((x & 0x3FFFFFF) << 38) | ((y & 0xFFF) << 26) | (z & 0x3FFFFFF);
-    char *location = (char *)calloc(8, sizeof(char));
-    for(int i = 0; i < 8; i++) {
-        *(location+i) = 0xff & (loc >> ((7-i)*8));
-    }
-    return location;
-}
-
-void place_block(bot_t *bot, char *location) {
-    // ITS A HACK PLS 4GIF & 4GET
-    //send_play_serverbound_player_block_place(bot, location, dir, (slot_t)0x000440000000, 0, 0, 0);
-    char buf[20] = {0x13, 0x08,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x02,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        //0x02, 0x00, 0x04, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    };
-    if (location) {
-        memcpy(buf+2, location, sizeof(uint64_t));
-    }
-    send_raw(bot, (void *)buf, 2+8+10);
-    
-    // 00 00 01 00 f4 00 00 02 (position)
-}
 
 bool next_int_token(int* value, char *string, char **saveptr)
 {
@@ -111,26 +84,30 @@ void exec(bot_t *bot, char *command, char *strargs)
         char msg[256] = {0};
         
         sprintf(msg, "I think I started at (%d, %d, %d) = (%f, %f, %f).\n",
-                (int)bot->x, (int)bot->y, (int)bot->z,
+                (int)floor(bot->x - 0.5), (int)bot->y, (int)floor(bot->z - 0.5),
                 bot->x, bot->y, bot->z);
         //send_play_serverbound_chat(bot, msg);
+        printf(msg);
 
         pthread_mutex_lock(&bot->bot_mutex);
-        int critical_value = (int)bot->y;
+        int critical_value = (int)floor(bot->y);
         bot->y += 1;
         pthread_mutex_unlock(&bot->bot_mutex);
         send_play_serverbound_player_move(bot, bot->x, bot->y, bot->z, 1);
 
         sprintf(msg, "I think I'm at (%d, %d, %d) = (%f, %f, %f).\n",
-                (int)bot->x, (int)bot->y, (int)bot->z,
+                (int)floor(bot->x - 0.5), (int)bot->y, (int)floor(bot->z - 0.5),
                 bot->x, bot->y, bot->z);
         //send_play_serverbound_chat(bot, msg);
+        printf(msg);
 
-        char *location = encode_location((int)bot->x, critical_value, (int)bot->z);
-        place_block(bot, location);
-        free(location);
-        sprintf(msg, "Tried placing block at (%d, %d, %d) (%llu).\n",
-                (int)bot->x, critical_value, (int)bot->z, location);
+        place_held(bot,
+                   (int)floor(bot->x - 0.5),
+                   critical_value,
+                   (int)floor(bot->z - 0.5));
+        sprintf(msg, "Tried placing block at (%d, %d, %d).\n",
+                (int)floor(bot->x - 0.5), critical_value, (int)floor(bot->z - 0.5),
+                (int)bot->x, critical_value, (int)bot->z);
         //send_play_serverbound_chat(bot, msg);
 
         printf("COMMAND <UP>: %s", msg);
@@ -153,9 +130,7 @@ void exec(bot_t *bot, char *command, char *strargs)
         free(saveptr);
         if (valid_input) {
             printf("BUILD: (%d, %d, %d)\n", x, y, z);
-            char *location = encode_location(x, y, z);
-            place_block(bot, location);
-            free(location);
+            place_held(bot, x, y, z);
         } else {
             send_play_serverbound_chat(bot,
                                        "Invalid arguments for BUILD command "
@@ -244,7 +219,7 @@ void chat_handler(bot_t *bot, void *vp)
 void builder_main(void *vbot)
 {
     bot_t *bot = (bot_t *)vbot;
-    msleep(500);
+    msleep(1000);
     send_play_serverbound_player_move(bot, bot->x, bot->y, bot->z, 1);
     //2 = upwards
     // Want to send:
@@ -256,6 +231,29 @@ void builder_main(void *vbot)
     // 00 00 00 (mouse x y z)
 
     // Timed function calls
+    /*
+    int x = (int)floor(bot->x - 0.5);
+    int y = (int)bot->y;
+    int z = (int)floor(bot->z - 0.5);
+    printf("STARTING FROM: (%d, %d, %d)\n", x, y, z);
+    place_held(bot, x, y-1, z);
+    msleep(300);
+    place_held(bot, x, y+2, z);
+    msleep(300);
+    place_held(bot, x, y+3, z);
+    msleep(300);
+    place_held(bot, x+1, y, z);
+    msleep(300);
+    place_held(bot, x-1, y, z);
+    msleep(300);
+    place_held(bot, x, y, z+1);
+    msleep(300);
+    place_held(bot, x, y, z-1);
+    msleep(300);
+    TESTING ONLY
+    */
+        
+        
     while(1) {
         msleep(500);
         send_play_serverbound_player_status(bot, 0);
