@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <string.h>
+#include "api.h"
 #include "bot.h"
 #include "protocol.h"
 #include <pthread.h>
@@ -49,6 +51,30 @@ void join_game_handler(bot_t *bot, void *vp)
     // Set client version (plugin messages currently broken).
     //send_play_serverbound_plugin_message(bot, "MC|Brand",
     //                                     (uint8_t *)"vanilla");
+}
+
+void chat_handler(bot_t *bot, void *vp)
+{
+    play_clientbound_chat_t *p =
+        (play_clientbound_chat_t *)vp;
+    char *msg = NULL;
+    char *sender = NULL;
+    decode_chat_json(p->json, &msg, &sender);
+    // Ensure that we do not echo ourselves,
+    // and that we received a chat message (not a server message).
+    if (msg && sender && strcmp(sender, bot->name)) {
+        // Commands to bots start with a backslash.
+        // Only operate on non-empty commands.
+        if (msg[0] == '\\' && msg[1]) {
+            // Parse space delimited tokens.
+            char **saveptr = calloc(1, sizeof(char *));
+            char *command = strtok_r(msg+1, " ", saveptr);
+            execute_command(bot, command, *saveptr);
+            free(saveptr);
+        }
+    }
+    free(sender);
+    free(msg);
 }
 
 void update_health_handler(bot_t *bot, void *vp)
