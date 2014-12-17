@@ -23,6 +23,19 @@ bool next_int_token(int* value, char *string, char **saveptr)
     return false;
 }
 
+position_t encode_location(uint64_t x, uint64_t  y, uint64_t z) {
+    position_t location = ((x & 0x3FFFFFF) << 38) |
+                          ((y & 0xFFF) << 26) |
+                          (z & 0x3FFFFFF);
+    return location;
+}
+        
+void dig(bot_t *bot, int x, int y, int z) {
+    position_t location = encode_location(x, y, z);
+    send_play_serverbound_player_dig(bot, 0x00, location, 0x01);
+    send_play_serverbound_player_dig(bot, 0x02, location, 0x01);
+}
+
 void exec(bot_t *bot, char *command, char *strargs)
 {
     if (strcmp(command, "dig") == 0) {
@@ -44,7 +57,7 @@ void exec(bot_t *bot, char *command, char *strargs)
         free(saveptr);
         if (valid_input) {
             printf("DIG: (%d, %d, %d)\n", x, y, z);
-            //dig(bot, x, y, z);
+            dig(bot, x, y, z);
         } else {
             send_play_serverbound_chat(bot,
                                        "Invalid arguments for DIG command "

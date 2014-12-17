@@ -9,7 +9,7 @@
 
 #define SERVER_NAME "localhost"
 #define DEFAULT_SERVER_PORT 25565
-#define NUM_BOTS 2
+#define NUM_BOTS 1
 
 int main(int argc, char *argv[], char **envp)
 {
@@ -22,8 +22,8 @@ int main(int argc, char *argv[], char **envp)
 
     bot_t *bots[NUM_BOTS];
 
-    bots[0] = init_defender("plants", server_name, DEFAULT_SERVER_PORT);
-    bots[1] = init_slave("batman", server_name, DEFAULT_SERVER_PORT);
+    //bots[0] = init_defender("plants", server_name, DEFAULT_SERVER_PORT);
+    bots[0] = init_slave("batman", server_name, DEFAULT_SERVER_PORT);
 
     client_run(bots, NUM_BOTS);
 
