@@ -14,16 +14,23 @@
 int main(int argc, char *argv[], char **envp)
 {
     char *server_name;
+    int port;
     if (argc == 2) {
         server_name = argv[1];
+        port = DEFAULT_SERVER_PORT;
+    } else if (argc == 3) {
+        server_name = argv[1];
+        port = strtol(argv[2], NULL, 0);
+        printf("port: %d\n", port);
     } else {
         server_name = SERVER_NAME;
+        port = DEFAULT_SERVER_PORT;
     }
 
     bot_t *bots[NUM_BOTS];
 
     //bots[0] = init_defender("plants", server_name, DEFAULT_SERVER_PORT);
-    bots[0] = init_slave("batman", server_name, DEFAULT_SERVER_PORT);
+    bots[0] = init_slave("batman", server_name, port);
 
     client_run(bots, NUM_BOTS);
 

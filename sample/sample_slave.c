@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <semaphore.h>
 #include "bot.h"
 #include "protocol.h"
 #include "json.h"
@@ -10,6 +11,8 @@
 
 typedef struct bot_globals {
     int status;
+    sem_t dig_sem;
+    position_t current_block;
 } bot_globals_t;
 
 bool next_int_token(int* value, char *string, char **saveptr)
@@ -29,16 +32,96 @@ position_t encode_location(uint64_t x, uint64_t  y, uint64_t z) {
                           (z & 0x3FFFFFF);
     return location;
 }
-        
+
+void block_update_handler(bot_t *bot, void *vp) {
+    play_clientbound_block_change_t *p =
+        (play_clientbound_block_change_t *)vp;
+    printf("BLOCK UPDATE (loc, id) = (%lx, %lx).\n", p->location, p->block_id);
+    if ((p->block_id >> 4) == 0) {
+        printf("BLOCK CLEARED.\n");
+        if (((bot_globals_t *)bot->state)->current_block == p->location) {
+            printf("Finished mining current block.\n");
+    
+            int sem_val;
+            sem_getvalue(&((bot_globals_t *)bot->state)->dig_sem, &sem_val);
+            printf("Semaphore value: %d, incrementing.\n", sem_val);
+
+            sem_post(&((bot_globals_t *)bot->state)->dig_sem);
+            ((bot_globals_t *)bot->state)->current_block = 0;
+
+
+            sem_getvalue(&((bot_globals_t *)bot->state)->dig_sem, &sem_val);
+            printf("Semaphore value: %d, incremented.\n", sem_val);
+        }
+    }
+}
+
 void dig(bot_t *bot, int x, int y, int z) {
+    int sem_val;
+    printf("exec dig @ (%d, %d, %d)\n", x, y, z);
+    sem_getvalue(&((bot_globals_t *)bot->state)->dig_sem, &sem_val);
+    printf("Semaphore value: %d.\n", sem_val);
+
     position_t location = encode_location(x, y, z);
+    ((bot_globals_t *)bot->state)->current_block = location;
+
     send_play_serverbound_player_dig(bot, 0x00, location, 0x01);
     send_play_serverbound_player_dig(bot, 0x02, location, 0x01);
 }
 
+void clear_area(bot_t *bot,
+                int x_1, int y_1, int z_1, 
+                int x_2, int y_2, int z_2) {
+    int x_start, dx, y_start, dy, z_start, dz;
+    x_start = x_1 < x_2 ? x_1 : x_2;
+    dx = abs(x_1 - x_2);
+    y_start = y_1 < y_2 ? y_1 : y_2;
+    dy = abs(y_1 - y_2);
+    z_start = z_1 < z_2 ? z_1 : z_2;
+    dz = abs(z_1 - z_2);
+    for (int x = 0; x <= dx; ++x) {
+        for (int y = 0; y <= dy; ++y) {
+            for (int z = 0; z <= dz; ++z) {
+                dig(bot, x_start + x, y_start + y, z_start + z);
+                sem_wait(&((bot_globals_t *)bot->state)->dig_sem);
+            }
+        }
+    }
+}
+
 void exec(bot_t *bot, char *command, char *strargs)
 {
-    if (strcmp(command, "dig") == 0) {
+    if (strcmp(command, "clear") == 0) {
+        char **saveptr = calloc(1, sizeof(char *));
+        bool valid_input = true;
+        char *token = NULL;
+        int x_1, y_1, z_1, x_2, y_2, z_2;
+
+        valid_input &= next_int_token(&x_1, strargs, saveptr);
+        valid_input &= next_int_token(&y_1, *saveptr, saveptr);
+        valid_input &= next_int_token(&z_1, *saveptr, saveptr);
+        valid_input &= next_int_token(&x_2, *saveptr, saveptr);
+        valid_input &= next_int_token(&y_2, *saveptr, saveptr);
+        valid_input &= next_int_token(&z_2, *saveptr, saveptr);
+
+        // Ensure there are no trailing tokens.
+        token = strtok_r(*saveptr, " ", saveptr);
+        if (token) {
+            valid_input = false;
+        }
+
+        free(saveptr);
+        if (valid_input) {
+            printf("CLEAR: (%d, %d, %d) to (%d, %d, %d)\n",
+                   x_1, y_1, z_1,
+                   x_2, y_2, z_2);
+            clear_area(bot, x_1, y_1, z_1, x_2, y_2, z_2);
+        } else {
+            send_play_serverbound_chat(bot,
+                                       "Invalid arguments for CLEAR command "
+                                       "(x1, y1, z1, x2, y2, z2).");
+        }
+    } else if (strcmp(command, "dig") == 0) {
         char **saveptr = calloc(1, sizeof(char *));
         bool valid_input = true;
         char *token = NULL;
@@ -63,6 +146,12 @@ void exec(bot_t *bot, char *command, char *strargs)
                                        "Invalid arguments for DIG command "
                                        "(x, y, z).");
         }
+    } else if (strcmp(command, "sem") == 0) {
+        static char msg[64];
+        int sem_val;
+        sem_getvalue(&((bot_globals_t *)bot->state)->dig_sem, &sem_val);
+        sprintf(msg, "Semaphore value: %d\n", sem_val);
+        send_play_serverbound_chat(bot, msg);
     } else if (strcmp(command, "slot") == 0) {
         char **saveptr = calloc(1, sizeof(char *));
         bool valid_input = true;
@@ -183,9 +272,11 @@ bot_t *init_slave(char *name, char *server_name, int port)
 {
     bot_t *bot = init_bot(name, *slave_main);
     bot->state = calloc(1, sizeof(bot_globals_t));
+    sem_init(&((bot_globals_t *)bot->state)->dig_sem, 0, 0);
 
     register_defaults(bot);
     register_event(bot, PLAY, 0x02, chat_handler);
+    register_event(bot, PLAY, 0x23, block_update_handler);
 
     login(bot, server_name, port);
 
