@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <signal.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include "bot.h"
@@ -40,17 +41,10 @@ void block_update_handler(bot_t *bot, void *vp) {
     //printf("BLOCK UPDATE (loc, id) = (%lx, %lx).\n", p->location, p->block_id);
     if ((p->block_id >> 4) == 0) {
         if (((bot_globals_t *)bot->state)->current_block == p->location) {
-            //printf("Finished mining current block.\n");
+            //printf("Finished mining current_block.\n");
     
-            //int sem_val;
-            //sem_getvalue(&((bot_globals_t *)bot->state)->dig_sem, &sem_val);
-            //printf("Semaphore value: %d, incrementing.\n", sem_val);
-
             sem_post(&((bot_globals_t *)bot->state)->dig_sem);
             ((bot_globals_t *)bot->state)->current_block = 0;
-
-            //sem_getvalue(&((bot_globals_t *)bot->state)->dig_sem, &sem_val);
-            //printf("Semaphore value: %d, incremented.\n", sem_val);
         }
     }
 }
@@ -71,6 +65,7 @@ void dig(bot_t *bot, int x, int y, int z) {
 struct clear_data {
     bot_t *bot;
     int x1, y1, z1, x2, y2, z2;
+    pthread_t *self;
 };
 
 void *clear_area(void *d) {
@@ -90,16 +85,26 @@ void *clear_area(void *d) {
             }
         }
     }
+    free(d);
     return NULL;
 }
 
 void exec(bot_t *bot, char *command, char *strargs)
 {
     if (strcmp(command, "clear") == 0) {
+        static pthread_t clear_area_thread = 0;
         char **saveptr = calloc(1, sizeof(char *));
         bool valid_input = true;
         char *token = NULL;
         int x1, y1, z1, x2, y2, z2;
+
+        // Never clear multiple areas at once.
+        if (clear_area_thread && !pthread_kill(clear_area_thread, 0)) {
+            printf("CANCELLED: CLEAR\n");
+            send_play_serverbound_chat(bot,
+                                       "CLEAR command is already running.");
+            return;
+        }
 
         valid_input &= next_int_token(&x1, strargs, saveptr);
         valid_input &= next_int_token(&y1, *saveptr, saveptr);
@@ -119,8 +124,6 @@ void exec(bot_t *bot, char *command, char *strargs)
             printf("CLEAR: (%d, %d, %d) to (%d, %d, %d)\n",
                    x1, y1, z1,
                    x2, y2, z2);
-            // Create a new thread to clear the area.
-            pthread_t clear_area_thread;
             struct clear_data *data = calloc(1, sizeof(struct clear_data));
             data->bot = bot;
             data->x1 = x1;
@@ -130,7 +133,6 @@ void exec(bot_t *bot, char *command, char *strargs)
             data->y2 = y2;
             data->z2 = z2;
             pthread_create(&clear_area_thread, NULL, clear_area, data);
-            // Clean thread somehow.
         } else {
             send_play_serverbound_chat(bot,
                                        "Invalid arguments for CLEAR command "
