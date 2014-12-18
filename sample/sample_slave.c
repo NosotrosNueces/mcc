@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <pthread.h>
 #include <semaphore.h>
 #include "bot.h"
 #include "protocol.h"
@@ -36,31 +37,29 @@ position_t encode_location(uint64_t x, uint64_t  y, uint64_t z) {
 void block_update_handler(bot_t *bot, void *vp) {
     play_clientbound_block_change_t *p =
         (play_clientbound_block_change_t *)vp;
-    printf("BLOCK UPDATE (loc, id) = (%lx, %lx).\n", p->location, p->block_id);
+    //printf("BLOCK UPDATE (loc, id) = (%lx, %lx).\n", p->location, p->block_id);
     if ((p->block_id >> 4) == 0) {
-        printf("BLOCK CLEARED.\n");
         if (((bot_globals_t *)bot->state)->current_block == p->location) {
-            printf("Finished mining current block.\n");
+            //printf("Finished mining current block.\n");
     
-            int sem_val;
-            sem_getvalue(&((bot_globals_t *)bot->state)->dig_sem, &sem_val);
-            printf("Semaphore value: %d, incrementing.\n", sem_val);
+            //int sem_val;
+            //sem_getvalue(&((bot_globals_t *)bot->state)->dig_sem, &sem_val);
+            //printf("Semaphore value: %d, incrementing.\n", sem_val);
 
             sem_post(&((bot_globals_t *)bot->state)->dig_sem);
             ((bot_globals_t *)bot->state)->current_block = 0;
 
-
-            sem_getvalue(&((bot_globals_t *)bot->state)->dig_sem, &sem_val);
-            printf("Semaphore value: %d, incremented.\n", sem_val);
+            //sem_getvalue(&((bot_globals_t *)bot->state)->dig_sem, &sem_val);
+            //printf("Semaphore value: %d, incremented.\n", sem_val);
         }
     }
 }
 
 void dig(bot_t *bot, int x, int y, int z) {
-    int sem_val;
-    printf("exec dig @ (%d, %d, %d)\n", x, y, z);
-    sem_getvalue(&((bot_globals_t *)bot->state)->dig_sem, &sem_val);
-    printf("Semaphore value: %d.\n", sem_val);
+    //int sem_val;
+    //printf("exec dig @ (%d, %d, %d)\n", x, y, z);
+    //sem_getvalue(&((bot_globals_t *)bot->state)->dig_sem, &sem_val);
+    //printf("Semaphore value: %d.\n", sem_val);
 
     position_t location = encode_location(x, y, z);
     ((bot_globals_t *)bot->state)->current_block = location;
@@ -69,24 +68,29 @@ void dig(bot_t *bot, int x, int y, int z) {
     send_play_serverbound_player_dig(bot, 0x02, location, 0x01);
 }
 
-void clear_area(bot_t *bot,
-                int x_1, int y_1, int z_1, 
-                int x_2, int y_2, int z_2) {
+struct clear_data {
+    bot_t *bot;
+    int x1, y1, z1, x2, y2, z2;
+};
+
+void *clear_area(void *d) {
     int x_start, dx, y_start, dy, z_start, dz;
-    x_start = x_1 < x_2 ? x_1 : x_2;
-    dx = abs(x_1 - x_2);
-    y_start = y_1 < y_2 ? y_1 : y_2;
-    dy = abs(y_1 - y_2);
-    z_start = z_1 < z_2 ? z_1 : z_2;
-    dz = abs(z_1 - z_2);
+    struct clear_data *data = d;
+    x_start = data->x1 < data->x2 ? data->x1 : data->x2;
+    dx = abs(data->x1 - data->x2);
+    y_start = data->y1 < data->y2 ? data->y1 : data->y2;
+    dy = abs(data->y1 - data->y2);
+    z_start = data->z1 < data->z2 ? data->z1 : data->z2;
+    dz = abs(data->z1 - data->z2);
     for (int x = 0; x <= dx; ++x) {
         for (int y = 0; y <= dy; ++y) {
             for (int z = 0; z <= dz; ++z) {
-                dig(bot, x_start + x, y_start + y, z_start + z);
-                sem_wait(&((bot_globals_t *)bot->state)->dig_sem);
+                dig(data->bot, x_start + x, y_start + y, z_start + z);
+                sem_wait(&((bot_globals_t *)data->bot->state)->dig_sem);
             }
         }
     }
+    return NULL;
 }
 
 void exec(bot_t *bot, char *command, char *strargs)
@@ -95,14 +99,14 @@ void exec(bot_t *bot, char *command, char *strargs)
         char **saveptr = calloc(1, sizeof(char *));
         bool valid_input = true;
         char *token = NULL;
-        int x_1, y_1, z_1, x_2, y_2, z_2;
+        int x1, y1, z1, x2, y2, z2;
 
-        valid_input &= next_int_token(&x_1, strargs, saveptr);
-        valid_input &= next_int_token(&y_1, *saveptr, saveptr);
-        valid_input &= next_int_token(&z_1, *saveptr, saveptr);
-        valid_input &= next_int_token(&x_2, *saveptr, saveptr);
-        valid_input &= next_int_token(&y_2, *saveptr, saveptr);
-        valid_input &= next_int_token(&z_2, *saveptr, saveptr);
+        valid_input &= next_int_token(&x1, strargs, saveptr);
+        valid_input &= next_int_token(&y1, *saveptr, saveptr);
+        valid_input &= next_int_token(&z1, *saveptr, saveptr);
+        valid_input &= next_int_token(&x2, *saveptr, saveptr);
+        valid_input &= next_int_token(&y2, *saveptr, saveptr);
+        valid_input &= next_int_token(&z2, *saveptr, saveptr);
 
         // Ensure there are no trailing tokens.
         token = strtok_r(*saveptr, " ", saveptr);
@@ -113,9 +117,20 @@ void exec(bot_t *bot, char *command, char *strargs)
         free(saveptr);
         if (valid_input) {
             printf("CLEAR: (%d, %d, %d) to (%d, %d, %d)\n",
-                   x_1, y_1, z_1,
-                   x_2, y_2, z_2);
-            clear_area(bot, x_1, y_1, z_1, x_2, y_2, z_2);
+                   x1, y1, z1,
+                   x2, y2, z2);
+            // Create a new thread to clear the area.
+            pthread_t clear_area_thread;
+            struct clear_data *data = calloc(1, sizeof(struct clear_data));
+            data->bot = bot;
+            data->x1 = x1;
+            data->y1 = y1;
+            data->z1 = z1;
+            data->x2 = x2;
+            data->y2 = y2;
+            data->z2 = z2;
+            pthread_create(&clear_area_thread, NULL, clear_area, data);
+            // Clean thread somehow.
         } else {
             send_play_serverbound_chat(bot,
                                        "Invalid arguments for CLEAR command "
