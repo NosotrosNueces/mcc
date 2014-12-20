@@ -48,5 +48,9 @@ void execute_command(bot_t *bot, char *command, char *strargs);
  * }
  * Desired result (sender, message):
  * (data['with'][0], ''.join(data['with']['extra']))
+ *
+ * N.B.
+ * This function allocates memory for *msg and *sender_name.
+ * Please free it.
  */
 void decode_chat_json(char *raw_json, char **msg, char **sender_name);
