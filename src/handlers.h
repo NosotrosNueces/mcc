@@ -24,6 +24,13 @@ void keepalive_handler(bot_t *, void *);
 void join_game_handler(bot_t *, void *);
 
 /*
+ * Parse the JSON data from users or the server.
+ * If the message is in the form \<command> [<arg1> <arg2> ...],
+ * excecute the command with the given args.
+ */
+void chat_handler(bot_t *bot, void *vp);
+
+/*
  * Update bot health, food, and saturation.
  */
 void update_health_handler(bot_t *, void *);
