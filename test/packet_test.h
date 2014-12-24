@@ -15,4 +15,3 @@ void init_random();
 
 // run the packet test
 void packet_test(void);
-;
