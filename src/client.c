@@ -36,7 +36,7 @@ void *executor(void *index);
 void *bot_thread(void *bot);
 
 
-/* Subtract the ‘struct timeval’ values X and Y,
+/* Subtract the 'struct timeval' values X and Y,
  * storing the result in RESULT.
  * Return 1 if the difference is negative, otherwise 0.
  * See: http://www.gnu.org/software/libc/manual/html_node/Elapsed-Time.html

@@ -89,15 +89,39 @@ void free_list(function *list)
     }
 }
 
-void register_event(bot_t *bot, uint32_t state, uint32_t packet_id,
-                    void (*f)(bot_t *, void *))
+function *register_event(bot_t *bot, uint32_t state, uint32_t packet_id,
+                         void (*f)(bot_t *, void *))
 {
-    function *parent = &bot->_data->callbacks[state][packet_id];
-    while(parent->next)
-        parent = parent->next;
-    function *child = calloc(1, sizeof(function));
-    parent->f = f;
-    parent->next = child;
+    // Find the last node.
+    function *new_node = &bot->_data->callbacks[state][packet_id];
+    function *prev_node = NULL;
+    while(new_node->next) {
+        prev_node = new_node;
+        new_node = new_node->next;
+    }
+    // Store the new callback in the last node.
+    new_node->f = f;
+    new_node->next = calloc(1, sizeof(function));
+    new_node->prev = prev_node;
+
+    // Use the returned node to unregister the callback later.
+    return new_node;
+}
+
+void unregister_event(bot_t *bot, function *callback)
+{
+    if (callback->prev) {
+        callback->next->prev = callback->prev;
+        callback->prev->next = callback->next;
+        free(callback);
+    } else { // First element is a special case.
+        // Overwrite next element into first element.
+        callback->f = callback->next->f;
+        callback->next = callback->next->next;
+        callback->prev = callback->next->prev;
+        // Delete next element.
+        unregister_event(bot, callback->next);
+    }
 }
 
 timed_function *register_timer(bot_t *bot, struct timeval delay,
@@ -105,6 +129,7 @@ timed_function *register_timer(bot_t *bot, struct timeval delay,
 {
     timed_function **old_head = bot->_data->timers;
 
+    // Create a new node representing the timer to add.
     timed_function *new_node = calloc(1, sizeof(timed_function));
     new_node->f = f;
     new_node->next = *old_head;
@@ -119,6 +144,7 @@ timed_function *register_timer(bot_t *bot, struct timeval delay,
     (*old_head)->prev = new_node;
     *(bot->_data->timers) = new_node;
 
+    // Use the returned node to unregister the timer later.
     return new_node;
 }
 

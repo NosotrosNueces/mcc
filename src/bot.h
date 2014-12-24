@@ -66,6 +66,7 @@ struct _bot_internal {
 struct _function {
     void (*f)(bot_t *, void *);
     struct _function *next;
+    struct _function *prev;
 };
 
 struct _timed_function {
@@ -96,7 +97,7 @@ bot_t *init_bot(char *name, void (*bot_main)(void *));
  */
 void free_bot(bot_t *);
 
-/** \brief Register to recieve callbacks for a specific packet type
+/** \brief Register to recieve callbacks for a specific packet type.
  *
  *  Registering for callbacks allows a bot to run a number of functions
  *  upon recieving a certain packet from the server. Functions are stored in a
@@ -104,8 +105,15 @@ void free_bot(bot_t *);
  *  is recieved.
  *  Note: Currently there is no way to "un-register" a callback.
  */
-void register_event(bot_t *bot, uint32_t state, uint32_t packet_id,
-                    void (*f)(bot_t *, void *));
+function *register_event(bot_t *bot, uint32_t state, uint32_t packet_id,
+                         void (*f)(bot_t *, void *));
+
+/** \brief Unregister a callback.
+ *
+ *  Unregister a callback using a callback id. Registering a callback returns
+ *  an id, which is just a freeable node in the callback list.
+ */
+void unregister_event(bot_t *bot, function *id);
 
 /** \brief Register to set an interval or timeout function.
  *
