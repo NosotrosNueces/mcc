@@ -13,17 +13,26 @@
 
 int main(int argc, char *argv[], char **envp)
 {
-    char *server_name;
-    if (argc == 2) {
+    char *server_name = SERVER_NAME;
+    int server_port = DEFAULT_SERVER_PORT;
+    if (argc == 3) {
         server_name = argv[1];
-    } else {
-        server_name = SERVER_NAME;
+        server_port = strtol(argv[2], NULL, 10);
+        if (!server_port) {
+            printf("Expected arguments: ./mcc [<SERVER> [<PORT>]]\n");
+            return 0;
+        }
+    } else if (argc == 2) {
+        server_name = argv[1];
+    } else if (argc > 3) {
+        printf("Expected arguments: ./mcc [<SERVER> [<PORT>]]\n");
+        return 0;
     }
 
     bot_t *bots[NUM_BOTS];
 
-    bots[0] = init_defender("plants", server_name, DEFAULT_SERVER_PORT);
-    bots[1] = init_slave("batman", server_name, DEFAULT_SERVER_PORT);
+    bots[0] = init_defender("plants", server_name, server_port);
+    bots[1] = init_slave("batman", server_name, server_port);
 
     client_run(bots, NUM_BOTS);
 
