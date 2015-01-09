@@ -160,3 +160,16 @@ void decode_chat_json(char *raw_json, char **msg, char **sender_name)
     }
     json_value_free(json_data);
 }
+
+void set_pos(bot_t *bot, double x, double y, double z)
+{
+    pthread_mutex_lock(&bot->bot_mutex);
+
+    bot->x = x;
+    bot->y = y;
+    bot->z = z;
+
+    pthread_mutex_unlock(&bot->bot_mutex);
+
+    send_play_serverbound_player_move(bot, x, y, z, true);
+}

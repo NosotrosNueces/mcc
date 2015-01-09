@@ -93,6 +93,16 @@ void update_health_handler(bot_t *bot, void *vp)
     pthread_mutex_unlock(&bot->bot_mutex);
 }
 
+void respawn_handler(bot_t *bot, void *vp)
+{
+    play_clientbound_update_health_t *p =
+        (play_clientbound_update_health_t *) vp;
+    if (p->health <= 0) {
+        send_play_serverbound_player_move(bot, bot->x, bot->y, bot->z, true);
+        send_play_serverbound_player_status(bot, 0);
+    }
+}
+
 void position_handler(bot_t *bot, void *vp)
 {
     play_clientbound_position_t *p =

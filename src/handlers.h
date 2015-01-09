@@ -36,6 +36,11 @@ void chat_handler(bot_t *bot, void *vp);
 void update_health_handler(bot_t *, void *);
 
 /*
+ * Auto-respawn if dead.
+ */
+void respawn_handler(bot_t *bot, void *vp);
+
+/*
  * Echo position back to the server (confirm location).
  */
 void position_handler(bot_t *, void *);
