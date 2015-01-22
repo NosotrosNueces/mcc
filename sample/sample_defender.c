@@ -1,8 +1,10 @@
+#include <unistd.h>
 #include <stdio.h>
 #include <time.h>
 #include "bot.h"
 #include "protocol.h"
 #include "api.h"
+#include "handlers.h"
 #include "timers.h"
 
 typedef struct entity_node {
@@ -60,6 +62,7 @@ bool exists_target(bot_t *bot, vint32_t eid)
 void protect(bot_t *bot, vint32_t eid)
 {
     send_play_serverbound_player_look(bot, 0, 0, true);
+    send_play_serverbound_animation(bot);
     send_play_serverbound_entity_use(bot, eid, 1, 0, 0, 0);
 }
 
@@ -87,13 +90,10 @@ void defender_main(void *vbot)
     struct timeval delay = {0, 500000};
     register_timer(bot, delay, -1, timer_echo_pos);
 
-    msleep(500);
+    msleep(300);
     send_play_serverbound_item_change(bot, 0);
 
-    while(1) {
-        msleep(500);
-        send_play_serverbound_player_status(bot, 0);
-    }
+    pause();
 }
 
 bot_t *init_defender(char *name, char *server_name, int port)
@@ -102,6 +102,7 @@ bot_t *init_defender(char *name, char *server_name, int port)
     bot->state = calloc(1, sizeof(bot_globals_t));
 
     register_defaults(bot);
+    register_event(bot, PLAY, 0x06, respawn_handler);
     register_event(bot, PLAY, 0x0F, entity_handler);
     register_event(bot, PLAY, 0x15, entity_move_handler);
     register_event(bot, PLAY, 0x1A, entity_status_handler);

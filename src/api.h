@@ -54,3 +54,8 @@ void execute_command(bot_t *bot, char *command, char *strargs);
  * Please free it.
  */
 void decode_chat_json(char *raw_json, char **msg, char **sender_name);
+
+/*
+ * This is the correct way to set the bot's position.
+ */
+void set_pos(bot_t *bot, double x, double y, double z);

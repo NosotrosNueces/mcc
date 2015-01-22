@@ -30,6 +30,7 @@ bot_t *init_slave(char *name, char *server_name, int port)
 
     register_defaults(bot);
     register_event(bot, PLAY, 0x02, chat_handler);
+    register_event(bot, PLAY, 0x06, respawn_handler);
 
     login(bot, server_name, port);
 
