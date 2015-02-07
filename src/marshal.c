@@ -267,6 +267,26 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw)
     return packet_raw - save + varlen;
 }
 
+void demarshal_slot(void* slot_raw, int16_t *block_id, char *count,
+                    int16_t *damage, nbt_t *nbt_data)
+{
+    *block_id = *(int16_t *)slot_raw;
+    *block_id = *block_id >> 8 | *block_id << 8;
+     
+    *count = *((char *)slot_raw + 2);
+     
+    *damage = (*((int64_t *)slot_raw) & (0xffffL << 5*8)) >> 6*8;
+    *damage = *damage >> 8 | *damage << 8;
+     
+    int16_t nbt_length = (*((int64_t *)slot_raw) & (0xffffL << 5*8)) >> 5*8;
+    nbt_length = nbt_length >> 8 | nbt_length << 8;
+    if (nbt_length != -1) {
+        exit(1); // NotImplementedError
+    } else {
+        *nbt_data = NULL;
+    }
+} 
+
 int decode_packet(bot_t *bot, void *packet_raw, void *packet_data)
 {
     // packet_raw = raw packet data

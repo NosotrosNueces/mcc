@@ -18,6 +18,7 @@ typedef void* metadata_t;
 typedef void* property_t;
 typedef void* record_t;
 typedef void* slot_t;
+typedef void* nbt_t;
 
 void *protocol_decode(bot_t *bot);
 
