@@ -3,16 +3,6 @@
 #include "marshal.h"
 #include "bot.h"
 
-// Macro for defining packet recv functions
-#define _render_recv(NAME, FORMAT, ID) NAME ## _t* recv_ ## NAME(bot_t* bot){ \
-    NAME ## _t *p;                                                            \
-    p = calloc(1, sizeof(NAME ## _t));                                        \
-    p->format = FORMAT;                                                       \
-    p->packet_id = ID;                                                        \
-    decode_packet(bot, bot->_data->buf, p);                                   \
-    return p;                                                                 \
-}
-
 // Macro to send packets to server
 #define _render_send(BOT, PACKET)                             \
     int8_t packet[BOT->_data->packet_threshold];              \
