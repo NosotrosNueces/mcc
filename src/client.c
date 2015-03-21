@@ -21,18 +21,37 @@
 
 uint32_t num_bots;
 bot_t **bot_list;
-pthread_t *bot_threads;
-pthread_t *receivers;
-pthread_t *callbackers;
-pthread_t *schedulers;
-pthread_t *executors;
 pipe_t **pipes;
 pipe_t **timer_pipes;
 
-void *receiver(void *index);
+/* These threads represent the main lines of execution for each bot.
+ * Each bot has a method named "main" that is run.
+ */
+pthread_t *bot_threads;
+
+/* These threads recognize game events and push them onto a queue for
+ * a corresponding callback_executor in callback_executors.
+ */
+pthread_t *callbackers;
+
+/* These threads are event handlers for each bot.
+ */
+pthread_t *callback_executors;
+
+/* These threads handle delayed and recurring actions. Actions are pushed onto
+ * a corresponding schedule_executor in schedule_executors.
+ */
+pthread_t *schedulers;
+
+/* These threads execute actions queued by the corresponding scheduler.
+ * Actions are executed in the order they were queued.
+ */
+pthread_t *schedule_executors;
+
 void *callbacker(void *index);
+void *callback_executor(void *index);
 void *scheduler(void *index);
-void *executor(void *index);
+void *schedule_executor(void *index);
 void *bot_thread(void *bot);
 
 
@@ -41,7 +60,6 @@ void *bot_thread(void *bot);
  * Return 1 if the difference is negative, otherwise 0.
  * See: http://www.gnu.org/software/libc/manual/html_node/Elapsed-Time.html
  */
-
 int timeval_subtract (struct timeval *result,
                       struct timeval *x,
                       struct timeval *y)
@@ -84,27 +102,28 @@ void client_run(bot_t **bots, uint32_t num)
         timer_pipes[i] = pipe_new(sizeof(void *), 0);
     }
 
-    // create and start listener threads
-    receivers = calloc(num, sizeof(pthread_t));
-    for (i = 0; i < num; i++)
-        pthread_create(receivers + i, NULL, receiver, (void *)i);
-
-    // create and start callback threads
+    // Create and start event listener threads.
     callbackers = calloc(num, sizeof(pthread_t));
     for (i = 0; i < num; i++)
         pthread_create(callbackers + i, NULL, callbacker, (void *)i);
 
-    // For timers, create and start scheduler threads.
+    // Create and start callback threads that execute on events.
+    callback_executors = calloc(num, sizeof(pthread_t));
+    for (i = 0; i < num; i++)
+        pthread_create(callback_executors + i, NULL, callback_executor, (void *)i);
+
+    // Create and start scheduler threads that handle timers and reccuring
+    // actions.
     schedulers = calloc(num, sizeof(pthread_t));
     for (i = 0; i < num; i++)
         pthread_create(schedulers + i, NULL, scheduler, (void *)i);
 
-    // For timers, create and start executor threads.
-    executors = calloc(num, sizeof(pthread_t));
+    // Create and start schedule executors that run jobs given by a scheduler.
+    schedule_executors = calloc(num, sizeof(pthread_t));
     for (i = 0; i < num; i++)
-        pthread_create(executors + i, NULL, executor, (void *)i);
+        pthread_create(schedule_executors + i, NULL, schedule_executor, (void *)i);
 
-    // create all the bot threads
+    // Create bot main threads.
     bot_threads = calloc(num, sizeof (pthread_t));
     for(i = 0; i < num; i++)
         pthread_create(bot_threads + i, NULL, bot_thread, bot_list[i]);
@@ -113,10 +132,10 @@ void client_run(bot_t **bots, uint32_t num)
     // TODO: support for exit codes
     for(i = 0; i < num; i++) {
         pthread_join(bot_threads[i], NULL);
-        pthread_join(receivers[i], NULL);
         pthread_join(callbackers[i], NULL);
+        pthread_join(callback_executors[i], NULL);
         pthread_join(schedulers[i], NULL);
-        pthread_join(executors[i], NULL);
+        pthread_join(schedule_executors[i], NULL);
     }
 
     for (i = 0; i < num; i++) {
@@ -125,10 +144,10 @@ void client_run(bot_t **bots, uint32_t num)
     }
 
     free(bot_threads);
-    free(receivers);
     free(callbackers);
-    free(executors);
+    free(callback_executors);
     free(schedulers);
+    free(schedule_executors);
 }
 
 void *bot_thread(void *bot)
@@ -137,7 +156,7 @@ void *bot_thread(void *bot)
     return NULL;
 }
 
-void *receiver(void *index)
+void *callbacker(void *index)
 {
     int i = (uint64_t) index;
     bot_t *bot = bot_list[i];
@@ -165,7 +184,7 @@ void *receiver(void *index)
     return NULL;
 }
 
-void *callbacker(void *index)
+void *callback_executor(void *index)
 {
     int i = (uint64_t) index;
     bot_t *bot = bot_list[i];
@@ -225,7 +244,7 @@ void *scheduler(void *index)
     return NULL;
 }
 
-void *executor(void *index)
+void *schedule_executor(void *index)
 {
     int i = (uint64_t) index;
     bot_t *bot = bot_list[i];
