@@ -32,7 +32,7 @@ pthread_t *bot_threads;
 /* These threads recognize game events and push them onto a queue for
  * a corresponding callback_executor in callback_executors.
  */
-pthread_t *callbackers;
+pthread_t *callback_listeners;
 
 /* These threads are event handlers for each bot.
  */
@@ -48,7 +48,7 @@ pthread_t *schedulers;
  */
 pthread_t *schedule_executors;
 
-void *callbacker(void *index);
+void *callback_listener(void *index);
 void *callback_executor(void *index);
 void *scheduler(void *index);
 void *schedule_executor(void *index);
@@ -103,9 +103,9 @@ void client_run(bot_t **bots, uint32_t num)
     }
 
     // Create and start event listener threads.
-    callbackers = calloc(num, sizeof(pthread_t));
+    callback_listeners = calloc(num, sizeof(pthread_t));
     for (i = 0; i < num; i++)
-        pthread_create(callbackers + i, NULL, callbacker, (void *)i);
+        pthread_create(callback_listeners + i, NULL, callback_listener, (void *)i);
 
     // Create and start callback threads that execute on events.
     callback_executors = calloc(num, sizeof(pthread_t));
@@ -132,7 +132,7 @@ void client_run(bot_t **bots, uint32_t num)
     // TODO: support for exit codes
     for(i = 0; i < num; i++) {
         pthread_join(bot_threads[i], NULL);
-        pthread_join(callbackers[i], NULL);
+        pthread_join(callback_listeners[i], NULL);
         pthread_join(callback_executors[i], NULL);
         pthread_join(schedulers[i], NULL);
         pthread_join(schedule_executors[i], NULL);
@@ -144,7 +144,7 @@ void client_run(bot_t **bots, uint32_t num)
     }
 
     free(bot_threads);
-    free(callbackers);
+    free(callback_listeners);
     free(callback_executors);
     free(schedulers);
     free(schedule_executors);
@@ -156,7 +156,7 @@ void *bot_thread(void *bot)
     return NULL;
 }
 
-void *callbacker(void *index)
+void *callback_listener(void *index)
 {
     int i = (uint64_t) index;
     bot_t *bot = bot_list[i];
