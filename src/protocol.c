@@ -499,7 +499,8 @@ int32_t send_play_serverbound_spectate(
  * Login clientbound structs
  */
 
-login_clientbound_disconnect_t* recv_login_clientbound_disconnect(bot_t *bot){
+login_clientbound_disconnect_t* recv_login_clientbound_disconnect(bot_t *bot)
+{
     login_clientbound_disconnect_t *p;
     p = calloc(1, sizeof(login_clientbound_disconnect_t));
     p->format = "vs";
@@ -508,7 +509,8 @@ login_clientbound_disconnect_t* recv_login_clientbound_disconnect(bot_t *bot){
     return p;
 }
 
-login_clientbound_success_t* recv_login_clientbound_success(bot_t *bot){
+login_clientbound_success_t* recv_login_clientbound_success(bot_t *bot)
+{
     login_clientbound_success_t *p;
     p = calloc(1, sizeof(login_clientbound_success_t));
     p->format = "vss";
@@ -517,7 +519,8 @@ login_clientbound_success_t* recv_login_clientbound_success(bot_t *bot){
     return p;
 }
 
-login_clientbound_set_compression_t* recv_login_clientbound_set_compression(bot_t *bot){
+login_clientbound_set_compression_t* recv_login_clientbound_set_compression(bot_t *bot)
+{
     login_clientbound_set_compression_t *p;
     p = calloc(1, sizeof(login_clientbound_set_compression_t));
     p->format = "vv";
@@ -530,7 +533,8 @@ login_clientbound_set_compression_t* recv_login_clientbound_set_compression(bot_
  * Status clientbound structs
  */
 
-status_clientbound_response_t* recv_status_clientbound_response(bot_t *bot){
+status_clientbound_response_t* recv_status_clientbound_response(bot_t *bot)
+{
     status_clientbound_response_t *p;
     p = calloc(1, sizeof(status_clientbound_response_t));
     p->format = "vs";
@@ -539,7 +543,8 @@ status_clientbound_response_t* recv_status_clientbound_response(bot_t *bot){
     return p;
 }
 
-status_clientbound_ping_t* recv_status_clientbound_ping(bot_t *bot){
+status_clientbound_ping_t* recv_status_clientbound_ping(bot_t *bot)
+{
     status_clientbound_ping_t *p;
     p = calloc(1, sizeof(status_clientbound_ping_t));
     p->format = "vl";
@@ -552,7 +557,8 @@ status_clientbound_ping_t* recv_status_clientbound_ping(bot_t *bot){
  * Play clientbound structs
  */
 
-play_clientbound_keepalive_t* recv_play_clientbound_keepalive(bot_t *bot){
+play_clientbound_keepalive_t* recv_play_clientbound_keepalive(bot_t *bot)
+{
     play_clientbound_keepalive_t *p;
     p = calloc(1, sizeof(play_clientbound_keepalive_t));
     p->format = "vv";
@@ -561,7 +567,8 @@ play_clientbound_keepalive_t* recv_play_clientbound_keepalive(bot_t *bot){
     return p;
 }
 
-play_clientbound_join_game_t* recv_play_clientbound_join_game(bot_t *bot){
+play_clientbound_join_game_t* recv_play_clientbound_join_game(bot_t *bot)
+{
     play_clientbound_join_game_t *p;
     p = calloc(1, sizeof(play_clientbound_join_game_t));
     p->format = "vwbbbbs";
@@ -570,7 +577,8 @@ play_clientbound_join_game_t* recv_play_clientbound_join_game(bot_t *bot){
     return p;
 }
 
-play_clientbound_chat_t* recv_play_clientbound_chat(bot_t *bot){
+play_clientbound_chat_t* recv_play_clientbound_chat(bot_t *bot)
+{
     play_clientbound_chat_t *p;
     p = calloc(1, sizeof(play_clientbound_chat_t));
     p->format = "vsb";
@@ -579,7 +587,8 @@ play_clientbound_chat_t* recv_play_clientbound_chat(bot_t *bot){
     return p;
 }
 
-play_clientbound_time_update_t* recv_play_clientbound_time_update(bot_t *bot){
+play_clientbound_time_update_t* recv_play_clientbound_time_update(bot_t *bot)
+{
     play_clientbound_time_update_t *p;
     p = calloc(1, sizeof(play_clientbound_time_update_t));
     p->format = "vll";
@@ -588,7 +597,8 @@ play_clientbound_time_update_t* recv_play_clientbound_time_update(bot_t *bot){
     return p;
 }
 
-play_clientbound_entity_equipment_t* recv_play_clientbound_entity_equipment(bot_t *bot){
+play_clientbound_entity_equipment_t* recv_play_clientbound_entity_equipment(bot_t *bot)
+{
     play_clientbound_entity_equipment_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_equipment_t));
     p->format = "vvhw";
@@ -597,7 +607,8 @@ play_clientbound_entity_equipment_t* recv_play_clientbound_entity_equipment(bot_
     return p;
 }
 
-play_clientbound_spawn_position_t* recv_play_clientbound_spawn_position(bot_t *bot){
+play_clientbound_spawn_position_t* recv_play_clientbound_spawn_position(bot_t *bot)
+{
     play_clientbound_spawn_position_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_position_t));
     p->format = "vl";
@@ -606,7 +617,8 @@ play_clientbound_spawn_position_t* recv_play_clientbound_spawn_position(bot_t *b
     return p;
 }
 
-play_clientbound_update_health_t* recv_play_clientbound_update_health(bot_t *bot){
+play_clientbound_update_health_t* recv_play_clientbound_update_health(bot_t *bot)
+{
     play_clientbound_update_health_t *p;
     p = calloc(1, sizeof(play_clientbound_update_health_t));
     p->format = "vwvw";
@@ -615,7 +627,8 @@ play_clientbound_update_health_t* recv_play_clientbound_update_health(bot_t *bot
     return p;
 }
 
-play_clientbound_respawn_t* recv_play_clientbound_respawn(bot_t *bot){
+play_clientbound_respawn_t* recv_play_clientbound_respawn(bot_t *bot)
+{
     play_clientbound_respawn_t *p;
     p = calloc(1, sizeof(play_clientbound_respawn_t));
     p->format = "vwbbs";
@@ -624,7 +637,8 @@ play_clientbound_respawn_t* recv_play_clientbound_respawn(bot_t *bot){
     return p;
 }
 
-play_clientbound_position_t* recv_play_clientbound_position(bot_t *bot){
+play_clientbound_position_t* recv_play_clientbound_position(bot_t *bot)
+{
     play_clientbound_position_t *p;
     p = calloc(1, sizeof(play_clientbound_position_t));
     p->format = "vlllwwb";
@@ -633,7 +647,8 @@ play_clientbound_position_t* recv_play_clientbound_position(bot_t *bot){
     return p;
 }
 
-play_clientbound_item_change_t* recv_play_clientbound_item_change(bot_t *bot){
+play_clientbound_item_change_t* recv_play_clientbound_item_change(bot_t *bot)
+{
     play_clientbound_item_change_t *p;
     p = calloc(1, sizeof(play_clientbound_item_change_t));
     p->format = "vb";
@@ -642,7 +657,8 @@ play_clientbound_item_change_t* recv_play_clientbound_item_change(bot_t *bot){
     return p;
 }
 
-play_clientbound_use_bed_t* recv_play_clientbound_use_bed(bot_t *bot){
+play_clientbound_use_bed_t* recv_play_clientbound_use_bed(bot_t *bot)
+{
     play_clientbound_use_bed_t *p;
     p = calloc(1, sizeof(play_clientbound_use_bed_t));
     p->format = "vvl";
@@ -651,7 +667,8 @@ play_clientbound_use_bed_t* recv_play_clientbound_use_bed(bot_t *bot){
     return p;
 }
 
-play_clientbound_animation_t* recv_play_clientbound_animation(bot_t *bot){
+play_clientbound_animation_t* recv_play_clientbound_animation(bot_t *bot)
+{
     play_clientbound_animation_t *p;
     p = calloc(1, sizeof(play_clientbound_animation_t));
     p->format = "vvb";
@@ -660,7 +677,8 @@ play_clientbound_animation_t* recv_play_clientbound_animation(bot_t *bot){
     return p;
 }
 
-play_clientbound_spawn_player_t* recv_play_clientbound_spawn_player(bot_t *bot){
+play_clientbound_spawn_player_t* recv_play_clientbound_spawn_player(bot_t *bot)
+{
     play_clientbound_spawn_player_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_player_t));
     p->format = "vvqwwwbbhw";
@@ -669,7 +687,8 @@ play_clientbound_spawn_player_t* recv_play_clientbound_spawn_player(bot_t *bot){
     return p;
 }
 
-play_clientbound_collect_t* recv_play_clientbound_collect(bot_t *bot){
+play_clientbound_collect_t* recv_play_clientbound_collect(bot_t *bot)
+{
     play_clientbound_collect_t *p;
     p = calloc(1, sizeof(play_clientbound_collect_t));
     p->format = "vvv";
@@ -678,7 +697,8 @@ play_clientbound_collect_t* recv_play_clientbound_collect(bot_t *bot){
     return p;
 }
 
-play_clientbound_spawn_object_t* recv_play_clientbound_spawn_object(bot_t *bot){
+play_clientbound_spawn_object_t* recv_play_clientbound_spawn_object(bot_t *bot)
+{
     play_clientbound_spawn_object_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_object_t));
     p->format = "vvbwwwbbw";
@@ -687,7 +707,8 @@ play_clientbound_spawn_object_t* recv_play_clientbound_spawn_object(bot_t *bot){
     return p;
 }
 
-play_clientbound_spawn_mob_t* recv_play_clientbound_spawn_mob(bot_t *bot){
+play_clientbound_spawn_mob_t* recv_play_clientbound_spawn_mob(bot_t *bot)
+{
     play_clientbound_spawn_mob_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_mob_t));
     p->format = "vvbwwwbbbhhhw";
@@ -696,7 +717,8 @@ play_clientbound_spawn_mob_t* recv_play_clientbound_spawn_mob(bot_t *bot){
     return p;
 }
 
-play_clientbound_spawn_painting_t* recv_play_clientbound_spawn_painting(bot_t *bot){
+play_clientbound_spawn_painting_t* recv_play_clientbound_spawn_painting(bot_t *bot)
+{
     play_clientbound_spawn_painting_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_painting_t));
     p->format = "vvslb";
@@ -705,7 +727,8 @@ play_clientbound_spawn_painting_t* recv_play_clientbound_spawn_painting(bot_t *b
     return p;
 }
 
-play_clientbound_spawn_xp_t* recv_play_clientbound_spawn_xp(bot_t *bot){
+play_clientbound_spawn_xp_t* recv_play_clientbound_spawn_xp(bot_t *bot)
+{
     play_clientbound_spawn_xp_t *p;
     p = calloc(1, sizeof(play_clientbound_spawn_xp_t));
     p->format = "vvwwwh";
@@ -714,7 +737,8 @@ play_clientbound_spawn_xp_t* recv_play_clientbound_spawn_xp(bot_t *bot){
     return p;
 }
 
-play_clientbound_entity_velocity_t* recv_play_clientbound_entity_velocity(bot_t *bot){
+play_clientbound_entity_velocity_t* recv_play_clientbound_entity_velocity(bot_t *bot)
+{
     play_clientbound_entity_velocity_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_velocity_t));
     p->format = "vvhhh";
@@ -723,7 +747,8 @@ play_clientbound_entity_velocity_t* recv_play_clientbound_entity_velocity(bot_t 
     return p;
 }
 
-play_clientbound_entity_destroy_entities_t* recv_play_clientbound_entity_destroy_entities(bot_t *bot){
+play_clientbound_entity_destroy_entities_t* recv_play_clientbound_entity_destroy_entities(bot_t *bot)
+{
     play_clientbound_entity_destroy_entities_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_destroy_entities_t));
     p->format = "vv*v";
@@ -732,7 +757,8 @@ play_clientbound_entity_destroy_entities_t* recv_play_clientbound_entity_destroy
     return p;
 }
 
-play_clientbound_entity_t* recv_play_clientbound_entity(bot_t *bot){
+play_clientbound_entity_t* recv_play_clientbound_entity(bot_t *bot)
+{
     play_clientbound_entity_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_t));
     p->format = "vv";
@@ -741,7 +767,8 @@ play_clientbound_entity_t* recv_play_clientbound_entity(bot_t *bot){
     return p;
 }
 
-play_clientbound_entity_move_t* recv_play_clientbound_entity_move(bot_t *bot){
+play_clientbound_entity_move_t* recv_play_clientbound_entity_move(bot_t *bot)
+{
     play_clientbound_entity_move_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_move_t));
     p->format = "vvbbbb";
@@ -750,7 +777,8 @@ play_clientbound_entity_move_t* recv_play_clientbound_entity_move(bot_t *bot){
     return p;
 }
 
-play_clientbound_entity_look_t* recv_play_clientbound_entity_look(bot_t *bot){
+play_clientbound_entity_look_t* recv_play_clientbound_entity_look(bot_t *bot)
+{
     play_clientbound_entity_look_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_look_t));
     p->format = "vvbbbb";
@@ -759,7 +787,8 @@ play_clientbound_entity_look_t* recv_play_clientbound_entity_look(bot_t *bot){
     return p;
 }
 
-play_clientbound_entity_look_move_t* recv_play_clientbound_entity_look_move(bot_t *bot){
+play_clientbound_entity_look_move_t* recv_play_clientbound_entity_look_move(bot_t *bot)
+{
     play_clientbound_entity_look_move_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_look_move_t));
     p->format = "vvbbbbbb";
@@ -768,7 +797,8 @@ play_clientbound_entity_look_move_t* recv_play_clientbound_entity_look_move(bot_
     return p;
 }
 
-play_clientbound_entity_teleport_t* recv_play_clientbound_entity_teleport(bot_t *bot){
+play_clientbound_entity_teleport_t* recv_play_clientbound_entity_teleport(bot_t *bot)
+{
     play_clientbound_entity_teleport_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_teleport_t));
     p->format = "vvwwwbbb";
@@ -777,7 +807,8 @@ play_clientbound_entity_teleport_t* recv_play_clientbound_entity_teleport(bot_t 
     return p;
 }
 
-play_clientbound_entity_head_look_t* recv_play_clientbound_entity_head_look(bot_t *bot){
+play_clientbound_entity_head_look_t* recv_play_clientbound_entity_head_look(bot_t *bot)
+{
     play_clientbound_entity_head_look_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_head_look_t));
     p->format = "vvb";
@@ -786,7 +817,8 @@ play_clientbound_entity_head_look_t* recv_play_clientbound_entity_head_look(bot_
     return p;
 }
 
-play_clientbound_entity_status_t* recv_play_clientbound_entity_status(bot_t *bot){
+play_clientbound_entity_status_t* recv_play_clientbound_entity_status(bot_t *bot)
+{
     play_clientbound_entity_status_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_status_t));
     p->format = "vwb";
@@ -795,7 +827,8 @@ play_clientbound_entity_status_t* recv_play_clientbound_entity_status(bot_t *bot
     return p;
 }
 
-play_clientbound_entity_attach_t* recv_play_clientbound_entity_attach(bot_t *bot){
+play_clientbound_entity_attach_t* recv_play_clientbound_entity_attach(bot_t *bot)
+{
     play_clientbound_entity_attach_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_attach_t));
     p->format = "vwwb";
@@ -804,7 +837,8 @@ play_clientbound_entity_attach_t* recv_play_clientbound_entity_attach(bot_t *bot
     return p;
 }
 
-play_clientbound_entity_effect_t* recv_play_clientbound_entity_effect(bot_t *bot){
+play_clientbound_entity_effect_t* recv_play_clientbound_entity_effect(bot_t *bot)
+{
     play_clientbound_entity_effect_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_effect_t));
     p->format = "vvbbvb";
@@ -813,7 +847,8 @@ play_clientbound_entity_effect_t* recv_play_clientbound_entity_effect(bot_t *bot
     return p;
 }
 
-play_clientbound_entity_clear_effect_t* recv_play_clientbound_entity_clear_effect(bot_t *bot){
+play_clientbound_entity_clear_effect_t* recv_play_clientbound_entity_clear_effect(bot_t *bot)
+{
     play_clientbound_entity_clear_effect_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_clear_effect_t));
     p->format = "vvb";
@@ -822,7 +857,8 @@ play_clientbound_entity_clear_effect_t* recv_play_clientbound_entity_clear_effec
     return p;
 }
 
-play_clientbound_entity_properties_t* recv_play_clientbound_entity_properties(bot_t *bot){
+play_clientbound_entity_properties_t* recv_play_clientbound_entity_properties(bot_t *bot)
+{
     play_clientbound_entity_properties_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_properties_t));
     p->format = "vvw*w";
@@ -831,7 +867,8 @@ play_clientbound_entity_properties_t* recv_play_clientbound_entity_properties(bo
     return p;
 }
 
-play_clientbound_set_xp_t* recv_play_clientbound_set_xp(bot_t *bot){
+play_clientbound_set_xp_t* recv_play_clientbound_set_xp(bot_t *bot)
+{
     play_clientbound_set_xp_t *p;
     p = calloc(1, sizeof(play_clientbound_set_xp_t));
     p->format = "vwww";
@@ -840,7 +877,8 @@ play_clientbound_set_xp_t* recv_play_clientbound_set_xp(bot_t *bot){
     return p;
 }
 
-play_clientbound_chunk_data_t* recv_play_clientbound_chunk_data(bot_t *bot){
+play_clientbound_chunk_data_t* recv_play_clientbound_chunk_data(bot_t *bot)
+{
     play_clientbound_chunk_data_t *p;
     p = calloc(1, sizeof(play_clientbound_chunk_data_t));
     p->format = "vwwbhv*b";
@@ -849,7 +887,8 @@ play_clientbound_chunk_data_t* recv_play_clientbound_chunk_data(bot_t *bot){
     return p;
 }
 
-play_clientbound_multi_block_change_t* recv_play_clientbound_multi_block_change(bot_t *bot){
+play_clientbound_multi_block_change_t* recv_play_clientbound_multi_block_change(bot_t *bot)
+{
     play_clientbound_multi_block_change_t *p;
     p = calloc(1, sizeof(play_clientbound_multi_block_change_t));
     p->format = "vwwv*w";
@@ -858,7 +897,8 @@ play_clientbound_multi_block_change_t* recv_play_clientbound_multi_block_change(
     return p;
 }
 
-play_clientbound_block_change_t* recv_play_clientbound_block_change(bot_t *bot){
+play_clientbound_block_change_t* recv_play_clientbound_block_change(bot_t *bot)
+{
     play_clientbound_block_change_t *p;
     p = calloc(1, sizeof(play_clientbound_block_change_t));
     p->format = "vlv";
@@ -867,7 +907,8 @@ play_clientbound_block_change_t* recv_play_clientbound_block_change(bot_t *bot){
     return p;
 }
 
-play_clientbound_block_action_t* recv_play_clientbound_block_action(bot_t *bot){
+play_clientbound_block_action_t* recv_play_clientbound_block_action(bot_t *bot)
+{
     play_clientbound_block_action_t *p;
     p = calloc(1, sizeof(play_clientbound_block_action_t));
     p->format = "vlbbv";
@@ -876,7 +917,8 @@ play_clientbound_block_action_t* recv_play_clientbound_block_action(bot_t *bot){
     return p;
 }
 
-play_clientbound_block_break_animation_t* recv_play_clientbound_block_break_animation(bot_t *bot){
+play_clientbound_block_break_animation_t* recv_play_clientbound_block_break_animation(bot_t *bot)
+{
     play_clientbound_block_break_animation_t *p;
     p = calloc(1, sizeof(play_clientbound_block_break_animation_t));
     p->format = "vvlb";
@@ -885,7 +927,8 @@ play_clientbound_block_break_animation_t* recv_play_clientbound_block_break_anim
     return p;
 }
 
-play_clientbound_chunk_bulk_t* recv_play_clientbound_chunk_bulk(bot_t *bot){
+play_clientbound_chunk_bulk_t* recv_play_clientbound_chunk_bulk(bot_t *bot)
+{
     play_clientbound_chunk_bulk_t *p;
     p = calloc(1, sizeof(play_clientbound_chunk_bulk_t));
     p->format = "vbvwwh*b";
@@ -894,7 +937,8 @@ play_clientbound_chunk_bulk_t* recv_play_clientbound_chunk_bulk(bot_t *bot){
     return p;
 }
 
-play_clientbound_explosion_t* recv_play_clientbound_explosion(bot_t *bot){
+play_clientbound_explosion_t* recv_play_clientbound_explosion(bot_t *bot)
+{
     play_clientbound_explosion_t *p;
     p = calloc(1, sizeof(play_clientbound_explosion_t));
     p->format = "vwwwww*wwww";
@@ -903,7 +947,8 @@ play_clientbound_explosion_t* recv_play_clientbound_explosion(bot_t *bot){
     return p;
 }
 
-play_clientbound_effect_t* recv_play_clientbound_effect(bot_t *bot){
+play_clientbound_effect_t* recv_play_clientbound_effect(bot_t *bot)
+{
     play_clientbound_effect_t *p;
     p = calloc(1, sizeof(play_clientbound_effect_t));
     p->format = "vwlwb";
@@ -912,7 +957,8 @@ play_clientbound_effect_t* recv_play_clientbound_effect(bot_t *bot){
     return p;
 }
 
-play_clientbound_sound_effect_t* recv_play_clientbound_sound_effect(bot_t *bot){
+play_clientbound_sound_effect_t* recv_play_clientbound_sound_effect(bot_t *bot)
+{
     play_clientbound_sound_effect_t *p;
     p = calloc(1, sizeof(play_clientbound_sound_effect_t));
     p->format = "vswwwwb";
@@ -921,7 +967,8 @@ play_clientbound_sound_effect_t* recv_play_clientbound_sound_effect(bot_t *bot){
     return p;
 }
 
-play_clientbound_entity_spawn_global_t* recv_play_clientbound_entity_spawn_global(bot_t *bot){
+play_clientbound_entity_spawn_global_t* recv_play_clientbound_entity_spawn_global(bot_t *bot)
+{
     play_clientbound_entity_spawn_global_t *p;
     p = calloc(1, sizeof(play_clientbound_entity_spawn_global_t));
     p->format = "vvbwww";
@@ -930,7 +977,8 @@ play_clientbound_entity_spawn_global_t* recv_play_clientbound_entity_spawn_globa
     return p;
 }
 
-play_clientbound_update_sign_t* recv_play_clientbound_update_sign(bot_t *bot){
+play_clientbound_update_sign_t* recv_play_clientbound_update_sign(bot_t *bot)
+{
     play_clientbound_update_sign_t *p;
     p = calloc(1, sizeof(play_clientbound_update_sign_t));
     p->format = "vlssss";
@@ -939,7 +987,8 @@ play_clientbound_update_sign_t* recv_play_clientbound_update_sign(bot_t *bot){
     return p;
 }
 
-play_clientbound_plugin_message_t* recv_play_clientbound_plugin_message(bot_t *bot){
+play_clientbound_plugin_message_t* recv_play_clientbound_plugin_message(bot_t *bot)
+{
     play_clientbound_plugin_message_t *p;
     p = calloc(1, sizeof(play_clientbound_plugin_message_t));
     p->format = "vs*b";
@@ -948,7 +997,8 @@ play_clientbound_plugin_message_t* recv_play_clientbound_plugin_message(bot_t *b
     return p;
 }
 
-play_clientbound_plugin_disconnect_t* recv_play_clientbound_plugin_disconnect(bot_t *bot){
+play_clientbound_plugin_disconnect_t* recv_play_clientbound_plugin_disconnect(bot_t *bot)
+{
     play_clientbound_plugin_disconnect_t *p;
     p = calloc(1, sizeof(play_clientbound_plugin_disconnect_t));
     p->format = "vs";
@@ -957,7 +1007,8 @@ play_clientbound_plugin_disconnect_t* recv_play_clientbound_plugin_disconnect(bo
     return p;
 }
 
-play_clientbound_plugin_difficulty_t* recv_play_clientbound_plugin_difficulty(bot_t *bot){
+play_clientbound_plugin_difficulty_t* recv_play_clientbound_plugin_difficulty(bot_t *bot)
+{
     play_clientbound_plugin_difficulty_t *p;
     p = calloc(1, sizeof(play_clientbound_plugin_difficulty_t));
     p->format = "vb";
@@ -966,7 +1017,8 @@ play_clientbound_plugin_difficulty_t* recv_play_clientbound_plugin_difficulty(bo
     return p;
 }
 
-play_clientbound_set_compression_t* recv_play_clientbound_set_compression(bot_t *bot){
+play_clientbound_set_compression_t* recv_play_clientbound_set_compression(bot_t *bot)
+{
     play_clientbound_set_compression_t *p;
     p = calloc(1, sizeof(play_clientbound_set_compression_t));
     p->format = "vv";
