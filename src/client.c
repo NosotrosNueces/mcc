@@ -169,7 +169,7 @@ void *callback_listener(void *index)
     pipe_producer_t *p = pipe_producer_new(pipes[i]);
     while (1) {
         ready = poll(&fds, 1, -1);
-        if(bot, ready < 0)
+        if (ready < 0)
             perror("event listener");
         // read packet
         // send signal to corresponding thread

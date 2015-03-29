@@ -1,6 +1,7 @@
 #pragma once
 
 #include "bot.h"
+#include "types.h"
 
 /* Briefly suspend thread execution for an interval measured in ms
  *
