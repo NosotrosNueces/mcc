@@ -175,8 +175,9 @@ void set_pos(bot_t *bot, double x, double y, double z)
 }
 
 
-void register_login_clientbound_disconnect(bot_t *bot, 
-        void (*f)(bot_t *, char *)){
+void register_login_clientbound_disconnect(bot_t *bot,
+        void (*f)(bot_t *, char *))
+{
     function *parent = &bot->_data->callbacks[LOGIN][0x00];
     while(parent->next)
         parent = parent->next;
@@ -186,7 +187,8 @@ void register_login_clientbound_disconnect(bot_t *bot,
 }
 
 void register_login_clientbound_success(bot_t *bot,
-        void (*f)(bot_t *, char *, char *)) {
+                                        void (*f)(bot_t *, char *, char *))
+{
 
     function *parent = &bot->_data->callbacks[LOGIN][0x02];
     while(parent->next)
@@ -197,7 +199,8 @@ void register_login_clientbound_success(bot_t *bot,
 }
 
 void register_login_clientbound_set_compression(bot_t *bot,
-        void (*f)(bot_t *, vint32_t)) {
+        void (*f)(bot_t *, vint32_t))
+{
     function *parent = &bot->_data->callbacks[LOGIN][0x03];
     while(parent->next)
         parent = parent->next;
@@ -207,7 +210,8 @@ void register_login_clientbound_set_compression(bot_t *bot,
 }
 
 void register_status_clientbound_response(bot_t *bot,
-        void (*f)(bot_t *, char *)) {
+        void (*f)(bot_t *, char *))
+{
     function *parent = &bot->_data->callbacks[STATUS][0x00];
     while(parent->next)
         parent = parent->next;
@@ -217,7 +221,8 @@ void register_status_clientbound_response(bot_t *bot,
 }
 
 void register_status_clientbound_ping(bot_t *bot,
-        void (*f)(bot_t *, int64_t)) {
+                                      void (*f)(bot_t *, int64_t))
+{
     function *parent = &bot->_data->callbacks[STATUS][0x01];
     while(parent->next)
         parent = parent->next;
@@ -227,7 +232,8 @@ void register_status_clientbound_ping(bot_t *bot,
 }
 
 void register_play_clientbound_keepalive(bot_t *bot,
-        void (*f)(bot_t *, vint32_t)) {
+        void (*f)(bot_t *, vint32_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x00];
     while(parent->next)
         parent = parent->next;
@@ -237,7 +243,8 @@ void register_play_clientbound_keepalive(bot_t *bot,
 }
 
 void register_play_clientbound_join_game(bot_t *bot,
-        void (*f)(bot_t *, int32_t, uint8_t, int8_t, uint8_t, uint8_t, char *)) {
+        void (*f)(bot_t *, int32_t, uint8_t, int8_t, uint8_t, uint8_t, char *))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x01];
     while(parent->next)
         parent = parent->next;
@@ -247,7 +254,8 @@ void register_play_clientbound_join_game(bot_t *bot,
 }
 
 void register_play_clientbound_chat(bot_t *bot,
-        void (*f)(bot_t *, char *, int8_t)) {
+                                    void (*f)(bot_t *, char *, int8_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x02];
     while(parent->next)
         parent = parent->next;
@@ -257,7 +265,8 @@ void register_play_clientbound_chat(bot_t *bot,
 }
 
 void register_play_clientbound_time_update(bot_t *bot,
-        void (*f)(bot_t *, int64_t, int64_t)) {
+        void (*f)(bot_t *, int64_t, int64_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x03];
     while(parent->next)
         parent = parent->next;
@@ -267,7 +276,8 @@ void register_play_clientbound_time_update(bot_t *bot,
 }
 
 void register_play_clientbound_entity_equipment(bot_t *bot,
-        void (*f)(bot_t *, vint32_t, int16_t, slot_t)) {
+        void (*f)(bot_t *, vint32_t, int16_t, slot_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x04];
     while(parent->next)
         parent = parent->next;
@@ -277,7 +287,8 @@ void register_play_clientbound_entity_equipment(bot_t *bot,
 }
 
 void register_play_clientbound_spawn_position(bot_t *bot,
-        void (*f)(bot_t *, position_t)) {
+        void (*f)(bot_t *, position_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x05];
     while(parent->next)
         parent = parent->next;
@@ -287,7 +298,8 @@ void register_play_clientbound_spawn_position(bot_t *bot,
 }
 
 void register_play_clientbound_update_health(bot_t *bot,
-        void (*f)(bot_t *, float, vint32_t, float)) {
+        void (*f)(bot_t *, float, vint32_t, float))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x06];
     while(parent->next)
         parent = parent->next;
@@ -297,7 +309,8 @@ void register_play_clientbound_update_health(bot_t *bot,
 }
 
 void register_play_clientbound_respawn(bot_t *bot,
-        void (*f)(bot_t *, int32_t, uint8_t, uint8_t, char *)) {
+                                       void (*f)(bot_t *, int32_t, uint8_t, uint8_t, char *))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x07];
     while(parent->next)
         parent = parent->next;
@@ -307,7 +320,8 @@ void register_play_clientbound_respawn(bot_t *bot,
 }
 
 void register_play_clientbound_position(bot_t *bot,
-        void (*f)(bot_t *, double, double, double, float, float, int8_t)) {
+                                        void (*f)(bot_t *, double, double, double, float, float, int8_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x08];
     while(parent->next)
         parent = parent->next;
@@ -317,7 +331,8 @@ void register_play_clientbound_position(bot_t *bot,
 }
 
 void register_play_clientbound_item_change(bot_t *bot,
-        void (*f)(bot_t *, int8_t)) {
+        void (*f)(bot_t *, int8_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x09];
     while(parent->next)
         parent = parent->next;
@@ -327,7 +342,8 @@ void register_play_clientbound_item_change(bot_t *bot,
 }
 
 void register_play_clientbound_use_bed(bot_t *bot,
-        void (*f)(bot_t *, vint32_t, position_t)) {
+                                       void (*f)(bot_t *, vint32_t, position_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x0a];
     while(parent->next)
         parent = parent->next;
@@ -337,7 +353,8 @@ void register_play_clientbound_use_bed(bot_t *bot,
 }
 
 void register_play_clientbound_animation(bot_t *bot,
-        void (*f)(bot_t *, vint32_t, uint8_t)) {
+        void (*f)(bot_t *, vint32_t, uint8_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x0b];
     while(parent->next)
         parent = parent->next;
@@ -347,15 +364,16 @@ void register_play_clientbound_animation(bot_t *bot,
 }
 
 void register_play_clientbound_spawn_player(bot_t *bot,
-        void (*f)(bot_t *, vint32_t, 
-            __uint128_t, 
-            int32_t, 
-            int32_t, 
-            int32_t, 
-            int8_t, 
-            int8_t, 
-            int16_t,
-            metadata_t)) {
+        void (*f)(bot_t *, vint32_t,
+                  __uint128_t,
+                  int32_t,
+                  int32_t,
+                  int32_t,
+                  int8_t,
+                  int8_t,
+                  int16_t,
+                  metadata_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x0c];
     while(parent->next)
         parent = parent->next;
@@ -365,7 +383,8 @@ void register_play_clientbound_spawn_player(bot_t *bot,
 }
 
 void register_play_clientbound_collect(bot_t *bot,
-        void (*f)(bot_t *, vint32_t, vint32_t)) {
+                                       void (*f)(bot_t *, vint32_t, vint32_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x0d];
     while(parent->next)
         parent = parent->next;
@@ -376,13 +395,14 @@ void register_play_clientbound_collect(bot_t *bot,
 
 void register_play_clientbound_spawn_object(bot_t *bot,
         void (*f)(bot_t *, vint32_t,
-            int8_t,
-            int32_t,
-            int32_t,
-            int32_t,
-            int8_t,
-            int8_t,
-            data_t)) {
+                  int8_t,
+                  int32_t,
+                  int32_t,
+                  int32_t,
+                  int8_t,
+                  int8_t,
+                  data_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x0e];
     while(parent->next)
         parent = parent->next;
@@ -393,17 +413,18 @@ void register_play_clientbound_spawn_object(bot_t *bot,
 
 void register_play_clientbound_spawn_mob(bot_t *bot,
         void (*f)(bot_t *, vint32_t,
-            uint8_t,
-            int32_t,
-            int32_t,
-            int32_t,
-            int8_t,
-            int8_t,
-            int8_t,
-            int16_t,
-            int16_t,
-            int16_t,
-            metadata_t)) {
+                  uint8_t,
+                  int32_t,
+                  int32_t,
+                  int32_t,
+                  int8_t,
+                  int8_t,
+                  int8_t,
+                  int16_t,
+                  int16_t,
+                  int16_t,
+                  metadata_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x0f];
     while(parent->next)
         parent = parent->next;
@@ -413,7 +434,8 @@ void register_play_clientbound_spawn_mob(bot_t *bot,
 }
 
 void register_play_clientbound_spawn_painting(bot_t *bot,
-        void (*f)(bot_t *, vint32_t, char *, position_t, uint8_t)) {
+        void (*f)(bot_t *, vint32_t, char *, position_t, uint8_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x10];
     while(parent->next)
         parent = parent->next;
@@ -423,7 +445,8 @@ void register_play_clientbound_spawn_painting(bot_t *bot,
 }
 
 void register_play_clientbound_spawn_xp(bot_t *bot,
-        void (*f)(bot_t *, vint32_t, int32_t, int32_t, int32_t, int16_t)) {
+                                        void (*f)(bot_t *, vint32_t, int32_t, int32_t, int32_t, int16_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x11];
     while(parent->next)
         parent = parent->next;
@@ -433,7 +456,8 @@ void register_play_clientbound_spawn_xp(bot_t *bot,
 }
 
 void register_play_clientbound_entity_velocity(bot_t *bot,
-        void (*f)(bot_t *, vint32_t, int16_t, int16_t, int16_t)) {
+        void (*f)(bot_t *, vint32_t, int16_t, int16_t, int16_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x12];
     while(parent->next)
         parent = parent->next;
@@ -443,7 +467,8 @@ void register_play_clientbound_entity_velocity(bot_t *bot,
 }
 
 void register_play_clientbound_entity_destroy_entities(bot_t *bot,
-        void (*f)(bot_t *, vint32_t, vint32_t)) {
+        void (*f)(bot_t *, vint32_t, vint32_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x13];
     while(parent->next)
         parent = parent->next;
@@ -453,7 +478,8 @@ void register_play_clientbound_entity_destroy_entities(bot_t *bot,
 }
 
 void register_play_clientbound_entity(bot_t *bot,
-        void (*f)(bot_t *, vint32_t)) {
+                                      void (*f)(bot_t *, vint32_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x14];
     while(parent->next)
         parent = parent->next;
@@ -464,10 +490,11 @@ void register_play_clientbound_entity(bot_t *bot,
 
 void register_play_clientbound_entity_move(bot_t *bot,
         void (*f)(bot_t *, vint32_t,
-            int8_t,
-            int8_t,
-            int8_t,
-            bool)) {
+                  int8_t,
+                  int8_t,
+                  int8_t,
+                  bool))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x15];
     while(parent->next)
         parent = parent->next;
@@ -478,10 +505,11 @@ void register_play_clientbound_entity_move(bot_t *bot,
 
 void register_play_clientbound_entity_look(bot_t *bot,
         void (*f)(bot_t *, vint32_t,
-            int8_t,
-            int8_t,
-            bool,
-            int8_t)) {
+                  int8_t,
+                  int8_t,
+                  bool,
+                  int8_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x16];
     while(parent->next)
         parent = parent->next;
@@ -492,12 +520,13 @@ void register_play_clientbound_entity_look(bot_t *bot,
 
 void register_play_clientbound_entity_look_move(bot_t *bot,
         void (*f)(bot_t *, vint32_t,
-            int8_t,
-            int8_t,
-            int8_t,
-            int8_t,
-            int8_t,
-            bool)) {
+                  int8_t,
+                  int8_t,
+                  int8_t,
+                  int8_t,
+                  int8_t,
+                  bool))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x17];
     while(parent->next)
         parent = parent->next;
@@ -508,12 +537,13 @@ void register_play_clientbound_entity_look_move(bot_t *bot,
 
 void register_play_clientbound_entity_teleport(bot_t *bot,
         void (*f)(bot_t *, vint32_t,
-            int32_t,
-            int32_t,
-            int32_t,
-            int8_t,
-            int8_t,
-            bool)) {
+                  int32_t,
+                  int32_t,
+                  int32_t,
+                  int8_t,
+                  int8_t,
+                  bool))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x18];
     while(parent->next)
         parent = parent->next;
@@ -523,7 +553,8 @@ void register_play_clientbound_entity_teleport(bot_t *bot,
 }
 
 void register_play_clientbound_entity_head_look(bot_t *bot,
-        void (*f)(bot_t *, vint32_t, int8_t)) {
+        void (*f)(bot_t *, vint32_t, int8_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x19];
     while(parent->next)
         parent = parent->next;
@@ -533,7 +564,8 @@ void register_play_clientbound_entity_head_look(bot_t *bot,
 }
 
 void register_play_clientbound_entity_status(bot_t *bot,
-        void (*f)(bot_t *, int32_t, int8_t)) {
+        void (*f)(bot_t *, int32_t, int8_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x1a];
     while(parent->next)
         parent = parent->next;
@@ -543,7 +575,8 @@ void register_play_clientbound_entity_status(bot_t *bot,
 }
 
 void register_play_clientbound_entity_attach(bot_t *bot,
-        void (*f)(bot_t *, int32_t, int32_t, bool)) {
+        void (*f)(bot_t *, int32_t, int32_t, bool))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x1b];
     while(parent->next)
         parent = parent->next;
@@ -554,10 +587,11 @@ void register_play_clientbound_entity_attach(bot_t *bot,
 
 void register_play_clientbound_entity_effect(bot_t *bot,
         void (*f)(bot_t *, vint32_t,
-            int8_t,
-            int8_t,
-            vint32_t,
-            bool)) {
+                  int8_t,
+                  int8_t,
+                  vint32_t,
+                  bool))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x1d];
     while(parent->next)
         parent = parent->next;
@@ -567,7 +601,8 @@ void register_play_clientbound_entity_effect(bot_t *bot,
 }
 
 void register_play_clientbound_entity_clear_effect(bot_t *bot,
-        void (*f)(bot_t *, vint32_t, int8_t)) {
+        void (*f)(bot_t *, vint32_t, int8_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x1e];
     while(parent->next)
         parent = parent->next;
@@ -577,7 +612,8 @@ void register_play_clientbound_entity_clear_effect(bot_t *bot,
 }
 
 void register_play_clientbound_set_xp(bot_t *bot,
-        void (*f)(bot_t *, float, int32_t, int32_t)) {
+                                      void (*f)(bot_t *, float, int32_t, int32_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x1f];
     while(parent->next)
         parent = parent->next;
@@ -588,8 +624,9 @@ void register_play_clientbound_set_xp(bot_t *bot,
 
 void register_play_clientbound_entity_properties(bot_t *bot,
         void (*f)(bot_t *, vint32_t,
-            int32_t,
-            property_t *)) {
+                  int32_t,
+                  property_t *))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x20];
     while(parent->next)
         parent = parent->next;
@@ -600,11 +637,12 @@ void register_play_clientbound_entity_properties(bot_t *bot,
 
 void register_play_clientbound_chunk_data(bot_t *bot,
         void (*f)(bot_t *, int32_t,
-            int32_t,
-            bool,
-            uint16_t,
-            vint32_t,
-            int8_t *)) {
+                  int32_t,
+                  bool,
+                  uint16_t,
+                  vint32_t,
+                  int8_t *))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x21];
     while(parent->next)
         parent = parent->next;
@@ -614,7 +652,8 @@ void register_play_clientbound_chunk_data(bot_t *bot,
 }
 
 void register_play_clientbound_multi_block_change(bot_t *bot,
-        void (*f)(bot_t *, int32_t, int32_t, vint32_t, record_t *)) {
+        void (*f)(bot_t *, int32_t, int32_t, vint32_t, record_t *))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x22];
     while(parent->next)
         parent = parent->next;
@@ -624,7 +663,8 @@ void register_play_clientbound_multi_block_change(bot_t *bot,
 }
 
 void register_play_clientbound_block_change(bot_t *bot,
-        void (*f)(bot_t *, position_t, vint32_t)) {
+        void (*f)(bot_t *, position_t, vint32_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x23];
     while(parent->next)
         parent = parent->next;
@@ -634,7 +674,8 @@ void register_play_clientbound_block_change(bot_t *bot,
 }
 
 void register_play_clientbound_block_action(bot_t *bot,
-        void (*f)(bot_t *, position_t, uint8_t, uint8_t, vint32_t)) {
+        void (*f)(bot_t *, position_t, uint8_t, uint8_t, vint32_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x24];
     while(parent->next)
         parent = parent->next;
@@ -644,7 +685,8 @@ void register_play_clientbound_block_action(bot_t *bot,
 }
 
 void register_play_clientbound_block_break_animation(bot_t *bot,
-        void (*f)(bot_t *, vint32_t, position_t, int8_t)) {
+        void (*f)(bot_t *, vint32_t, position_t, int8_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x25];
     while(parent->next)
         parent = parent->next;
@@ -655,11 +697,12 @@ void register_play_clientbound_block_break_animation(bot_t *bot,
 
 void register_play_clientbound_chunk_bulk(bot_t *bot,
         void (*f)(bot_t *, bool,
-            vint32_t,
-            int32_t,
-            int32_t,
-            uint16_t,
-            int8_t *)) {
+                  vint32_t,
+                  int32_t,
+                  int32_t,
+                  uint16_t,
+                  int8_t *))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x26];
     while(parent->next)
         parent = parent->next;
@@ -670,14 +713,15 @@ void register_play_clientbound_chunk_bulk(bot_t *bot,
 
 void register_play_clientbound_explosion(bot_t *bot,
         void (*f)(bot_t *, float,
-            float,
-            float,
-            float,
-            int32_t,
-            record_t *,
-            float,
-            float,
-            float)) {
+                  float,
+                  float,
+                  float,
+                  int32_t,
+                  record_t *,
+                  float,
+                  float,
+                  float))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x27];
     while(parent->next)
         parent = parent->next;
@@ -687,7 +731,8 @@ void register_play_clientbound_explosion(bot_t *bot,
 }
 
 void register_play_clientbound_effect(bot_t *bot,
-        void (*f)(bot_t *, int32_t, position_t, int32_t, bool)) {
+                                      void (*f)(bot_t *, int32_t, position_t, int32_t, bool))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x28];
     while(parent->next)
         parent = parent->next;
@@ -698,11 +743,12 @@ void register_play_clientbound_effect(bot_t *bot,
 
 void register_play_clientbound_sound_effect(bot_t *bot,
         void (*f)(bot_t *, char *,
-            int32_t,
-            int32_t,
-            int32_t,
-            float,
-            uint8_t)) {
+                  int32_t,
+                  int32_t,
+                  int32_t,
+                  float,
+                  uint8_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x29];
     while(parent->next)
         parent = parent->next;
@@ -713,10 +759,11 @@ void register_play_clientbound_sound_effect(bot_t *bot,
 
 void register_play_clientbound_entity_spawn_global(bot_t *bot,
         void (*f)(bot_t *, vint32_t,
-            int8_t,
-            int32_t,
-            int32_t,
-            int32_t)) {
+                  int8_t,
+                  int32_t,
+                  int32_t,
+                  int32_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x2c];
     while(parent->next)
         parent = parent->next;
@@ -727,10 +774,11 @@ void register_play_clientbound_entity_spawn_global(bot_t *bot,
 
 void register_play_clientbound_update_sign(bot_t *bot,
         void (*f)(bot_t *, position_t,
-            chat_t,
-            chat_t,
-            chat_t,
-            chat_t)) {
+                  chat_t,
+                  chat_t,
+                  chat_t,
+                  chat_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x33];
     while(parent->next)
         parent = parent->next;
@@ -740,7 +788,8 @@ void register_play_clientbound_update_sign(bot_t *bot,
 }
 
 void register_play_clientbound_plugin_message(bot_t *bot,
-        void (*f)(bot_t *, char *, int8_t *)) {
+        void (*f)(bot_t *, char *, int8_t *))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x3f];
     while(parent->next)
         parent = parent->next;
@@ -750,7 +799,8 @@ void register_play_clientbound_plugin_message(bot_t *bot,
 }
 
 void register_play_clientbound_plugin_disconnect(bot_t *bot,
-        void (*f)(bot_t *, char *)) {
+        void (*f)(bot_t *, char *))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x40];
     while(parent->next)
         parent = parent->next;
@@ -760,7 +810,8 @@ void register_play_clientbound_plugin_disconnect(bot_t *bot,
 }
 
 void register_play_clientbound_plugin_difficulty(bot_t *bot,
-        void (*f)(bot_t *, char *)) {
+        void (*f)(bot_t *, char *))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x41];
     while(parent->next)
         parent = parent->next;
@@ -770,7 +821,8 @@ void register_play_clientbound_plugin_difficulty(bot_t *bot,
 }
 
 void register_play_clientbound_set_compression(bot_t *bot,
-        void (*f)(bot_t *, vint32_t)) {
+        void (*f)(bot_t *, vint32_t))
+{
     function *parent = &bot->_data->callbacks[PLAY][0x46];
     while(parent->next)
         parent = parent->next;
