@@ -64,7 +64,7 @@ struct _bot_internal {
 };
 
 struct _function {
-    void (*f)(bot_t *, void *);
+    void *f;
     struct _function *next;
 };
 
