@@ -169,7 +169,7 @@ void *callback_listener(void *index)
     pipe_producer_t *p = pipe_producer_new(pipes[i]);
     while (1) {
         ready = poll(&fds, 1, -1);
-        if(ready < 0)
+        if(bot, ready < 0)
             perror("event listener");
         // read packet
         // send signal to corresponding thread
@@ -286,22 +286,22 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x00:
                 {
                 login_clientbound_disconnect_t *p = packet_struct;
-                void (*f)(char *) = function;
-                f(p->json);
+                void (*f)(bot_t *, char *) = function;
+                f(bot, p->json);
                 break;
                 }
             case 0x02:
                 {
                 login_clientbound_success_t *p = packet_struct;
-                void (*f)(char *, char *) = function;
-                f(p->uuid, p->username);
+                void (*f)(bot_t *, char *, char *) = function;
+                f(bot, p->uuid, p->username);
                 break;
                 }
             case 0x03:
                 {
                 login_clientbound_set_compression_t *p = packet_struct;
-                void (*f)(vint32_t) = function;
-                f(p->threshold);
+                void (*f)(bot_t *, vint32_t) = function;
+                f(bot, p->threshold);
                 break;
                 }
             }
@@ -311,15 +311,15 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x00:
                 {
                 status_clientbound_response_t *p = packet_struct;
-                void (*f)(char *) = function;
-                f(p->json);
+                void (*f)(bot_t *, char *) = function;
+                f(bot, p->json);
                 break;
                 }
             case 0x01:
                 {
                 status_clientbound_ping_t *p = packet_struct;
-                void (*f)(int64_t) = function;
-                f(p->time);
+                void (*f)(bot_t *, int64_t) = function;
+                f(bot, p->time);
                 break;
                 }
             }
@@ -329,20 +329,20 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x00:
                 {
                 play_clientbound_keepalive_t *p = packet_struct;
-                void (*f)(vint32_t) = function;
-                f(p->keepalive_id);
+                void (*f)(bot_t *, vint32_t) = function;
+                f(bot, p->keepalive_id);
                 break;
                 }
             case 0x01:
                 {
                 play_clientbound_join_game_t *p = packet_struct;
-                void (*f)(int32_t, 
+                void (*f)(bot_t *, int32_t, 
                         uint8_t, 
                         int8_t, 
                         uint8_t, 
                         uint8_t, 
                         char*) = function;
-                f(p->entity_id,
+                f(bot, p->entity_id,
                         p->gamemode,
                         p->dimension,
                         p->difficulty,
@@ -353,82 +353,82 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x02:
                 {
                 play_clientbound_chat_t *p = packet_struct;
-                void (*f)(char *, int8_t) = function;
-                f(p->json, p->position);
+                void (*f)(bot_t *, char *, int8_t) = function;
+                f(bot, p->json, p->position);
                 break;
                 }
             case 0x03:
                 {
                 play_clientbound_time_update_t *p = packet_struct;
-                void (*f)(int64_t, int64_t) = function;
-                f(p->age, p->time);
+                void (*f)(bot_t *, int64_t, int64_t) = function;
+                f(bot, p->age, p->time);
                 break;
                 }
             case 0x04:
                 {
                 play_clientbound_entity_equipment_t *p = packet_struct;
-                void (*f)(vint32_t, int16_t, slot_t) = function;
-                f(p->entity_id, p->slot, p->item);
+                void (*f)(bot_t *, vint32_t, int16_t, slot_t) = function;
+                f(bot, p->entity_id, p->slot, p->item);
                 break;
                 }
             case 0x05:
                 {
                 play_clientbound_spawn_position_t *p = packet_struct;
-                void (*f)(position_t) = function;
-                f(p->location);
+                void (*f)(bot_t *, position_t) = function;
+                f(bot, p->location);
                 break;
                 }
             case 0x06:
                 {
                 play_clientbound_update_health_t *p = packet_struct;
-                void (*f)(float, vint32_t, float) = function;
-                f(p->health, p->food, p->saturation);
+                void (*f)(bot_t *, float, vint32_t, float) = function;
+                f(bot, p->health, p->food, p->saturation);
                 break;
                 }
             case 0x07:
                 {
                 play_clientbound_respawn_t *p = packet_struct;
-                void (*f)(int32_t, uint8_t, uint8_t, char *) = function;
-                f(p->dimension, p->difficulty, p->gamemode, p->level_type);
+                void (*f)(bot_t *, int32_t, uint8_t, uint8_t, char *) = function;
+                f(bot, p->dimension, p->difficulty, p->gamemode, p->level_type);
                 break;
                 }
             case 0x08:
                 {
                 play_clientbound_position_t *p = packet_struct;
-                void (*f)(double,
+                void (*f)(bot_t *, double,
                         double,
                         double,
                         float,
                         float,
                         int8_t) = function;
-                f(p->x, p->y, p->z, p->yaw, p->pitch, p->flags);
+                f(bot, p->x, p->y, p->z, p->yaw, p->pitch, p->flags);
                 break;
                 }
             case 0x09:
                 {
                 play_clientbound_item_change_t *p = packet_struct;
-                void (*f)(int8_t) = function;
-                f(p->slot);
+                void (*f)(bot_t *, int8_t) = function;
+                f(bot, p->slot);
                 break;
                 }
             case 0x0A:
                 {
                 play_clientbound_use_bed_t *p = packet_struct;
-                void (*f)(vint32_t, position_t) = function;
-                f(p->entity_id, p->location);
+                void (*f)(bot_t *, vint32_t, position_t) = function;
+                f(bot, p->entity_id, p->location);
                 break;
                 }
             case 0x0B:
                 {
                 play_clientbound_animation_t *p = packet_struct;
-                void (*f)(vint32_t, uint8_t) = function;
-                f(p->entity_id, p->animation);
+                void (*f)(bot_t *, vint32_t, uint8_t) = function;
+                f(bot, p->entity_id, p->animation);
                 break;
                 }
             case 0x0C:
                 {
                 play_clientbound_spawn_player_t *p = packet_struct;
-                void (*f)(vint32_t,
+                void (*f)(bot_t *, vint32_t,
                         __uint128_t,
                         int32_t,
                         int32_t,
@@ -437,7 +437,7 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
                         int8_t,
                         int16_t,
                         metadata_t) = function;
-                f(p->entity_id,
+                f(bot, p->entity_id,
                         p->uuid,
                         p->x,
                         p->y,
@@ -451,14 +451,14 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x0D:
                 {
                 play_clientbound_collect_t *p = packet_struct;
-                void (*f)(vint32_t, vint32_t) = function;
-                f(p->collected_entity_id, p->collector_entity_id);
+                void (*f)(bot_t *, vint32_t, vint32_t) = function;
+                f(bot, p->collected_entity_id, p->collector_entity_id);
                 break;
                 }
             case 0x0E:
                 {
                 play_clientbound_spawn_object_t *p = packet_struct;
-                void (*f)(vint32_t,
+                void (*f)(bot_t *, vint32_t,
                         int8_t,
                         int32_t,
                         int32_t,
@@ -466,7 +466,7 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
                         int8_t,
                         int8_t,
                         data_t) = function;
-                f(p->entity_id,
+                f(bot, p->entity_id,
                         p->type,
                         p->x,
                         p->y,
@@ -479,7 +479,7 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x0F:
                 {
                 play_clientbound_spawn_mob_t *p = packet_struct;
-                void (*f)(vint32_t,
+                void (*f)(bot_t *, vint32_t,
                         uint8_t,
                         int32_t,
                         int32_t,
@@ -491,7 +491,7 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
                         int16_t,
                         int16_t,
                         metadata_t) = function;
-                f(p->entity_id, 
+                f(bot, p->entity_id, 
                         p->type, 
                         p->x, 
                         p->y, 
@@ -508,11 +508,11 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x10:
                 {
                 play_clientbound_spawn_painting_t *p = packet_struct;
-                void (*f)(vint32_t,
+                void (*f)(bot_t *, vint32_t,
                         char *,
                         position_t,
                         uint8_t) = function;
-                f(p->entity_id,
+                f(bot, p->entity_id,
                         p->title,
                         p->location,
                         p->direction);
@@ -521,12 +521,12 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x11:
                 {
                 play_clientbound_spawn_xp_t *p = packet_struct;
-                void (*f)(vint32_t,
+                void (*f)(bot_t *, vint32_t,
                         int32_t,
                         int32_t,
                         int32_t,
                         int16_t) = function;
-                f(p->entity_id,
+                f(bot, p->entity_id,
                         p->x,
                         p->y,
                         p->z,
@@ -536,11 +536,11 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x12:
                 {
                 play_clientbound_entity_velocity_t *p = packet_struct;
-                void (*f)(vint32_t,
+                void (*f)(bot_t *, vint32_t,
                         int16_t,
                         int16_t,
                         int16_t) = function;
-                f(p->entity_id,
+                f(bot, p->entity_id,
                         p->dx,
                         p->dy,
                         p->dz);
@@ -549,26 +549,26 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x13:
                 {
                 play_clientbound_entity_destroy_entities_t *p = packet_struct;
-                void (*f)(vint32_t, vint32_t *) = function;
-                f(p->count, p->entity_ids);
+                void (*f)(bot_t *, vint32_t, vint32_t *) = function;
+                f(bot, p->count, p->entity_ids);
                 break;
                 }
             case 0x14:
                 {
                 play_clientbound_entity_t *p = packet_struct;
-                void (*f)(vint32_t) = function;
-                f(p->entity_id);
+                void (*f)(bot_t *, vint32_t) = function;
+                f(bot, p->entity_id);
                 break;
                 }
             case 0x15:
                 {
                 play_clientbound_entity_move_t *p = packet_struct;
-                void (*f)(vint32_t,
+                void (*f)(bot_t *, vint32_t,
                         int8_t,
                         int8_t,
                         int8_t,
                         bool) = function;
-                f(p->entity_id,
+                f(bot, p->entity_id,
                         p->dx,
                         p->dy,
                         p->dz,
@@ -578,12 +578,12 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x16:
                 {
                 play_clientbound_entity_look_t *p = packet_struct;
-                void (*f)(vint32_t,
+                void (*f)(bot_t *, vint32_t,
                         int8_t,
                         int8_t,
                         bool,
                         int8_t) = function;
-                f(p->entity_id,
+                f(bot, p->entity_id,
                         p->yaw,
                         p->pitch,
                         p->on_ground,
@@ -593,14 +593,14 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x17:
                 {
                 play_clientbound_entity_look_move_t *p = packet_struct;
-                void (*f)(vint32_t,
+                void (*f)(bot_t *, vint32_t,
                         int8_t,
                         int8_t,
                         int8_t,
                         int8_t,
                         int8_t,
                         bool) = function;
-                f(p->entity_id,
+                f(bot, p->entity_id,
                         p->dx,
                         p->dy,
                         p->dz,
@@ -612,14 +612,14 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x18:
                 {
                 play_clientbound_entity_teleport_t *p = packet_struct;
-                void (*f)(vint32_t,
+                void (*f)(bot_t *, vint32_t,
                         int32_t,
                         int32_t,
                         int32_t,
                         int8_t,
                         int8_t,
                         bool) = function;
-                f(p->entity_id,
+                f(bot, p->entity_id,
                         p->x,
                         p->y,
                         p->z,
@@ -631,37 +631,37 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x19:
                 {
                 play_clientbound_entity_head_look_t *p = packet_struct;
-                void (*f)(vint32_t,
+                void (*f)(bot_t *, vint32_t,
                         int8_t) = function;
-                f(p->entity_id, p->yaw);
+                f(bot, p->entity_id, p->yaw);
                 break;
                 }
             case 0x1A:
                 {
                 play_clientbound_entity_status_t *p = packet_struct;
-                void (*f)(int32_t,
+                void (*f)(bot_t *, int32_t,
                         int8_t) = function;
-                f(p->entity_id, p->status);
+                f(bot, p->entity_id, p->status);
                 break;
                 }
             case 0x1B:
                 {
                 play_clientbound_entity_attach_t *p = packet_struct;
-                void (*f)(int32_t,
+                void (*f)(bot_t *, int32_t,
                         int32_t,
                         bool) = function;
-                f(p->entity_id, p->vehicle_id, p->leash);
+                f(bot, p->entity_id, p->vehicle_id, p->leash);
                 break;
                 }
             case 0x1D:
                 {
                 play_clientbound_entity_effect_t *p = packet_struct;
-                void (*f)(vint32_t,
+                void (*f)(bot_t *, vint32_t,
                         int8_t,
                         int8_t,
                         vint32_t,
                         bool) = function;
-                f(p->entity_id,
+                f(bot, p->entity_id,
                         p->effect_id,
                         p->amplifier,
                         p->duration,
@@ -671,36 +671,36 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x1E:
                 {
                 play_clientbound_entity_clear_effect_t *p = packet_struct;
-                void (*f)(vint32_t, int8_t) = function;
-                f(p->entity_id, p->effect_id);
+                void (*f)(bot_t *, vint32_t, int8_t) = function;
+                f(bot, p->entity_id, p->effect_id);
                 break;
                 }
             case 0x20:
                 {
                 play_clientbound_entity_properties_t *p = packet_struct;
-                void (*f)(vint32_t,
+                void (*f)(bot_t *, vint32_t,
                         int32_t,
                         property_t *) = function;
-                f(p->entity_id, p->count, p->properties);
+                f(bot, p->entity_id, p->count, p->properties);
                 break;
                 }
             case 0x1F:
                 {
                 play_clientbound_set_xp_t *p = packet_struct;
-                void (*f)(float, int32_t, int32_t) = function;
-                f(p->xp_bar, p->level, p->xp);
+                void (*f)(bot_t *, float, int32_t, int32_t) = function;
+                f(bot, p->xp_bar, p->level, p->xp);
                 break;
                 }
             case 0x21:
                 {
                 play_clientbound_chunk_data_t *p = packet_struct;
-                void (*f)(int32_t,
+                void (*f)(bot_t *, int32_t,
                         int32_t,
                         bool,
                         uint16_t,
                         vint32_t,
                         int8_t *) = function;
-                f(p->chunk_x,
+                f(bot, p->chunk_x,
                         p->chunk_z,
                         p->continuous,
                         p->bitmap,
@@ -711,11 +711,11 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x22:
                 {
                 play_clientbound_multi_block_change_t *p = packet_struct;
-                void (*f)(int32_t,
+                void (*f)(bot_t *, int32_t,
                         int32_t,
                         vint32_t,
                         record_t *) = function;
-                f(p->chunk_x,
+                f(bot, p->chunk_x,
                         p->chunk_z,
                         p->count,
                         p->records);
@@ -724,18 +724,18 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x23:
                 {
                 play_clientbound_block_change_t *p = packet_struct;
-                void (*f)(position_t, vint32_t) = function;
-                f(p->location, p->block_id);
+                void (*f)(bot_t *, position_t, vint32_t) = function;
+                f(bot, p->location, p->block_id);
                 break;
                 }
             case 0x24:
                 {
                 play_clientbound_block_action_t *p = packet_struct;
-                void (*f)(position_t,
+                void (*f)(bot_t *, position_t,
                         uint8_t,
                         uint8_t,
                         vint32_t) = function;
-                f(p->location,
+                f(bot, p->location,
                         p->byte1,
                         p->byte2,
                         p->type);
@@ -744,20 +744,20 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x25:
                 {
                 play_clientbound_block_break_animation_t *p = packet_struct;
-                void (*f)(vint32_t, position_t, int8_t) = function;
-                f(p->entity_id, p->location, p->stage);
+                void (*f)(bot_t *, vint32_t, position_t, int8_t) = function;
+                f(bot, p->entity_id, p->location, p->stage);
                 break;
                 }
             case 0x26:
                 {
                 play_clientbound_chunk_bulk_t *p = packet_struct;
-                void (*f)(bool,
+                void (*f)(bot_t *, bool,
                         vint32_t,
                         int32_t,
                         int32_t,
                         uint16_t,
                         int8_t *) = function;
-                f(p->skylight,
+                f(bot, p->skylight,
                         p->column_count,
                         p->chunk_x,
                         p->chunk_z,
@@ -768,7 +768,7 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x27:
                 {
                 play_clientbound_explosion_t *p = packet_struct;
-                void (*f)(float,
+                void (*f)(bot_t *, float,
                         float,
                         float,
                         float,
@@ -777,7 +777,7 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
                         float,
                         float,
                         float) = function;
-                f(p->x,
+                f(bot, p->x,
                         p->y,
                         p->z,
                         p->radius,
@@ -791,11 +791,11 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x28:
                 {
                 play_clientbound_effect_t *p = packet_struct;
-                void (*f)(int32_t,
+                void (*f)(bot_t *, int32_t,
                         position_t,
                         int32_t,
                         bool) = function;
-                f(p->effect_id,
+                f(bot, p->effect_id,
                         p->location,
                         p->data,
                         p->relative);
@@ -804,13 +804,13 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x29:
                 {
                 play_clientbound_sound_effect_t *p = packet_struct;
-                void (*f)(char *,
+                void (*f)(bot_t *, char *,
                         int32_t,
                         int32_t,
                         int32_t,
                         float,
                         uint8_t) = function;
-                f(p->sound_name,
+                f(bot, p->sound_name,
                         p->x,
                         p->y,
                         p->z,
@@ -821,12 +821,12 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x2C:
                 {
                 play_clientbound_entity_spawn_global_t *p = packet_struct;
-                void (*f)(vint32_t,
+                void (*f)(bot_t *, vint32_t,
                         int8_t,
                         int32_t,
                         int32_t,
                         int32_t) = function;
-                f(p->entity_id,
+                f(bot, p->entity_id,
                         p->type,
                         p->x,
                         p->y,
@@ -836,12 +836,12 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x33:
                 {
                 play_clientbound_update_sign_t *p = packet_struct;
-                void (*f)(position_t,
+                void (*f)(bot_t *, position_t,
                         chat_t,
                         chat_t,
                         chat_t,
                         chat_t) = function;
-                f(p->location,
+                f(bot, p->location,
                         p->line1,
                         p->line2,
                         p->line3,
@@ -851,29 +851,29 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function) {
             case 0x3F:
                 {
                 play_clientbound_plugin_message_t *p = packet_struct;
-                void (*f)(char *, int8_t *) = function;
-                f(p->channel, p->data);
+                void (*f)(bot_t *, char *, int8_t *) = function;
+                f(bot, p->channel, p->data);
                 break;
                 }
             case 0x40:
                 {
                 play_clientbound_plugin_disconnect_t *p = packet_struct;
-                void (*f)(char *) = function;
-                f(p->reason);
+                void (*f)(bot_t *, char *) = function;
+                f(bot, p->reason);
                 break;
                 }
             case 0x41:
                 {
                 play_clientbound_plugin_difficulty_t *p = packet_struct;
-                void (*f)(uint8_t) = function;
-                f(p->difficulty);
+                void (*f)(bot_t *, uint8_t) = function;
+                f(bot, p->difficulty);
                 break;
                 }
             case 0x46:
                 {
                 play_clientbound_set_compression_t *p = packet_struct;
-                void (*f)(vint32_t) = function;
-                f(p->threshold);
+                void (*f)(bot_t *, vint32_t) = function;
+                f(bot, p->threshold);
                 break;
                 }
             }
