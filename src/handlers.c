@@ -5,10 +5,9 @@
 #include "protocol.h"
 #include <pthread.h>
 
-void login_success_handler(bot_t *bot, void *vp)
+void login_success_handler(bot_t *bot, char *uuid, char *username)
 {
-    login_clientbound_success_t *p = (login_clientbound_success_t *)vp;
-    printf("Logged in: %s\n", p->username);
+    printf("Logged in: %s\n", username);
 
     // acquire lock
     pthread_mutex_lock(&bot->bot_mutex);
@@ -23,25 +22,29 @@ void login_success_handler(bot_t *bot, void *vp)
     //send_play_serverbound_chat(bot, msg);
 }
 
-void keepalive_handler(bot_t *bot, void *vp)
+void keepalive_handler(bot_t *bot, vint32_t keepalive_id)
 {
-    play_clientbound_keepalive_t *p = (play_clientbound_keepalive_t *)vp;
-    send_play_serverbound_keepalive(bot, p->keepalive_id);
+    send_play_serverbound_keepalive(bot, keepalive_id);
 }
 
-void join_game_handler(bot_t *bot, void *vp)
+void join_game_handler(bot_t *bot, 
+        int32_t entity_id, 
+        uint8_t gamemode, 
+        int8_t dimension, 
+        uint8_t difficulty, 
+        uint8_t max_players, 
+        char* level_type)
 {
-    play_clientbound_join_game_t *p = (play_clientbound_join_game_t *)vp;
 
     // acquire lock
     pthread_mutex_lock(&bot->bot_mutex);
 
-    bot->eid = p->entity_id;
-    bot->gamemode = p->gamemode;
-    bot->dimension = p->dimension;
-    bot->difficulty = p->difficulty;
-    bot->max_players = p->max_players;
-    bot->level_type = p->level_type;
+    bot->eid = entity_id;
+    bot->gamemode = gamemode;
+    bot->dimension = dimension;
+    bot->difficulty = difficulty;
+    bot->max_players = max_players;
+    bot->level_type = level_type;
 
     // release lock
     pthread_mutex_unlock(&bot->bot_mutex);
@@ -53,13 +56,11 @@ void join_game_handler(bot_t *bot, void *vp)
     //                                     (uint8_t *)"vanilla");
 }
 
-void chat_handler(bot_t *bot, void *vp)
+void chat_handler(bot_t *bot, char *json, int8_t position)
 {
-    play_clientbound_chat_t *p =
-        (play_clientbound_chat_t *)vp;
     char *msg = NULL;
     char *sender = NULL;
-    decode_chat_json(p->json, &msg, &sender);
+    decode_chat_json(json, &msg, &sender);
     // Ensure that we do not echo ourselves,
     // and that we received a chat message (not a server message).
     if (msg && sender && strcmp(sender, bot->name)) {
@@ -77,46 +78,51 @@ void chat_handler(bot_t *bot, void *vp)
     free(msg);
 }
 
-void update_health_handler(bot_t *bot, void *vp)
+void update_health_handler(bot_t *bot, 
+        float health, 
+        vint32_t food, 
+        float saturation)
 {
-    play_clientbound_update_health_t *p =
-        (play_clientbound_update_health_t *)vp;
-
     // acquire lock
     pthread_mutex_lock(&bot->bot_mutex);
 
-    bot->health = (int)(p->health);
-    bot->food = p->food;
-    bot->saturation = p->saturation;
+    bot->health = (int)(health);
+    bot->food = food;
+    bot->saturation = saturation;
 
     // release lock
     pthread_mutex_unlock(&bot->bot_mutex);
 }
 
-void respawn_handler(bot_t *bot, void *vp)
+/* Rename plz */
+void respawn_handler(bot_t *bot,
+        float health,
+        vint32_t food,
+        float saturation)
 {
-    play_clientbound_update_health_t *p =
-        (play_clientbound_update_health_t *) vp;
-    if (p->health <= 0) {
+    if (health <= 0) {
         send_play_serverbound_player_move(bot, bot->x, bot->y, bot->z, true);
         send_play_serverbound_player_status(bot, 0);
     }
 }
 
-void position_handler(bot_t *bot, void *vp)
+void position_handler(bot_t *bot,
+        double x,
+        double y,
+        double z,
+        float yaw,
+        float pitch,
+        int8_t flags)
 {
-    play_clientbound_position_t *p =
-        (play_clientbound_position_t *)vp;
-
     // acquire lock
     pthread_mutex_lock(&bot->bot_mutex);
 
-    bot->x = p->x;
-    bot->y = p->y;
-    bot->z = p->z;
-    bot->yaw = p->yaw;
-    bot->pitch = p->pitch;
-    bot->flags = p->flags;
+    bot->x = x;
+    bot->y = y;
+    bot->z = z;
+    bot->yaw = yaw;
+    bot->pitch = pitch;
+    bot->flags = flags;
 
     // release lock
     pthread_mutex_unlock(&bot->bot_mutex);
