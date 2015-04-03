@@ -37,7 +37,7 @@ struct bot {
 
     uint8_t animation;
 
-    int32_t health;
+    float health;
     int32_t food;
     float saturation;
 

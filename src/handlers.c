@@ -86,7 +86,7 @@ void update_health_handler(bot_t *bot,
     // acquire lock
     pthread_mutex_lock(&bot->bot_mutex);
 
-    bot->health = (int)(health);
+    bot->health = health;
     bot->food = food;
     bot->saturation = saturation;
 
