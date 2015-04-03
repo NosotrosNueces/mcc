@@ -5,6 +5,7 @@
 #include "protocol.h"
 #include "handlers.h"
 #include "json.h"
+#include "api.h"
 
 #define PROTOCOL_VERSION 47
 
@@ -26,11 +27,12 @@ void msleep(uint64_t ms)
 void register_defaults(bot_t *bot)
 {
     // Basic event handling that you should always want
-    register_event(bot, LOGIN, 0x02, login_success_handler);
-    register_event(bot, PLAY, 0x00, keepalive_handler);
-    register_event(bot, PLAY, 0x01, join_game_handler);
-    register_event(bot, PLAY, 0x06, update_health_handler);
-    register_event(bot, PLAY, 0x08, position_handler);
+    //register_event(bot, LOGIN, 0x02, login_success_handler);
+    register_login_clientbound_success(bot, login_success_handler);
+    register_play_clientbound_keepalive(bot, keepalive_handler);
+    register_play_clientbound_join_game(bot, join_game_handler);
+    register_play_clientbound_update_health(bot, update_health_handler);
+    register_play_clientbound_position(bot, position_handler);
 }
 
 void login(bot_t *bot, char *server_address, int port)
