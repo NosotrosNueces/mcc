@@ -1,5 +1,6 @@
 #pragma once
 
+#include "protocol.h"
 #include "bot.h"
 
 /* Briefly suspend thread execution for an interval measured in ms
@@ -20,6 +21,16 @@ void register_defaults(bot_t *bot);
  * Connect to the server, initiate the handshake, and login.
  */
 void login(bot_t *bot, char *server_address, int port);
+
+/*
+ * Encode a position from x,y,z.
+ */
+position_t encode_pos(int64_t x, int64_t y, int64_t z);
+
+/*
+ * Decode a location into x, y, and z integer pointers.
+ */
+void decode_pos(position_t pos, int64_t *x, int64_t *y, int64_t *z);
 
 /*
  * Execute actions based on a command and arguments.

@@ -40,6 +40,23 @@ void login(bot_t *bot, char *server_address, int port)
     send_login_serverbound_login(bot, bot->name);
 }
 
+position_t encode_pos(int64_t x, int64_t y, int64_t z)
+{
+    // Literally http://wiki.vg/Protocol#Position.
+    position_t pos = ((x & 0x3FFFFFF) << 38) |
+                     ((y & 0xFFF) << 26) |
+                     (z & 0x3FFFFFF);
+    return pos;
+}
+
+void decode_pos(position_t pos, int64_t *x, int64_t *y, int64_t *z)
+{
+    // Literally http://wiki.vg/Protocol#Position.
+    *x = pos >> 38;
+    *y = (pos >> 26) & 0xFFF;
+    *z = pos << 38 >> 38;
+}
+
 bool next_int_token(int* value, char *string, char **saveptr)
 {
     char *token = strtok_r(string, " ", saveptr);
