@@ -23,16 +23,6 @@ void msleep(uint64_t ms)
     } while (finished == -1);
 }
 
-void register_defaults(bot_t *bot)
-{
-    // Basic event handling that you should always want
-    register_event(bot, LOGIN, 0x02, login_success_handler);
-    register_event(bot, PLAY, 0x00, keepalive_handler);
-    register_event(bot, PLAY, 0x01, join_game_handler);
-    register_event(bot, PLAY, 0x06, update_health_handler);
-    register_event(bot, PLAY, 0x08, position_handler);
-}
-
 void login(bot_t *bot, char *server_address, int port)
 {
     join_server(bot, server_address, port);
@@ -829,4 +819,15 @@ void register_play_clientbound_set_compression(bot_t *bot,
     function *child = calloc(1, sizeof(function));
     parent->f = f;
     parent->next = child;
+}
+
+
+void register_defaults(bot_t *bot)
+{
+    // Basic event handling that you should always want
+    register_login_clientbound_success(bot, mcc_login_success_handler);
+    register_play_clientbound_keepalive(bot, mcc_keepalive_handler);
+    register_play_clientbound_join_game(bot, mcc_join_game_handler);
+    register_play_clientbound_update_health(bot, mcc_update_health_handler);
+    register_play_clientbound_position(bot, mcc_position_handler);
 }

@@ -66,22 +66,34 @@ void protect(bot_t *bot, vint32_t eid)
     send_play_serverbound_entity_use(bot, eid, 1, 0, 0, 0);
 }
 
-void entity_handler(bot_t *bot, void *vp)
+void entity_handler(bot_t *bot, vint32_t entity_id,
+                    uint8_t type,
+                    int32_t x,
+                    int32_t y,
+                    int32_t z,
+                    int8_t yaw,
+                    int8_t pitch,
+                    int8_t head_pitch,
+                    int16_t dx,
+                    int16_t dy,
+                    int16_t dz,
+                    metadata_t metadata)
 {
-    play_clientbound_spawn_mob_t *p = (play_clientbound_spawn_mob_t *) vp;
-    if (p->type >= 50) insert_target(bot, p->entity_id);
+    if (type >= 50) insert_target(bot, entity_id);
 }
 
-void entity_move_handler(bot_t *bot, void *vp)
+void entity_move_handler(bot_t *bot, vint32_t entity_id,
+                         int8_t dx,
+                         int8_t dy,
+                         int8_t dz,
+                         bool on_ground)
 {
-    play_clientbound_entity_move_t *p = (play_clientbound_entity_move_t *) vp;
-    if (exists_target(bot, p->entity_id)) protect(bot, p->entity_id);
+    if (exists_target(bot, entity_id)) protect(bot, entity_id);
 }
 
-void entity_status_handler(bot_t *bot, void *vp)
+void entity_status_handler(bot_t *bot, int32_t entity_id, int8_t status)
 {
-    play_clientbound_entity_status_t *p = (play_clientbound_entity_status_t *) vp;
-    if (p->status == 3) remove_target(bot, p->entity_id);
+    if (status == 3) remove_target(bot, entity_id);
 }
 
 void defender_main(void *vbot)
@@ -102,10 +114,10 @@ bot_t *init_defender(char *name, char *server_name, int port)
     bot->state = calloc(1, sizeof(bot_globals_t));
 
     register_defaults(bot);
-    register_event(bot, PLAY, 0x06, respawn_handler);
-    register_event(bot, PLAY, 0x0F, entity_handler);
-    register_event(bot, PLAY, 0x15, entity_move_handler);
-    register_event(bot, PLAY, 0x1A, entity_status_handler);
+    register_play_clientbound_update_health(bot, mcc_autorespawn_handler);
+    register_play_clientbound_spawn_mob(bot, entity_handler);
+    register_play_clientbound_entity_move(bot, entity_move_handler);
+    register_play_clientbound_entity_status(bot, entity_status_handler);
 
     login(bot, server_name, port);
 

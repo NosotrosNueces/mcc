@@ -29,8 +29,8 @@ bot_t *init_slave(char *name, char *server_name, int port)
     bot->state = calloc(1, sizeof(bot_globals_t));
 
     register_defaults(bot);
-    register_event(bot, PLAY, 0x02, chat_handler);
-    register_event(bot, PLAY, 0x06, respawn_handler);
+    register_play_clientbound_chat(bot, mcc_chat_handler);
+    register_play_clientbound_update_health(bot, mcc_autorespawn_handler);
 
     login(bot, server_name, port);
 
