@@ -48,7 +48,8 @@ void mcc_join_game_handler(bot_t *bot,
     //                                     (uint8_t *)"vanilla");
 }
 
-void mcc_chat_handler(bot_t *bot, char *json, int8_t position)
+void mcc_chat_handler(bot_t *bot, char *json, int8_t position,
+                      void (*f)(bot_t *, char *, char *))
 {
     char *msg = NULL;
     char *sender = NULL;
@@ -62,7 +63,7 @@ void mcc_chat_handler(bot_t *bot, char *json, int8_t position)
             // Parse space delimited tokens.
             char **saveptr = calloc(1, sizeof(char *));
             char *command = strtok_r(msg+1, " ", saveptr);
-            execute_command(bot, command, *saveptr);
+            f(bot, command, *saveptr);
             free(saveptr);
         }
     }

@@ -1065,6 +1065,7 @@ void *protocol_decode(bot_t *bot)
         }
         break;
     case PLAY:
+        //if (pid) printf("Receiving packet id: 0x%x\n", pid);
         switch (pid) {
         case 0x00:
             recv_struct = recv_play_clientbound_keepalive(bot);

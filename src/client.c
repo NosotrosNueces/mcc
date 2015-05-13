@@ -321,6 +321,7 @@ void packet_callback(bot_t *bot, void *packet_struct, void *function)
         }
         break;
     case PLAY:
+        //if (packet_id) printf("Sending packet id: 0x%x\n", packet_id);
         switch (packet_id) {
         case 0x00: {
             play_clientbound_keepalive_t *p = packet_struct;
