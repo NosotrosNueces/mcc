@@ -31,8 +31,8 @@ int main(int argc, char *argv[], char **envp)
 
     bot_t *bots[NUM_BOTS];
 
-    //bots[0] = init_defender("plants", server_name, server_port);
-    bots[0] = init_slave("batman", server_name, server_port);
+    bots[0] = init_defender("plants", server_name, server_port);
+    //bots[0] = init_slave("batman", server_name, server_port);
 
     client_run(bots, NUM_BOTS);
 
