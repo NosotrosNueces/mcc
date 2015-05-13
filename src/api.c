@@ -846,5 +846,6 @@ void register_defaults(bot_t *bot)
     register_play_clientbound_keepalive(bot, mcc_keepalive_handler);
     register_play_clientbound_join_game(bot, mcc_join_game_handler);
     register_play_clientbound_update_health(bot, mcc_update_health_handler);
+    register_play_clientbound_item_change(bot, mcc_item_change_handler);
     register_play_clientbound_position(bot, mcc_position_handler);
 }

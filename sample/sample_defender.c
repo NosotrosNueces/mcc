@@ -76,9 +76,16 @@ bool exists_target(bot_t *bot, vint32_t eid)
 
 void protect(bot_t *bot, vint32_t eid)
 {
+    //pthread_mutex_lock(&bot->bot_mutex);
+    //int8_t old_slot = bot->slot;
+    //pthread_mutex_unlock(&bot->bot_mutex);
+
     send_play_serverbound_player_look(bot, 0, 0, true);
     send_play_serverbound_animation(bot);
+
+    //send_play_serverbound_item_change(bot, 0);
     send_play_serverbound_entity_use(bot, eid, 1, 0, 0, 0);
+    //send_play_serverbound_item_change(bot, 1);
 }
 
 void entity_handler(bot_t *bot, vint32_t entity_id,
@@ -111,6 +118,13 @@ void entity_status_handler(bot_t *bot, int32_t entity_id, int8_t status)
     if (status == 3) remove_target(bot, entity_id);
 }
 
+void where(bot_t *bot)
+{
+    char buf[128] = {0};
+    sprintf(buf, "Current position: %f %f %f.\n", bot->x, bot->y, bot->z);
+    send_play_serverbound_chat(bot, buf);
+}
+
 void defender_command(bot_t *bot, char *command, char *strargs)
 {
     if (strcmp(command, "slot") == 0) {
@@ -135,7 +149,12 @@ void defender_command(bot_t *bot, char *command, char *strargs)
         free(saveptr);
         if (valid_input) {
             printf("SLOT CHANGE: (%d)\n", slot_no);
+            pthread_mutex_lock(&bot->bot_mutex);
+
+            bot->slot = slot_no;
             send_play_serverbound_item_change(bot, slot_no);
+
+            pthread_mutex_unlock(&bot->bot_mutex);
         } else {
             send_play_serverbound_chat(bot,
                                        "Invalid arguments for SLOT command "
@@ -179,11 +198,14 @@ void defender_command(bot_t *bot, char *command, char *strargs)
             printf("Waiting...\n");
             send_play_serverbound_chat(bot, "Waiting...");
         }
+    } else if (strcmp(command, "where") == 0) {
+        where(bot);
     } else if (strcmp(command, "help") == 0) {
         send_play_serverbound_chat(bot, "\\slot <slot>\n");
         send_play_serverbound_chat(bot, "\\stay\n");
         send_play_serverbound_chat(bot, "\\follow\n");
         send_play_serverbound_chat(bot, "\\reaquire\n");
+        send_play_serverbound_chat(bot, "\\where\n");
     } else {
         printf("Command not implemented: %s\n", command);
         send_play_serverbound_chat(bot,
@@ -235,7 +257,7 @@ void target_teleport_handler(bot_t *bot, vint32_t entity_id,
                   int8_t pitch,
                   bool on_ground)
 {
-    printf("Entity %d teleported: %f %f %f.\n", entity_id, x/32., y/32., z/32.);
+    //printf("Entity %d teleported: %f %f %f.\n", entity_id, x/32., y/32., z/32.);
 
     bool will_teleport;
     pthread_mutex_lock(&bot->bot_mutex);
@@ -297,17 +319,21 @@ void player_watcher(bot_t *bot, vint32_t entity_id,
     pthread_mutex_unlock(&bot->bot_mutex);
 }
 
-
-
 void defender_main(void *vbot)
 {
     bot_t *bot = (bot_t *)vbot;
     struct timeval delay = {0, 500000};
     register_timer(bot, delay, -1, timer_echo_pos);
-    ((bot_globals_t *)bot->state)->state = FOLLOW;
+    ((bot_globals_t *)bot->state)->state = STAY;
 
     msleep(300);
     send_play_serverbound_item_change(bot, 0);
+    msleep(5000);
+    printf("Current position: %f %f %f.\n", bot->x, bot->y, bot->z);
+    while (1) {
+        msleep(30*60*1000);
+        where(bot);
+    }
 
     pause();
 }

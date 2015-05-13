@@ -41,11 +41,14 @@ struct bot {
     int32_t food;
     float saturation;
 
+    // The slot which the player has selected (0–8)
+    int8_t slot;
     // dummy entry since slot_t is currently a void*
     void* item;
 
     char *name;
 
+    // Use this for private bot data.
     void* state;
 
     pthread_mutex_t bot_mutex;

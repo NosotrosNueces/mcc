@@ -84,6 +84,16 @@ void mcc_update_health_handler(bot_t *bot,
     pthread_mutex_unlock(&bot->bot_mutex);
 }
 
+void mcc_item_change_handler(bot_t *bot, int8_t slot)
+{
+    pthread_mutex_lock(&bot->bot_mutex);
+
+    bot->slot = slot;
+
+    pthread_mutex_unlock(&bot->bot_mutex);
+    printf("Slot update: %d\n", slot+1);
+}
+
 void mcc_autorespawn_handler(bot_t *bot,
                              float health,
                              vint32_t food,

@@ -45,6 +45,12 @@ void mcc_update_health_handler(bot_t *bot,
                                float saturation);
 
 /*
+ * Update bot health, food, and saturation.
+ */
+void mcc_item_change_handler(bot_t *bot,
+                             int8_t slot);
+
+/*
  * Immediately respawn whenever dead.
  */
 void mcc_autorespawn_handler(bot_t *bot,
