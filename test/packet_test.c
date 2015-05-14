@@ -48,8 +48,8 @@ int for_each(char *fmt, uint32_t len, int (*func)(char *),
                         return 0;
                 }
             } else if(fmt[len - 1] == 's' ||
-                    fmt[len - 1] == 'q' ||
-                    fmt[len - 1] == 'v') {
+                      fmt[len - 1] == 'q' ||
+                      fmt[len - 1] == 'v') {
                 // if str, must be preceded by varint
                 if(!for_each(fmt, len - 1, func, 0))
                     return 0;
@@ -108,12 +108,16 @@ int packet_equals(void *p1, void *p2)
             size_t elem_size = format_sizeof(*fmt);
             if(memcmp(*(void **)p1, *(void **)p2, arr_size * elem_size)) {
                 printf("Array mismatch, array elements of size %lu\n", elem_size);
-                hexdump("Array 1", *(void **)p1, arr_size * elem_size); 
-                hexdump("Array 2", *(void **)p2, arr_size * elem_size); 
+                hexdump("Array 1", *(void **)p1, arr_size * elem_size);
+                hexdump("Array 2", *(void **)p2, arr_size * elem_size);
                 return 0;
             }
             break;
-        case 'b': case 'h': case 'w': case 'l': case 'v':
+        case 'b':
+        case 'h':
+        case 'w':
+        case 'l':
+        case 'v':
             v1 = value_at(p1, size);
             v2 = value_at(p2, size);
             if((arr_size = value_at(p1, size)) != value_at(p2, size)) {
@@ -189,13 +193,13 @@ int test_fmt_str(char *fmt)
 
     // re-encode packet
     int len_decode = format_packet(&bot, decoded, packet_raw_decode);
-    
+
     int structs_equal = packet_equals(test, decoded);
-    int packets_equal = !memcmp(packet_raw, packet_raw_decode, len); 
+    int packets_equal = !memcmp(packet_raw, packet_raw_decode, len);
 
     int8_t equals = ((len == len_decode) && structs_equal &&
                      packets_equal);
-    
+
     if(len != len_decode)
         printf("Lengths do not match\n");
     if(!structs_equal)

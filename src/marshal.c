@@ -134,12 +134,12 @@ void *push(void *buffer, void *data, size_t size)
 uint64_t value_at(void *buf, size_t size)
 {
     uint64_t value = 0;
-    
+
     if(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
         memcpy(&value, buf, size);
     else
         memcpy(&value + sizeof(value) - size, buf, size);
-        
+
     return value;
 }
 
@@ -174,7 +174,7 @@ int format_packet(bot_t *bot, void *_packet_data, void *_packet_raw)
     char *fmt = *((char **)packet_data);
     packet_data += sizeof(char *);
     char *save = packet_raw;
-    
+
     uint64_t network_order;
 
     while(*fmt) {
@@ -216,15 +216,18 @@ int format_packet(bot_t *bot, void *_packet_data, void *_packet_raw)
             void *arr = *(void **)packet_data;
             for(int i = 0; i < arr_len * size_elem; i += size_elem) {
                 network_order = value_at(arr + i, size_elem);
-                network_order = reverse(network_order, size_elem); 
+                network_order = reverse(network_order, size_elem);
                 packet_raw = push(packet_raw, &network_order, size_elem);
             }
             break;
-        case 'b': case 'h': case 'w': case 'l':
+        case 'b':
+        case 'h':
+        case 'w':
+        case 'l':
             ;
             if(packet_raw - save + size > len)
                 return -1; // TODO: compression
-            
+
             network_order = value_at(packet_data, size);
             arr_len = network_order;
             network_order = reverse(network_order, size);
@@ -301,7 +304,10 @@ int decode_packet(bot_t *bot, void *_packet_raw, void *_packet_data)
             *(void **)packet_data = arr;
             packet_raw += arr_len * size_elem;
             break;
-        case 'b': case 'h': case 'w': case 'l':
+        case 'b':
+        case 'h':
+        case 'w':
+        case 'l':
             ;
 
             host_order = value_at(packet_raw, size);

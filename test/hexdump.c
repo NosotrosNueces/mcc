@@ -1,6 +1,7 @@
 #include <stdio.h>
 
-void hexdump (char *desc, void *addr, int len) {
+void hexdump (char *desc, void *addr, int len)
+{
     int i;
     unsigned char buff[17];
     unsigned char *pc = (unsigned char*)addr;
