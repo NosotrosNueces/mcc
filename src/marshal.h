@@ -7,7 +7,7 @@
 #define expect_more(x) (x & 0x80)
 // align pointer x to y
 // y is assumed to be a power of 2
-#define align(x, y) ((size_t)(x + y - 1) & (~y + 1))
+#define align(x, y) ((uint64_t)((x) + (y) - 1) & (uint64_t)(~(y) + 1))
 
 int varint64(char *data, int64_t *value);
 int varint32(char *data, int32_t *value);

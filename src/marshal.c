@@ -89,8 +89,7 @@ uint64_t reverse(uint64_t number, int len)
             break;
         default:
             fprintf(stderr, "Bad word size\n");
-            assert(0);
-            return -1;
+            exit(-1);
         }
     }
     //printf("Reversed: %llx, size: %d\n", number, len);
