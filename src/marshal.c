@@ -143,19 +143,6 @@ uint64_t value_at(void *buf, size_t size)
     return value;
 }
 
-void reentrant_memmove(void *dest, void *src, size_t len)
-{
-    // shift backwards, read forwards
-    if(dest < src)
-        while(len--)
-            *(uint8_t *)dest++ = *(uint8_t *)src++;
-    // shift forwards, read backwards
-    else
-        while(len--)
-            *(uint8_t *)(dest + len) = *(uint8_t *)(src + len);
-
-}
-
 // puts the raw packet data from the struct packet_data into packet_raw
 // returns the number of bytes written to packet_raw, or -1 if packet_raw
 // is not a long enough array
