@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <arpa/inet.h>
 #include "marshal.h"
 #include "bot.h"
 #include "protocol.h"
@@ -267,25 +268,68 @@ int format_packet(bot_t *bot, void *packet_data, void *packet_raw)
     return packet_raw - save + varlen;
 }
 
-void demarshal_slot(void* slot_raw, int16_t *block_id, char *count,
+
+void *marshal_slot(void *_packet_raw, int len, int16_t block_id, int8_t count, int16_t damage, nbt_t *nbt_data)
+{
+    char *packet_raw = _packet_raw;
+    if (-1 == block_id) { // Empty slot is 0xffff
+        int16_t ffff = 0xffff;
+        return push(_packet_raw, &ffff, sizeof(ffff));
+    } else {
+        /* Convert little to big endian; flip the bytes. */
+        block_id = htons(block_id);
+        damage = htons(damage);
+
+        /* copy block_id (2 bytes) */
+        memcpy(packet_raw, &block_id, sizeof(block_id)); 
+        packet_raw += sizeof(block_id);
+
+        /* copy count (1 byte) */
+        memcpy(packet_raw, &count, sizeof(count)); 
+        packet_raw += sizeof(count); 
+
+        /* copy damage (2 bytes) */
+        memcpy(packet_raw, &damage, sizeof(damage));
+        packet_raw += sizeof(damage);
+
+        if (nbt_data->length > 0) {
+            memset(packet_raw, 1, sizeof(int8_t));
+            packet_raw += sizeof(int8_t);
+            memcpy(packet_raw, nbt_data->data, nbt_data->length);
+            packet_raw += nbt_data->length;
+        } else {
+            memset(packet_raw, 0, sizeof(int8_t));
+            packet_raw += sizeof(int8_t);
+        }
+    }
+    return packet_raw;
+}
+
+void demarshal_slot(void *_data, int16_t *block_id, int8_t *count,
                     int16_t *damage, nbt_t *nbt_data)
 {
-    *block_id = *(int16_t *)slot_raw;
-    *block_id = *block_id >> 8 | *block_id << 8;
-     
-    *count = *((char *)slot_raw + 2);
-     
-    *damage = (*((int64_t *)slot_raw) & (0xffffL << 5*8)) >> 6*8;
-    *damage = *damage >> 8 | *damage << 8;
-     
-    int16_t nbt_length = (*((int64_t *)slot_raw) & (0xffffL << 5*8)) >> 5*8;
-    nbt_length = nbt_length >> 8 | nbt_length << 8;
-    if (nbt_length != -1) {
-        exit(1); // NotImplementedError
+    char *data = _data; 
+    memcpy(block_id, data, sizeof(*block_id));
+    data += sizeof(*block_id);
+    *block_id = ntohs(*block_id); 
+
+    *count = *data;
+    data += sizeof(char);
+
+    memcpy(damage, data, sizeof(*damage));
+    data += sizeof(*damage);
+    *damage = ntohs(*damage);
+
+    int16_t nbt_length;
+    if(*data) {
+        exit(1); 
+        /* TODO: parse nbt data */
     } else {
-        *nbt_data = NULL;
+        nbt_data->length = 0;
+        nbt_data->data = NULL;
     }
-} 
+   
+}
 
 int decode_packet(bot_t *bot, void *packet_raw, void *packet_data)
 {
