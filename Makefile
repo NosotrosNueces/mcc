@@ -1,30 +1,40 @@
 CC      = clang
 SA      = scan-build
-TARGET  = mcc
 
 CFLAGS  = -Wall -Isrc --std=gnu99
 LDFLAGS = -lpthread -lm
 
-OBJECTS := $(patsubst %.c,%.o,$(wildcard src/*.c))
+SRC		= src
+LIB		= lib
+BIN		= bin
+TARGET  = $(BIN)/mcc
 TEST    := $(patsubst %.c,%.o,$(wildcard test/*.c))
-SAMPLE  := $(patsubst %.c,%.o,$(wildcard sample/*.c))
+SRCFILES	:= $(wildcard $(SRC)/*.c)
+OBJECTS 	:= $(patsubst $(SRC)/%.c,$(LIB)/%.o, $(SRCFILES))
+SAMPLE		:= $(patsubst %.c,%.o,$(wildcard sample/*.c))
 
 all: $(TARGET)
 
-$(TARGET): bin $(OBJECTS) $(SAMPLE)
+$(TARGET): $(OBJECTS) $(SAMPLE) | $(BIN)
 	$(CC) $(LDFLAGS) $(OBJECTS) $(SAMPLE) -o $@
 
-.PHONY: test
-test: bin $(OBJECTS) $(TEST)
+$(LIB)/%.o: $(SRC)/%.c | $(LIB)
+	$(CC) -c $(CFLAGS) $< -o $@
+
+.PHONY: tests
+tests: $(OBJECTS) $(TEST) | $(BIN)
 	$(CC) $(LDFLAGS) $(OBJECTS) $(TEST) -o bin/$@
 	bin/$@
 
 .PHONY: clean
 clean:
 	$(RM) $(OBJECTS) $(TEST) $(SAMPLE)
-	$(RM) $(TARGET)
+	$(RM) $(BIN)/*
 
-bin:
+$(LIB):
+	mkdir -p $@
+
+$(BIN):
 	mkdir -p $@
 
 scan:
