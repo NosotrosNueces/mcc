@@ -1,35 +1,48 @@
+VERSION = 0.0.1
+
 CC      = clang
 SA      = scan-build
 
-CFLAGS  = -Wall -Isrc --std=gnu99
+DIR 	:= $(pwd)
+
+CFLAGS  = -c -fpic -Wall -Isrc --std=gnu99
 LDFLAGS = -lpthread -lm
 
 SRC		= src
 LIB		= lib
+SHAREDLIB	= $(LIB)/libmcc.so.$(VERSION)
+OBJ		= obj
 BIN		= bin
 TARGET  = $(BIN)/mcc
 TEST    := $(patsubst %.c,%.o,$(wildcard test/*.c))
 SRCFILES	:= $(wildcard $(SRC)/*.c)
-OBJECTS 	:= $(patsubst $(SRC)/%.c,$(LIB)/%.o, $(SRCFILES))
+OBJECTS 	:= $(patsubst $(SRC)/%.c,$(OBJ)/%.o, $(SRCFILES))
 SAMPLE		:= $(patsubst %.c,%.o,$(wildcard sample/*.c))
 
 all: $(TARGET)
 
-$(TARGET): $(OBJECTS) $(SAMPLE) | $(BIN)
+$(TARGET): $(SHAREDLIB) $(SAMPLE) | $(BIN)
 	$(CC) $(LDFLAGS) $(OBJECTS) $(SAMPLE) -o $@
 
-$(LIB)/%.o: $(SRC)/%.c | $(LIB)
-	$(CC) -c $(CFLAGS) $< -o $@
+# Rule for making all object files
+$(OBJ)/%.o: $(SRC)/%.c | $(OBJ)
+	$(CC) $(CFLAGS) $< -o $@
+
+# Rule for making shared object file
+$(SHAREDLIB): $(OBJECTS) | $(LIB)
+	$(CC) -shared -o $@ $(OBJECTS)
 
 .PHONY: tests
-tests: $(OBJECTS) $(TEST) | $(BIN)
+tests: $(SHAREDLIB) $(TEST) | $(BIN)
 	$(CC) $(LDFLAGS) $(OBJECTS) $(TEST) -o bin/$@
 	bin/$@
 
 .PHONY: clean
 clean:
-	$(RM) $(OBJECTS) $(TEST) $(SAMPLE)
-	$(RM) $(BIN)/*
+	$(RM) $(OBJECTS) $(TEST) $(SAMPLE) $(BIN)/* $(SHAREDLIB)
+
+$(OBJ):
+	mkdir -p $@
 
 $(LIB):
 	mkdir -p $@
@@ -37,8 +50,10 @@ $(LIB):
 $(BIN):
 	mkdir -p $@
 
+.PHONY: scan
 scan:
 	$(SA) make all
 
+.PHONY: format
 format:
 	astyle -n -r --style=linux *.c *.h
