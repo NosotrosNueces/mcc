@@ -33,9 +33,9 @@ $(SHAREDLIB): $(OBJECTS) | $(LIB)
 	$(CC) -shared -o $@ $(OBJECTS)
 	ln $(SHAREDLIB) $(LIB)/libmcc.so
 
-.PHONY: tests
-tests: export LD_LIBRARY_PATH=$(DIR)/$(LIB)
-tests: $(SHAREDLIB) $(TEST) | $(BIN)
+.PHONY: test
+test: export LD_LIBRARY_PATH=$(DIR)/$(LIB)
+test: $(SHAREDLIB) $(TEST) | $(BIN)
 	$(CC) $(TEST) -o $(BIN)/$@ $(LDFLAGS)
 	$(BIN)/$@
 
