@@ -3,10 +3,10 @@ VERSION = 0.0.1
 CC      = clang
 SA      = scan-build
 
-DIR 	:= $(pwd)
+DIR 	:= $(shell pwd)
 
 CFLAGS  = -c -fpic -Wall -Isrc --std=gnu99
-LDFLAGS = -lpthread -lm
+LDFLAGS = -L$(DIR)/$(LIB) -lpthread -lm -lmcc
 
 SRC		= src
 LIB		= lib
@@ -22,7 +22,7 @@ SAMPLE		:= $(patsubst %.c,%.o,$(wildcard sample/*.c))
 all: $(TARGET)
 
 $(TARGET): $(SHAREDLIB) $(SAMPLE) | $(BIN)
-	$(CC) $(LDFLAGS) $(OBJECTS) $(SAMPLE) -o $@
+	$(CC) $(SAMPLE) -o $@ $(LDFLAGS)
 
 # Rule for making all object files
 $(OBJ)/%.o: $(SRC)/%.c | $(OBJ)
@@ -31,15 +31,24 @@ $(OBJ)/%.o: $(SRC)/%.c | $(OBJ)
 # Rule for making shared object file
 $(SHAREDLIB): $(OBJECTS) | $(LIB)
 	$(CC) -shared -o $@ $(OBJECTS)
+	ln $(SHAREDLIB) $(LIB)/libmcc.so
 
 .PHONY: tests
+tests: export LD_LIBRARY_PATH=$(DIR)/$(LIB)
 tests: $(SHAREDLIB) $(TEST) | $(BIN)
-	$(CC) $(LDFLAGS) $(OBJECTS) $(TEST) -o bin/$@
-	bin/$@
+	$(CC) $(TEST) -o $(BIN)/$@ $(LDFLAGS)
+	$(BIN)/$@
+
+# I don't understand this rule, but it works
+.PHONY: run
+run: export LD_LIBRARY_PATH=$(DIR)/$(LIB)
+run: $(SHAREDLIB)
+	$(BIN)/$(EXEC)
 
 .PHONY: clean
 clean:
 	$(RM) $(OBJECTS) $(TEST) $(SAMPLE) $(BIN)/* $(SHAREDLIB)
+	unlink $(LIB)/libmcc.so
 
 $(OBJ):
 	mkdir -p $@
