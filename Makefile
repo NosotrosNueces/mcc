@@ -6,7 +6,7 @@ SA      = scan-build
 DIR 	:= $(shell pwd)
 
 CFLAGS  = -c -fpic -Wall -Isrc --std=gnu99
-LDFLAGS = -L$(DIR)/$(LIB) -lpthread -lm -lmcc
+LDFLAGS = -lpthread -lm
 
 SRC		= src
 LIB		= lib
@@ -22,7 +22,7 @@ SAMPLE		:= $(patsubst %.c,%.o,$(wildcard sample/*.c))
 all: $(TARGET)
 
 $(TARGET): $(SHAREDLIB) $(SAMPLE) | $(BIN)
-	$(CC) $(SAMPLE) -o $@ $(LDFLAGS)
+	$(CC) $(SAMPLE) $(OBJECTS) -o $@ $(LDFLAGS)
 
 # Rule for making all object files
 $(OBJ)/%.o: $(SRC)/%.c | $(OBJ)
@@ -34,9 +34,8 @@ $(SHAREDLIB): $(OBJECTS) | $(LIB)
 	ln $(SHAREDLIB) $(LIB)/libmcc.so
 
 .PHONY: test
-test: export LD_LIBRARY_PATH=$(DIR)/$(LIB)
 test: $(SHAREDLIB) $(TEST) | $(BIN)
-	$(CC) $(TEST) -o $(BIN)/$@ $(LDFLAGS)
+	$(CC) $(TEST) $(OBJECTS) -o $(BIN)/$@ $(LDFLAGS)
 	$(BIN)/$@
 
 # I don't understand this rule, but it works
