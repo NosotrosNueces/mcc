@@ -6,7 +6,6 @@
 #include "packet_test.h"
 #include "marshal.h"
 #include "bot.h"
-#include "hexdump.h"
 
 #define STRUCT_SIZE 4096
 #define NUM_FMT_SPECS 8
@@ -17,6 +16,11 @@ char fmt_specifiers[NUM_FMT_SPECS] = {'s', 'b', 'h', 'w', 'v', 'l', 'q', '*'};
 int random_fmt(char *, int);
 
 FILE *urandom;
+
+
+void hexdump(char *title, void *buffer, int len) {
+    return;
+}
 
 // performs function for each possible format string of length len
 int for_each(char *fmt, uint32_t len, int (*func)(char *),
