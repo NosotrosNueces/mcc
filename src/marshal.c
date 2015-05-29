@@ -129,8 +129,8 @@ void *push(void *buffer, void *data, size_t size)
     return (char *)buffer + size;
 }
 
-// Read size bytes from buf as an integer and
-// returns the 128 bit integer at the top of the buffer
+// Reads an integer of size bytes from the top of buf
+// and returns it as a 64 bit integer
 uint64_t value_at(void *buf, size_t size)
 {
     uint64_t value = 0;

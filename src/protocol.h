@@ -3,21 +3,13 @@
 #include <stdint.h>
 #include "bot.h"
 #include <stdbool.h>
+#include "types.h"
 
 #define DEFAULT_THRESHOLD (512)
 #define HANDSHAKE_PACKETS 0x0
 #define LOGIN_PACKETS 0x03
 #define PLAY_PACKETS 0x47
 #define STATUS_PACKETS 0x02
-
-typedef uint64_t position_t;
-typedef int32_t vint32_t;
-typedef char* chat_t;
-typedef int32_t data_t;
-typedef void* metadata_t;
-typedef void* property_t;
-typedef void* record_t;
-typedef void* slot_t;
 
 void *protocol_decode(bot_t *bot);
 

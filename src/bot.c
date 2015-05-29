@@ -89,17 +89,6 @@ void free_list(function *list)
     }
 }
 
-void register_event(bot_t *bot, uint32_t state, uint32_t packet_id,
-                    void (*f)(bot_t *, void *))
-{
-    function *parent = &bot->_data->callbacks[state][packet_id];
-    while(parent->next)
-        parent = parent->next;
-    function *child = calloc(1, sizeof(function));
-    parent->f = f;
-    parent->next = child;
-}
-
 timed_function *register_timer(bot_t *bot, struct timeval delay,
                                int count, void (*f)(bot_t *, void *))
 {
