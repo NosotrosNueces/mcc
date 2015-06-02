@@ -24,6 +24,11 @@ all: $(TARGET)
 $(TARGET): $(SHAREDLIB) $(SAMPLE) | $(BIN)
 	$(CC) $(LDFLAGS) $(OBJECTS) $(SAMPLE) -o $@
 
+debug: CFLAGS += -g
+debug: clean
+debug: all
+
+
 # Rule for making all object files
 $(OBJ)/%.o: $(SRC)/%.c | $(OBJ)
 	$(CC) $(CFLAGS) $< -o $@
@@ -32,8 +37,10 @@ $(OBJ)/%.o: $(SRC)/%.c | $(OBJ)
 $(SHAREDLIB): $(OBJECTS) | $(LIB)
 	$(CC) -shared -o $@ $(OBJECTS)
 
-.PHONY: tests
-tests: $(SHAREDLIB) $(TEST) | $(BIN)
+.PHONY: test
+test: CFLAGS += -g
+test: bin $(OBJECTS) $(TEST)
+test: $(SHAREDLIB) $(TEST) | $(BIN)
 	$(CC) $(LDFLAGS) $(OBJECTS) $(TEST) -o bin/$@
 	bin/$@
 

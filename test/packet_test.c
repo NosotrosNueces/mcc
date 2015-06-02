@@ -17,6 +17,11 @@ int random_fmt(char *, int);
 
 FILE *urandom;
 
+
+void hexdump(char *title, void *buffer, int len) {
+    return;
+}
+
 // performs function for each possible format string of length len
 int for_each(char *fmt, uint32_t len, int (*func)(char *),
              uint8_t arr_allowed)
@@ -46,7 +51,9 @@ int for_each(char *fmt, uint32_t len, int (*func)(char *),
                     if(!for_each(fmt, len - 2, func, 0))
                         return 0;
                 }
-            } else if(fmt[len - 1] == 's') {
+            } else if(fmt[len - 1] == 's' ||
+                      fmt[len - 1] == 'q' ||
+                      fmt[len - 1] == 'v') {
                 // if str, must be preceded by varint
                 if(!for_each(fmt, len - 1, func, 0))
                     return 0;
@@ -74,16 +81,29 @@ int packet_equals(void *p1, void *p2)
     char *fmt = *(char **)p1;
     p1 += sizeof(void *);
     p2 += sizeof(void *);
-    size_t size;
-    __int128_t arr_size = -1;
+    uint64_t size;
+    uint64_t arr_size = -1;
+    uint64_t v1, v2;
+    char *str1, *str2;
     while(*fmt) {
         size = format_sizeof(*fmt);
         p1 = (void *)align(p1, size);
         p2 = (void *)align(p2, size);
         switch(*fmt) {
+        case 'q':
+            if(memcmp(p1, p2, size)) {
+                printf("Quad word mismatch\n");
+                return 0;
+            }
+            break;
         case 's':
-            if(strcmp(*(char **)p1, *(char **)p2)) {
-                printf("String mismatch\n");
+            str1 = *(char **)p1;
+            str2 = *(char **)p2;
+            int len = strlen(str1);
+            if(strcmp(str1, str2)) {
+                printf("String mismatch between %p and %p\n", str1, str2);
+                hexdump("String 1", str1, len);
+                hexdump("String 2", str2, len);
                 return 0;
             }
             break;
@@ -91,13 +111,23 @@ int packet_equals(void *p1, void *p2)
             fmt++;
             size_t elem_size = format_sizeof(*fmt);
             if(memcmp(*(void **)p1, *(void **)p2, arr_size * elem_size)) {
-                printf("Array mismatch\n");
+                printf("Array mismatch, array elements of size %lu\n", elem_size);
+                hexdump("Array 1", *(void **)p1, arr_size * elem_size);
+                hexdump("Array 2", *(void **)p2, arr_size * elem_size);
                 return 0;
             }
             break;
-        default:
+        case 'b':
+        case 'h':
+        case 'w':
+        case 'l':
+        case 'v':
+            v1 = value_at(p1, size);
+            v2 = value_at(p2, size);
             if((arr_size = value_at(p1, size)) != value_at(p2, size)) {
-                printf("Integer/Varint mismatch\n");
+                printf("Integer/Varint mismatch of size %lu\n", size);
+                hexdump("v1", &v1, size);
+                hexdump("v2", &v2, size);
                 return 0;
             }
             break;
@@ -135,7 +165,6 @@ int test_fmt_str(char *fmt)
     while(*fmt) {
         size = format_sizeof(*fmt);
         tmp = (void *)align(tmp, size);
-        char var[5];
         switch(*fmt) {
         case 's': // varint followed by string
             // push random array size onto tmp
@@ -168,8 +197,23 @@ int test_fmt_str(char *fmt)
 
     // re-encode packet
     int len_decode = format_packet(&bot, decoded, packet_raw_decode);
-    int8_t equals = ((len == len_decode) && packet_equals(test, decoded) &&
-                     !memcmp(packet_raw, packet_raw_decode, len));
+
+    int structs_equal = packet_equals(test, decoded);
+    int packets_equal = !memcmp(packet_raw, packet_raw_decode, len);
+
+    int8_t equals = ((len == len_decode) && structs_equal &&
+                     packets_equal);
+
+    if(len != len_decode)
+        printf("Lengths do not match\n");
+    if(!structs_equal)
+        printf("Structs do not match\n");
+    if(!packets_equal) {
+        printf("Packets do not match\n");
+        hexdump("1st", packet_raw, len);
+        hexdump("2nd", packet_raw_decode, len_decode);
+    }
+
     free_packet(test);
     free_packet(decoded);
     return equals;
