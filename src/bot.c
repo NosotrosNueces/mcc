@@ -9,121 +9,11 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#include <uv.h>
 #include "bot.h"
 #include "protocol.h"
 #include "marshal.h"
-
-void free_list(function *);
-
-// Initializes the bot with defaults given a name and a main function.
-bot_t *init_bot(char *name, void (*bot_main)(void *))
-{
-    // Set the bot name
-    bot_t *bot = calloc(1, sizeof(bot_t));
-    bot->eid = -1;
-    size_t len = strlen(name);
-    bot->name = calloc(len + 1, sizeof(char));
-    strncpy(bot->name, name, len + 1);
-    bot->_data = calloc(1, sizeof(bot_internal));
-    bot->_data->packet_threshold = DEFAULT_THRESHOLD;
-    bot->_data->buf = calloc(1, DEFAULT_THRESHOLD);
-    bot->_data->current_state = LOGIN;
-    bot->_data->bot_main = bot_main;
-    // Initialize the callback data structure
-    bot->_data->callbacks = calloc(NUM_STATES, sizeof(function *));
-    bot->_data->callbacks[HANDSHAKE] = calloc(HANDSHAKE_PACKETS, sizeof(function));
-    bot->_data->callbacks[LOGIN] = calloc(LOGIN_PACKETS, sizeof(function));
-    bot->_data->callbacks[PLAY] = calloc(PLAY_PACKETS, sizeof(function));
-    bot->_data->timers = calloc(1, sizeof(timed_function *));
-    // Dummy tail for the timer list.
-    *(bot->_data->timers) = calloc(1, sizeof(timed_function));
-
-    // initialize pthread_mutex
-    pthread_mutex_init(&bot->bot_mutex, NULL);
-    return bot;
-}
-
-void free_bot(bot_t *bot)
-{
-    free(bot->name);
-
-    free(bot->_data->buf);
-
-    // Free all handshake callback structs.
-    for(int i = 0; i < HANDSHAKE_PACKETS; i++)
-        free_list(bot->_data->callbacks[HANDSHAKE][i].next);
-    for(int i = 0; i < LOGIN_PACKETS; i++)
-        free_list(bot->_data->callbacks[LOGIN][i].next);
-    for(int i = 0; i < PLAY_PACKETS; i++)
-        free_list(bot->_data->callbacks[PLAY][i].next);
-    free(bot->_data->callbacks[HANDSHAKE]);
-    free(bot->_data->callbacks[LOGIN]);
-    free(bot->_data->callbacks[PLAY]);
-    free(bot->_data->callbacks);
-
-    // Free all timers in the linked list.
-    timed_function *node = *bot->_data->timers;
-    timed_function *prev_node = NULL;
-    // Use free_list?
-    while(node) {
-        prev_node = node;
-        node = node->next;
-        free(prev_node->last_time_called);
-        free(prev_node->interval);
-        free(prev_node);
-    }
-    free(bot->_data->timers);
-
-    free(bot->_data);
-
-    pthread_mutex_destroy(&bot->bot_mutex);
-
-    free(bot);
-}
-
-void free_list(function *list)
-{
-    if (list) {
-        free_list(list->next);
-        free(list);
-    }
-}
-
-timed_function *register_timer(bot_t *bot, struct timeval delay,
-                               int count, void (*f)(bot_t *, void *))
-{
-    timed_function **old_head = bot->_data->timers;
-
-    timed_function *new_node = calloc(1, sizeof(timed_function));
-    new_node->f = f;
-    new_node->next = *old_head;
-    new_node->prev = NULL;
-    new_node->last_time_called = calloc(1, sizeof(struct timeval));
-    gettimeofday(new_node->last_time_called, NULL);
-    new_node->interval = calloc(1, sizeof(struct timeval));
-    memcpy(new_node->interval, &delay, sizeof(struct timeval));
-    new_node->repeat_count = count;
-
-    // Always insert to the head.
-    (*old_head)->prev = new_node;
-    *(bot->_data->timers) = new_node;
-
-    return new_node;
-}
-
-void unregister_timer(bot_t *bot, timed_function *timer)
-{
-    if (timer->prev) {
-        timer->next->prev = timer->prev;
-        timer->prev->next = timer->next;
-    } else { // First element is a special case.
-        timer->next->prev = NULL;
-        *(bot->_data->timers) = timer->next;
-    }
-    free(timer->last_time_called);
-    free(timer->interval);
-    free(timer);
-}
+#include "types.h"
 
 // Initializes a bot structure with a socket. The socket is bound to the
 // local address on some port and is connected to the server specified by the
@@ -131,24 +21,22 @@ void unregister_timer(bot_t *bot, timed_function *timer)
 // function. If -1 is returned, then an error occured, and a message will
 // have been printed out.
 
-int join_server(bot_t *bot, char* server_host, int port_number)
+uv_loop_t *loop;
+
+void on_connect(uv_connect_t *req, int status) {
+}
+
+int join_server(struct bot_agent *bot, char* server_host, int port_number)
 {
-    struct addrinfo hints, *res;
-    int sockfd;
-    char server_port[8];
-    // first, load up address structs with getaddrinfo():
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    sprintf(server_port, "%d", port_number);
-    getaddrinfo(server_host, server_port, &hints, &res);
+	bot->socket = malloc(sizeof(uv_tcp_t));
+	uv_tcp_init(loop, bot->socket);
 
-    // make a socket and connect
-    sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-    connect(sockfd, res->ai_addr, res->ai_addrlen);
+	uv_connect_t *connect = malloc(sizeof(uv_connect_t));
 
-    bot->_data->socketfd = sockfd;
-    return sockfd;
+	struct sockaddr_in dest;
+	uv_ip4_addr(server_host, 25565, &dest);
+
+	uv_tcp_connect(connect, bot->socket, (const struct sockaddr*)&dest, on_connect);
 }
 
 int disconnect(bot_t *bot)
