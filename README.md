@@ -9,6 +9,9 @@ Minecraft by providing a framework to program bots. MCC provides some
 abstractions and an event-driven interface that makes bot-writing easy.
 
 ## Documentation and Resources ##
+
+### Protocol Version: 201 ###
+
 [mcc.lf.lc](http://mcc.lf.lc)
 
 [wiki.vg](http://wiki.vg)
