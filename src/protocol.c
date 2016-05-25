@@ -18,10 +18,75 @@ uint32_t _render_send(bot_t *bot, void *p)
 	return length;
 }
 
+int varint64(char *data, int64_t *value)
+{
+    int64_t result = 0;
+    int shifts = 0;
+    do {
+        result |= ((0x7F & *data) << (shifts * 7));
+        shifts++;
+    } while(expect_more(*data++));
+    *value = result;
+    return shifts;
+}
+
+// returns the number of bytes read from data
+int varint32(char *data, int32_t *value)
+{
+    int32_t result = 0;
+    int shifts = 0;
+    do {
+        result |= ((0x7F & *data) << (shifts * 7));
+        shifts++;
+    } while(expect_more(*data++));
+    *value = result;
+    return shifts;
+}
+
+int varint64_encode(int64_t value, char *data, int len)
+{
+    memset(data, 0, len);
+    char mask = 0x7F;
+    int i = 0;
+    do {
+        if(i >= len)
+            return -1;
+        data[i] = (mask & value);
+        data[i] |= 0X80;
+        value = (uint64_t)value >> 7;
+        i++;
+    } while(value);
+    data[i - 1] &= mask;
+    return i;
+}
+
+int varint32_encode(int32_t value, char *data, int len)
+{
+    memset(data, 0, len);
+    char mask = 0x7F;
+    int i = 0;
+    do {
+        if(i >= len)
+            return -1;
+        data[i] = (mask & value);
+        data[i] |= 0X80;
+        value = (uint32_t)value >> 7;
+        i++;
+    } while(value);
+    data[i - 1] &= mask;
+    return i;
+}
+
+void *_push(void *buffer, void *data, size_t size)
+{
+    memcpy(buffer, data, size);
+    return (char *)buffer + size;
+}
+
 void *_push_vint32(void *buf, vint32_t val) {
 	char varint[5];
 	uint32_t len = varint32_encode(val, varint, sizeof(varint));
-	buf = push(buf, varint, len);
+	buf = _push(buf, varint, len);
 	return buf;
 }
 
@@ -30,8 +95,8 @@ void *_push_string(void *buf, char *str) {
 	size_t s_len = strlen(str);
 	char str_len[5];
 	bytes_pushed = varint32_encode(s_len, str_len, sizeof(str_len));
-	buf = push(buf, str_len, bytes_pushed);
-	buf = push(buf, str, s_len);
+	buf = _push(buf, str_len, bytes_pushed);
+	buf = _push(buf, str, s_len);
 	return buf; 
 }
 
@@ -41,7 +106,7 @@ void *_push_slot(void *_packet_raw, slot_t *slot_data)
 
 	char *packet_raw = _packet_raw;
 	if (-1 == block_id) { // Empty slot is 0xffff
-		return push(packet_raw, &block_id, sizeof(block_id));
+		return _push(packet_raw, &block_id, sizeof(block_id));
 	} else {
 		int8_t count = slot_data->count;
 		int16_t damage = slot_data->damage;
@@ -52,18 +117,18 @@ void *_push_slot(void *_packet_raw, slot_t *slot_data)
 		damage = htons(damage);
 
 		/* copy block_id (2 bytes) */
-        packet_raw = push(packet_raw, &block_id, sizeof(block_id));
+        packet_raw = _push(packet_raw, &block_id, sizeof(block_id));
 
 		/* copy count (1 byte) */
-        packet_raw = push(packet_raw, &count, sizeof(count));
+        packet_raw = _push(packet_raw, &count, sizeof(count));
 
 		/* copy damage (2 bytes) */
-        packet_raw = push(packet_raw, &damage, sizeof(damage));
+        packet_raw = _push(packet_raw, &damage, sizeof(damage));
 
 		if (tree) {
 			/* convert nbt tree to binary nbt data */
 			struct buffer nbt_data = nbt_dump_binary(tree);
-            packet_raw = push(packet_raw, nbt_data.data, nbt_data.len);
+            packet_raw = _push(packet_raw, nbt_data.data, nbt_data.len);
 			free(nbt_data.data);
 		} else {
 			memset(packet_raw, 0, sizeof(int8_t));
@@ -88,7 +153,7 @@ void *_append_len(void *buf, uint32_t *len) {
 	int offset = varint32_encode(*len, buf_len, sizeof(buf_len));
 	*len += offset;
 	void *start = (char *)buf + 5 - offset;
-	push(start, buf_len, offset);
+	_push(start, buf_len, offset);
 	return start;
 }
 
@@ -111,7 +176,7 @@ int32_t send_handshaking_serverbound_handshake(
 	buf = _push_vint32(buf, 0x00);
 	buf = _push_vint32(buf, protocol_version);
 	buf = _push_string(buf, server_addr);
-	buf = push(buf, &server_port, sizeof(server_port));
+	buf = _push(buf, &server_port, sizeof(server_port));
 	buf = _push_vint32(buf, next_state);
 	int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -173,7 +238,7 @@ int32_t send_status_serverbound_ping(
 	PAD_LENGTH(buf);
 	packet = buf;
 	buf = _push_vint32(buf, 0x01);
-	buf = push(buf, &time, sizeof(time));
+	buf = _push(buf, &time, sizeof(time));
 	int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
 	send_raw(bot, packet, length);
@@ -220,11 +285,11 @@ int32_t send_play_serverbound_tab_complete(
 	buf = _push_vint32(buf, 0x01);
 	buf = _push_string(buf, text);
 	int8_t b = assume_command ? 1 : 0;
-	buf = push(buf, &b, sizeof(b));
+	buf = _push(buf, &b, sizeof(b));
 	b = has_position ? 1 : 0;
-	buf = push(buf, &b, sizeof(b));
+	buf = _push(buf, &b, sizeof(b));
 	if (has_position) {
-		buf = push(buf, &looked_at_block, sizeof(looked_at_block));
+		buf = _push(buf, &looked_at_block, sizeof(looked_at_block));
 	}
 	int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -285,11 +350,11 @@ int32_t send_play_serverbound_client_settings(
 	packet = buf;
 	buf = _push_vint32(buf, 0x04);
 	buf = _push_string(buf, locale);
-	buf = push(buf, &view_distance, sizeof(view_distance));
+	buf = _push(buf, &view_distance, sizeof(view_distance));
 	buf = _push_vint32(buf, chat_mode);
 	int8_t b = chat_colors ? 1 : 0;
-	buf = push(buf, &b, sizeof(b));
-	buf = push(buf, &displayed_skin_parts, sizeof(displayed_skin_parts));
+	buf = _push(buf, &b, sizeof(b));
+	buf = _push(buf, &displayed_skin_parts, sizeof(displayed_skin_parts));
 	buf = _push_vint32(buf, main_hand);
 	int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -312,10 +377,10 @@ int32_t send_play_serverbound_confirm_transaction(
 	packet = buf;
 
 	buf = _push_vint32(buf, 0x05);
-	buf = push(buf, &window_id, sizeof(window_id));
-	buf = push(buf, &action_number, sizeof(action_number));
+	buf = _push(buf, &window_id, sizeof(window_id));
+	buf = _push(buf, &action_number, sizeof(action_number));
 	int8_t b = accepted ? 1 : 0;
-	buf = push(buf, &b, sizeof(b));
+	buf = _push(buf, &b, sizeof(b));
 
 	int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -336,8 +401,8 @@ int32_t send_play_serverbound_enchant_item(
 	packet = buf;
 
 	buf = _push_vint32(buf, 0x06);
-	buf = push(buf, &window_id, sizeof(window_id));
-	buf = push(buf, &enchantment, sizeof(enchantment));
+	buf = _push(buf, &window_id, sizeof(window_id));
+	buf = _push(buf, &enchantment, sizeof(enchantment));
 
 	int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -364,10 +429,10 @@ int32_t send_play_serverbound_click_window(
 	packet = buf;
 
     buf = _push_vint32(buf, 0x07);
-    buf = push(buf, &window_id, sizeof(window_id));
-    buf = push(buf, &slot, sizeof(slot));
-    buf = push(buf, &button, sizeof(button));
-    buf = push(buf, &action_number, sizeof(action_number));
+    buf = _push(buf, &window_id, sizeof(window_id));
+    buf = _push(buf, &slot, sizeof(slot));
+    buf = _push(buf, &button, sizeof(button));
+    buf = _push(buf, &action_number, sizeof(action_number));
     buf = _push_vint32(buf, mode);
     buf = _push_slot(buf, clicked_item);
     
@@ -389,7 +454,7 @@ int32_t send_play_serverbound_close_window(
 	packet = buf;
     
     buf = _push_vint32(buf, 0x08);
-    buf = push(buf, &window_id, sizeof(window_id));
+    buf = _push(buf, &window_id, sizeof(window_id));
 
     int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -412,7 +477,7 @@ int32_t send_play_serverbound_plugin_message(
     
     buf = _push_vint32(buf, 0x09);
     buf = _push_string(buf, channel);
-    buf = push(buf, data, data_length); 
+    buf = _push(buf, data, data_length); 
 
     int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -441,9 +506,9 @@ int32_t send_play_serverbound_use_entity(
     buf = _push_vint32(buf, type);
     switch(type) {
         case 2: /* interact at */
-            buf = push(buf, &target_x, sizeof(target_x));
-            buf = push(buf, &target_y, sizeof(target_y));
-            buf = push(buf, &target_z, sizeof(target_z));
+            buf = _push(buf, &target_x, sizeof(target_x));
+            buf = _push(buf, &target_y, sizeof(target_y));
+            buf = _push(buf, &target_z, sizeof(target_z));
         case 0: /* interact */
             buf = _push_vint32(buf, hand);
     }
@@ -489,11 +554,11 @@ int32_t send_play_serverbound_player_position(
 	packet = buf;
     
     buf = _push_vint32(buf, 0x0C);
-    buf = push(buf, &x, sizeof(x));
-    buf = push(buf, &y, sizeof(y));
-    buf = push(buf, &z, sizeof(z));
+    buf = _push(buf, &x, sizeof(x));
+    buf = _push(buf, &y, sizeof(y));
+    buf = _push(buf, &z, sizeof(z));
     int8_t b = on_ground ? 1 : 0;
-    buf = push(buf, &b, sizeof(b));
+    buf = _push(buf, &b, sizeof(b));
 
     int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -518,13 +583,13 @@ int32_t send_play_serverbound_player_position_look(
 	packet = buf;
     
     buf = _push_vint32(buf, 0x0D);
-    buf = push(buf, &x, sizeof(x));
-    buf = push(buf, &y, sizeof(y));
-    buf = push(buf, &z, sizeof(z));
-    buf = push(buf, &yaw, sizeof(yaw));
-    buf = push(buf, &pitch, sizeof(pitch));
+    buf = _push(buf, &x, sizeof(x));
+    buf = _push(buf, &y, sizeof(y));
+    buf = _push(buf, &z, sizeof(z));
+    buf = _push(buf, &yaw, sizeof(yaw));
+    buf = _push(buf, &pitch, sizeof(pitch));
     int8_t b = on_ground ? 1 : 0;
-    buf = push(buf, &b, sizeof(b));
+    buf = _push(buf, &b, sizeof(b));
 
     int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -546,10 +611,10 @@ int32_t send_play_serverbound_player_look(
 	packet = buf;
     
     buf = _push_vint32(buf, 0x0E);
-    buf = push(buf, &yaw, sizeof(yaw));
-    buf = push(buf, &pitch, sizeof(pitch));
+    buf = _push(buf, &yaw, sizeof(yaw));
+    buf = _push(buf, &pitch, sizeof(pitch));
     int8_t b = on_ground ? 1 : 0;
-    buf = push(buf, &b, sizeof(b));
+    buf = _push(buf, &b, sizeof(b));
 
     int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -570,7 +635,7 @@ int32_t send_play_serverbound_player(
     
     buf = _push_vint32(buf, 0x0F);
     int8_t b = on_ground ? 1 : 0;
-    buf = push(buf, &b, sizeof(b));
+    buf = _push(buf, &b, sizeof(b));
 
     int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -594,11 +659,11 @@ int32_t send_play_serverbound_vehicle_move(
 	packet = buf;
     
     buf = _push_vint32(buf, 0x10);
-    buf = push(buf, &x, sizeof(x));
-    buf = push(buf, &y, sizeof(y));
-    buf = push(buf, &z, sizeof(z));
-    buf = push(buf, &yaw, sizeof(yaw));
-    buf = push(buf, &pitch, sizeof(pitch));
+    buf = _push(buf, &x, sizeof(x));
+    buf = _push(buf, &y, sizeof(y));
+    buf = _push(buf, &z, sizeof(z));
+    buf = _push(buf, &yaw, sizeof(yaw));
+    buf = _push(buf, &pitch, sizeof(pitch));
 
     int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -620,9 +685,9 @@ int32_t send_play_serverbound_steer_boat(
     
     buf = _push_vint32(buf, 0x11);
     int8_t b = right_paddle ? 1 : 0;
-    buf = push(buf, &b, sizeof(b));
+    buf = _push(buf, &b, sizeof(b));
     b = left_paddle ? 1 : 0;
-    buf = push(buf, &b, sizeof(b));
+    buf = _push(buf, &b, sizeof(b));
 
     int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -644,9 +709,9 @@ int32_t send_play_serverbound_player_abilities(
 	packet = buf;
     
     buf = _push_vint32(buf, 0x12);
-    buf = push(buf, &flags, sizeof(flags));
-    buf = push(buf, &flying_speed, sizeof(flying_speed));
-    buf = push(buf, &walking_speed, sizeof(walking_speed));
+    buf = _push(buf, &flags, sizeof(flags));
+    buf = _push(buf, &flying_speed, sizeof(flying_speed));
+    buf = _push(buf, &walking_speed, sizeof(walking_speed));
 
     int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -670,8 +735,8 @@ int32_t send_play_serverbound_player_digging(
     
     buf = _push_vint32(buf, 0x13);
     buf = _push_vint32(buf, status);
-    buf = push(buf, &location, sizeof(location));
-    buf = push(buf, &face, sizeof(face));
+    buf = _push(buf, &location, sizeof(location));
+    buf = _push(buf, &face, sizeof(face));
 
     int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -717,9 +782,9 @@ int32_t send_play_serverbound_steer_vehicle(
 	packet = buf;
     
     buf = _push_vint32(buf, 0x15);
-    buf = push(buf, &sideways, sizeof(sideways));
-    buf = push(buf, &forward, sizeof(forward));
-    buf = push(buf, &flags, sizeof(flags));
+    buf = _push(buf, &sideways, sizeof(sideways));
+    buf = _push(buf, &forward, sizeof(forward));
+    buf = _push(buf, &flags, sizeof(flags));
 
     int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -762,7 +827,7 @@ int32_t send_play_serverbound_held_item_change(
 	packet = buf;
 
 	buf = _push_vint32(buf, 0x17);
-    buf = push(buf, &slot, sizeof(slot));
+    buf = _push(buf, &slot, sizeof(slot));
 
     int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -784,7 +849,7 @@ int32_t send_play_serverbound_creative_inventory_action(
 	packet = buf;
 
 	buf = _push_vint32(buf, 0x18);
-    buf = push(buf, &slot, sizeof(slot));
+    buf = _push(buf, &slot, sizeof(slot));
     buf = _push_slot(buf, clicked_item);
 
     int32_t length = (int32_t)(buf - packet);
@@ -810,7 +875,7 @@ int32_t send_play_serverbound_update_sign(
 	packet = buf;
     
     buf = _push_vint32(buf, 0x19);
-    buf = push(buf, &location, sizeof(location));
+    buf = _push(buf, &location, sizeof(location));
     buf = _push_string(buf, line1);
     buf = _push_string(buf, line2);
     buf = _push_string(buf, line3);
@@ -854,7 +919,7 @@ int32_t send_play_serverbound_spectate(
 	packet = buf;
     
     buf = _push_vint32(buf, 0x1B);
-    buf = push(buf, uuid, 16);
+    buf = _push(buf, uuid, 16);
 
     int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
@@ -880,12 +945,12 @@ int32_t send_play_serverbound_player_block_placement(
 	packet = buf;
  
     buf = _push_vint32(buf, 0x1C);
-    buf = push(buf, &location, sizeof(location));
+    buf = _push(buf, &location, sizeof(location));
     buf = _push_vint32(buf, face);
     buf = _push_vint32(buf, hand);
-    buf = push(buf, &x, sizeof(x));
-    buf = push(buf, &y, sizeof(y));
-    buf = push(buf, &z, sizeof(z));
+    buf = _push(buf, &x, sizeof(x));
+    buf = _push(buf, &y, sizeof(y));
+    buf = _push(buf, &z, sizeof(z));
 
     int32_t length = (int32_t)(buf - packet);
 	packet = _append_len(tmp, &length);
