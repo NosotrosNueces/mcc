@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <pthread.h>
+#include "types.h"
 
-typedef enum {HANDSHAKE, LOGIN, STATUS, PLAY, NUM_STATES} state;
 
 typedef struct bot bot_t;
 typedef struct _function function;
@@ -87,7 +87,7 @@ extern struct bot context;
  *  threading purposes. If bot_main exits, the bot will cease to exist.
  *  bot_main will likely contain a large switch on some sort of global state.
  */
-bot_t *init_bot(char *name, void (*bot_main)(void *));
+void init_bot(struct bot_agent *bot, char *name);
 
 /** \brief Free a bot
  *
@@ -129,21 +129,21 @@ void unregister_timer(bot_t *bot, timed_function *id);
  *
  *  Open a socket connection to a specific server for a particular bot.
  */
-int join_server(bot_t *bot, char* server_host, int server_port);
+void join_server(struct bot_agent *bot, char* server_host, int server_port);
 
 /** \brief Sends a string across the network using a bot's socket
  *
  *  Sends a raw string across the network using a bot's socket. This function
  *  should not be used unless you know what you're doing.
  */
-int send_str(bot_t *bot, char *str);
+int send_string(struct bot_agent *bot, char *str);
 
 /** \brief Sends bytes across the network using a bot's socket
  *
  *  Sends raw bytes across the network using a bot's socket. This function
  *  should not be used unless you know what you're doing.
  */
-int send_raw(bot_t *bot, void *data, size_t len);
+int send_raw(struct bot_agent *bot, void *data, size_t len);
 
 /** \brief Recieve bytes from the network using a bot's socket
  *
