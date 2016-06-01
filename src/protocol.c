@@ -3,7 +3,6 @@
 #include <string.h>
 #include <unistd.h>
 #include "protocol.h"
-#include "../cNBT/nbt.h"
 #include "types.h"
 
 #define PAD_LENGTH(x) (x = (char *)x + 5)
@@ -101,7 +100,6 @@ void *_push_slot(void *_packet_raw, struct slot_type *slot_data)
     } else {
         int8_t count = slot_data->count;
         int16_t damage = slot_data->damage;
-        nbt_node *tree = slot_data->tree;
 
         /* Convert little to big endian; flip the bytes. */
         block_id = htons(block_id);
@@ -116,11 +114,9 @@ void *_push_slot(void *_packet_raw, struct slot_type *slot_data)
         /* copy damage (2 bytes) */
         packet_raw = _push(packet_raw, &damage, sizeof(damage));
 
-        if (tree) {
+        if (slot_data->nbt_data) {
             /* convert nbt tree to binary nbt data */
-            struct buffer nbt_data = nbt_dump_binary(tree);
-            packet_raw = _push(packet_raw, nbt_data.data, nbt_data.len);
-            free(nbt_data.data);
+            packet_raw = _push(packet_raw, slot_data->nbt_data, slot_data->nbt_length);
         } else {
             memset(packet_raw, 0, sizeof(int8_t));
             packet_raw += sizeof(int8_t);

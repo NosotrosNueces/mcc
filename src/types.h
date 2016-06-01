@@ -19,7 +19,8 @@ struct slot_type {
     int16_t block_id;
     int8_t count;
     int16_t damage;
-    nbt_node *tree;
+    uint32_t nbt_length;
+    void *nbt_data;
 };
 
 enum ENTITY_METADATA_ENTRY_TYPE {
@@ -440,8 +441,8 @@ struct bot_agent {
     float saturation;
 
     size_t packet_threshold;
-    uv_loop_t *loop;
-    uv_tcp_t *socket;
+    uv_loop_t loop;
+    uv_tcp_t socket;
     /* callbacks */ 
 };
 
