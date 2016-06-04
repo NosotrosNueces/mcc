@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <uv.h>
 #include "protocol.h"
 #include "types.h"
 
@@ -67,10 +68,130 @@ int varint32_encode(int32_t value, char *data, int len)
     return i;
 }
 
+uint64_t htonll(uint64_t number)
+{
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+    number = __builtin_bswap64(number);
+#endif
+    return number;
+}
+
+uint64_t ntohll(uint64_t number)
+{
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+    number = __builtin_bswap64(number);
+#endif
+    return number;
+}
+
+
+void *_read(void *buffer, void *storage, size_t size)
+{
+    memcpy(storage, buffer, size);
+    return ((char *)buffer + size);
+}
+
+void *_read_int16_t(void *buffer, int16_t *val) {
+    buffer = _read(buffer, val, sizeof(*val));
+    *val = ntohs(*val);
+    return buffer;
+}
+
+void *_read_uint16_t(void *buffer, uint16_t *val) {
+    buffer = _read(buffer, val, sizeof(*val));
+    *val = ntohs(*val);
+    return buffer;
+}
+
+void *_read_int32_t(void *buffer, int32_t *val) {
+    buffer = _read(buffer, val, sizeof(*val));
+    *val = ntohl(*val);
+    return buffer;
+}
+
+void *_read_uint32_t(void *buffer, uint32_t *val) {
+    buffer = _read(buffer, val, sizeof(*val));
+    *val = ntohl(*val);
+    return buffer;
+}
+
+void *_read_int64_t(void *buffer, int64_t *val) {
+    buffer = _read(buffer, val, sizeof(*val));
+    *val = ntohll(*val);
+    return buffer;
+}
+
+void *_read_uint64_t(void *buffer, uint64_t *val) {
+    buffer = _read(buffer, val, sizeof(*val));
+    *val = ntohll(*val);
+    return buffer;
+}
+
+void *_read_float(void *buffer, float *val) {
+    buffer = _read(buffer, val, sizeof(val));
+    uint32_t *x = (uint32_t *)val; 
+    *x = ntohl(*x);
+    return buffer;
+}
+
+void *_read_double(void *buffer, double *val) {
+    buffer = _read(buffer, val, sizeof(val));
+    uint64_t *x = (uint64_t *)val;
+    *x = ntohll(*x);
+    return buffer;
+}
+
 void *_push(void *buffer, void *data, size_t size)
 {
     memcpy(buffer, data, size);
     return (char *)buffer + size;
+}
+
+void *_push_int16_t(void *buffer, int16_t val) {
+    val = htons(val);
+    return _push(buffer, &val, sizeof(val));
+}
+
+void *_push_uint16_t(void *buffer, uint16_t val) {
+    val = htons(val);
+    return _push(buffer, &val, sizeof(val));
+}
+
+void *_push_int32_t(void *buffer, int32_t val) {
+    val = htonl(val);
+    return _push(buffer, &val, sizeof(val));
+}
+
+void *_push_uint32_t(void *buffer, uint32_t val) {
+    val = htonl(val);
+    return _push(buffer, &val, sizeof(val));
+}
+
+void *_push_int64_t(void *buffer, int64_t val) {
+    val = htonll(val);
+    return _push(buffer, &val, sizeof(val));
+}
+
+void *_push_uint64_t(void *buffer, uint64_t val) {
+    val = htonll(val);
+    return _push(buffer, &val, sizeof(val));
+}
+
+void *_push_float(void *buffer, float val) {
+    uint32_t *x = (uint32_t *)&val;
+    *x = htonl(*x);
+    return _push(buffer, &val, sizeof(val));
+}
+
+void *_push_double(void *buffer, double val) {
+    uint64_t *x = (uint64_t *)&val;
+    *x = htonll(*x);
+    return _push(buffer, &val, sizeof(val));
+}
+
+void *_read_vint32(void *buf, vint32_t *val) {
+    uint32_t bytes_read = varint32(buf, val);
+    return (char *)buf + bytes_read;
 }
 
 void *_push_vint32(void *buf, vint32_t val) {
@@ -78,6 +199,15 @@ void *_push_vint32(void *buf, vint32_t val) {
     uint32_t len = varint32_encode(val, varint, sizeof(varint));
     buf = _push(buf, varint, len);
     return buf;
+}
+
+void *_read_string(void *buf, char **strptr, int32_t *str_len) {
+    uint32_t bytes_read = varint32(buf, str_len);
+    buf = (char *)buf + bytes_read;
+    *strptr = malloc(*str_len + 1);
+    memcpy(*strptr, buf, *str_len);
+    (*strptr)[*str_len] = '\0';
+    return (char *)buf + *str_len;
 }
 
 void *_push_string(void *buf, char *str) {
@@ -101,18 +231,14 @@ void *_push_slot(void *_packet_raw, struct slot_type *slot_data)
         int8_t count = slot_data->count;
         int16_t damage = slot_data->damage;
 
-        /* Convert little to big endian; flip the bytes. */
-        block_id = htons(block_id);
-        damage = htons(damage);
-
         /* copy block_id (2 bytes) */
-        packet_raw = _push(packet_raw, &block_id, sizeof(block_id));
+        packet_raw = _push_int16_t(packet_raw, block_id);
 
         /* copy count (1 byte) */
         packet_raw = _push(packet_raw, &count, sizeof(count));
 
         /* copy damage (2 bytes) */
-        packet_raw = _push(packet_raw, &damage, sizeof(damage));
+        packet_raw = _push_int16_t(packet_raw, damage);
 
         if (slot_data->nbt_data) {
             /* convert nbt tree to binary nbt data */
@@ -125,13 +251,7 @@ void *_push_slot(void *_packet_raw, struct slot_type *slot_data)
     return packet_raw;
 }
 
-uint64_t htonll(uint64_t number)
-{
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-    number = __builtin_bswap64(number);
-#endif
-    return number;
-}
+
 
 /* appends length to the buffer as a varint, returns the start of the buffer */
 /* writes the new length of packet in len */
@@ -155,7 +275,6 @@ int32_t send_handshaking_serverbound_handshake(
         uint16_t      server_port,
         vint32_t      next_state
         ) {
-    server_port = htons(server_port);
     void *tmp = malloc(bot->packet_threshold);
     void *buf = tmp, *packet;
     PAD_LENGTH(buf);
@@ -163,7 +282,7 @@ int32_t send_handshaking_serverbound_handshake(
     buf = _push_vint32(buf, 0x00);
     buf = _push_vint32(buf, protocol_version);
     buf = _push_string(buf, server_addr);
-    buf = _push(buf, &server_port, sizeof(server_port));
+    buf = _push_uint16_t(buf, server_port);
     buf = _push_vint32(buf, next_state);
     uint32_t length = (int32_t)(buf - packet);
     packet = _append_len(tmp, &length);
@@ -219,13 +338,12 @@ int32_t send_status_serverbound_ping(
         int64_t       time
         )
 {
-    time = htonll(time);
     void *tmp = malloc(bot->packet_threshold);
     void *buf = tmp, *packet;
     PAD_LENGTH(buf);
     packet = buf;
     buf = _push_vint32(buf, 0x01);
-    buf = _push(buf, &time, sizeof(time));
+    buf = _push_int64_t(buf, time);
     uint32_t length = (int32_t)(buf - packet);
     packet = _append_len(tmp, &length);
     send_raw(bot, packet, length);
@@ -264,7 +382,6 @@ int32_t send_play_serverbound_tab_complete(
         position_t looked_at_block
         )
 {
-    looked_at_block = htonll(looked_at_block);
     void *tmp = malloc(bot->packet_threshold);
     void *buf = tmp, *packet;
     PAD_LENGTH(buf);
@@ -276,7 +393,7 @@ int32_t send_play_serverbound_tab_complete(
     b = has_position ? 1 : 0;
     buf = _push(buf, &b, sizeof(b));
     if (has_position) {
-        buf = _push(buf, &looked_at_block, sizeof(looked_at_block));
+        buf = _push_uint64_t(buf, looked_at_block);
     }
     uint32_t length = (int32_t)(buf - packet);
     packet = _append_len(tmp, &length);
@@ -357,7 +474,6 @@ int32_t send_play_serverbound_confirm_transaction(
         bool accepted
         )
 {
-    action_number = htons(action_number);
     void *tmp = malloc(bot->packet_threshold);
     void *buf = tmp, *packet;
     PAD_LENGTH(buf);
@@ -365,7 +481,7 @@ int32_t send_play_serverbound_confirm_transaction(
 
     buf = _push_vint32(buf, 0x05);
     buf = _push(buf, &window_id, sizeof(window_id));
-    buf = _push(buf, &action_number, sizeof(action_number));
+    buf = _push_int16_t(buf, action_number);
     int8_t b = accepted ? 1 : 0;
     buf = _push(buf, &b, sizeof(b));
 
@@ -408,8 +524,6 @@ int32_t send_play_serverbound_click_window(
         struct slot_type *clicked_item
         )
 {
-    slot = htons(slot);
-    action_number = htons(action_number);
     void *tmp = malloc(bot->packet_threshold);
     void *buf = tmp, *packet;
     PAD_LENGTH(buf);
@@ -417,9 +531,9 @@ int32_t send_play_serverbound_click_window(
 
     buf = _push_vint32(buf, 0x07);
     buf = _push(buf, &window_id, sizeof(window_id));
-    buf = _push(buf, &slot, sizeof(slot));
+    buf = _push_int16_t(buf, slot);
     buf = _push(buf, &button, sizeof(button));
-    buf = _push(buf, &action_number, sizeof(action_number));
+    buf = _push_int16_t(buf, action_number);
     buf = _push_vint32(buf, mode);
     buf = _push_slot(buf, clicked_item);
 
@@ -493,9 +607,9 @@ int32_t send_play_serverbound_use_entity(
     buf = _push_vint32(buf, type);
     switch(type) {
         case 2: /* interact at */
-            buf = _push(buf, &target_x, sizeof(target_x));
-            buf = _push(buf, &target_y, sizeof(target_y));
-            buf = _push(buf, &target_z, sizeof(target_z));
+            buf = _push_float(buf, target_x);
+            buf = _push_float(buf, target_y);
+            buf = _push_float(buf, target_z);
         case 0: /* interact */
             buf = _push_vint32(buf, hand);
     }
@@ -541,9 +655,9 @@ int32_t send_play_serverbound_player_position(
     packet = buf;
 
     buf = _push_vint32(buf, 0x0C);
-    buf = _push(buf, &x, sizeof(x));
-    buf = _push(buf, &y, sizeof(y));
-    buf = _push(buf, &z, sizeof(z));
+    buf = _push_double(buf, x);
+    buf = _push_double(buf, y);
+    buf = _push_double(buf, z);
     int8_t b = on_ground ? 1 : 0;
     buf = _push(buf, &b, sizeof(b));
 
@@ -570,11 +684,11 @@ int32_t send_play_serverbound_player_position_look(
     packet = buf;
 
     buf = _push_vint32(buf, 0x0D);
-    buf = _push(buf, &x, sizeof(x));
-    buf = _push(buf, &y, sizeof(y));
-    buf = _push(buf, &z, sizeof(z));
-    buf = _push(buf, &yaw, sizeof(yaw));
-    buf = _push(buf, &pitch, sizeof(pitch));
+    buf = _push_double(buf, x);
+    buf = _push_double(buf, y);
+    buf = _push_double(buf, z);
+    buf = _push_float(buf, yaw);
+    buf = _push_float(buf, pitch);
     int8_t b = on_ground ? 1 : 0;
     buf = _push(buf, &b, sizeof(b));
 
@@ -598,8 +712,8 @@ int32_t send_play_serverbound_player_look(
     packet = buf;
 
     buf = _push_vint32(buf, 0x0E);
-    buf = _push(buf, &yaw, sizeof(yaw));
-    buf = _push(buf, &pitch, sizeof(pitch));
+    buf = _push_float(buf, yaw);
+    buf = _push_float(buf, pitch);
     int8_t b = on_ground ? 1 : 0;
     buf = _push(buf, &b, sizeof(b));
 
@@ -646,11 +760,11 @@ int32_t send_play_serverbound_vehicle_move(
     packet = buf;
 
     buf = _push_vint32(buf, 0x10);
-    buf = _push(buf, &x, sizeof(x));
-    buf = _push(buf, &y, sizeof(y));
-    buf = _push(buf, &z, sizeof(z));
-    buf = _push(buf, &yaw, sizeof(yaw));
-    buf = _push(buf, &pitch, sizeof(pitch));
+    buf = _push_double(buf, x);
+    buf = _push_double(buf, y);
+    buf = _push_double(buf, z);
+    buf = _push_float(buf, yaw);
+    buf = _push_float(buf, pitch);
 
     uint32_t length = (int32_t)(buf - packet);
     packet = _append_len(tmp, &length);
@@ -697,8 +811,8 @@ int32_t send_play_serverbound_player_abilities(
 
     buf = _push_vint32(buf, 0x12);
     buf = _push(buf, &flags, sizeof(flags));
-    buf = _push(buf, &flying_speed, sizeof(flying_speed));
-    buf = _push(buf, &walking_speed, sizeof(walking_speed));
+    buf = _push_float(buf, flying_speed);
+    buf = _push_float(buf, walking_speed);
 
     uint32_t length = (int32_t)(buf - packet);
     packet = _append_len(tmp, &length);
@@ -714,7 +828,6 @@ int32_t send_play_serverbound_player_digging(
         int8_t face
         )
 {
-    location = htonll(location);
     void *tmp = malloc(bot->packet_threshold);
     void *buf = tmp, *packet;
     PAD_LENGTH(buf);
@@ -722,7 +835,7 @@ int32_t send_play_serverbound_player_digging(
 
     buf = _push_vint32(buf, 0x13);
     buf = _push_vint32(buf, status);
-    buf = _push(buf, &location, sizeof(location));
+    buf = _push_uint64_t(buf, location);
     buf = _push(buf, &face, sizeof(face));
 
     uint32_t length = (int32_t)(buf - packet);
@@ -769,8 +882,8 @@ int32_t send_play_serverbound_steer_vehicle(
     packet = buf;
 
     buf = _push_vint32(buf, 0x15);
-    buf = _push(buf, &sideways, sizeof(sideways));
-    buf = _push(buf, &forward, sizeof(forward));
+    buf = _push_float(buf, sideways);
+    buf = _push_float(buf, forward);
     buf = _push(buf, &flags, sizeof(flags));
 
     uint32_t length = (int32_t)(buf - packet);
@@ -807,14 +920,13 @@ int32_t send_play_serverbound_held_item_change(
         int16_t slot
         )
 {
-    slot = htons(slot);
     void *tmp = malloc(bot->packet_threshold);
     void *buf = tmp, *packet;
     PAD_LENGTH(buf);
     packet = buf;
 
     buf = _push_vint32(buf, 0x17);
-    buf = _push(buf, &slot, sizeof(slot));
+    buf = _push_int16_t(buf, slot);
 
     uint32_t length = (int32_t)(buf - packet);
     packet = _append_len(tmp, &length);
@@ -829,14 +941,13 @@ int32_t send_play_serverbound_creative_inventory_action(
         struct slot_type *clicked_item
         )
 {
-    slot = htons(slot);
     void *tmp = malloc(bot->packet_threshold);
     void *buf = tmp, *packet;
     PAD_LENGTH(buf);
     packet = buf;
 
     buf = _push_vint32(buf, 0x18);
-    buf = _push(buf, &slot, sizeof(slot));
+    buf = _push_int16_t(buf, slot);
     buf = _push_slot(buf, clicked_item);
 
     uint32_t length = (int32_t)(buf - packet);
@@ -855,14 +966,13 @@ int32_t send_play_serverbound_update_sign(
         char *line4
         )
 {
-    location = htonll(location);
     void *tmp = malloc(bot->packet_threshold);
     void *buf = tmp, *packet;
     PAD_LENGTH(buf);
     packet = buf;
 
     buf = _push_vint32(buf, 0x19);
-    buf = _push(buf, &location, sizeof(location));
+    buf = _push_uint64_t(buf, location);
     buf = _push_string(buf, line1);
     buf = _push_string(buf, line2);
     buf = _push_string(buf, line3);
@@ -925,14 +1035,13 @@ int32_t send_play_serverbound_player_block_placement(
         uint8_t z
         )
 {
-    location = htonll(location);
     void *tmp = malloc(bot->packet_threshold);
     void *buf = tmp, *packet;
     PAD_LENGTH(buf);
     packet = buf;
 
     buf = _push_vint32(buf, 0x1C);
-    buf = _push(buf, &location, sizeof(location));
+    buf = _push_uint64_t(buf, location);
     buf = _push_vint32(buf, face);
     buf = _push_vint32(buf, hand);
     buf = _push(buf, &x, sizeof(x));
@@ -966,3 +1075,447 @@ int32_t send_play_serverbound_use_item(
     return length;
 }
 
+void deserialize_clientbound_login_disconnect(char *packet_data, struct bot_agent *bot) {
+    if (bot->callbacks.clientbound_login_disconnect_cb != NULL) {
+        int32_t length;
+        char *reason;
+        packet_data = _read_string(packet_data, &reason, &length);
+        bot->callbacks.clientbound_login_disconnect_cb(
+                bot,
+                length,
+                reason
+                );
+    }
+}
+
+void deserialize_clientbound_login_encryption_request(char *packet_data, struct bot_agent *bot) {
+    if (bot->callbacks.clientbound_login_encryption_request_cb != NULL) {
+        int32_t server_id_length;
+        char *server_id;
+        vint32_t public_key_length;
+        char *public_key;
+        vint32_t verify_token_length;
+        char *verify_token;
+
+        packet_data = _read_string(packet_data, &server_id, &server_id_length);
+        packet_data = _read_vint32(packet_data, &public_key_length);
+        public_key = malloc(public_key_length);
+        packet_data = _read(packet_data, public_key, public_key_length);
+        packet_data = _read_vint32(packet_data, &verify_token_length);
+        verify_token = malloc(verify_token_length);
+        packet_data = _read(packet_data, verify_token, verify_token_length);
+
+        bot->callbacks.clientbound_login_encryption_request_cb(
+                bot,
+                server_id_length,
+                server_id,
+                public_key_length,
+                public_key,
+                verify_token_length,
+                verify_token
+                );
+        free(server_id);
+        free(public_key);
+        free(verify_token);
+    }
+}
+
+void deserialize_clientbound_login_login_success(char *packet_data, struct bot_agent *bot) {
+    if (bot->callbacks.clientbound_login_login_success_cb != NULL) {
+        int32_t uuid_length; 
+        char *uuid;
+        int32_t username_length;
+        char *username;
+
+        packet_data = _read_string(packet_data, &uuid, &uuid_length);
+        packet_data = _read_string(packet_data, &username, &username_length);
+        bot->callbacks.clientbound_login_login_success_cb(
+                bot,
+                uuid_length,
+                uuid,
+                username_length,
+                username
+                );
+        free(uuid);
+        free(username);
+    }
+}
+
+void deserialize_clientbound_login_set_compression(char *packet_data, struct bot_agent *bot) {
+    if (bot->callbacks.clientbound_login_set_compression_cb != NULL) {
+        vint32_t threshold;
+
+        packet_data = _read_vint32(packet_data, &threshold);
+
+        /* this probably shouldn't be a user callback function */
+        bot->callbacks.clientbound_login_set_compression_cb(
+                bot,
+                threshold
+                );
+    }
+}
+
+void deserialize_clientbound_status_response(char *packet_data, struct bot_agent *bot) {
+    if (bot->callbacks.clientbound_status_response_cb != NULL) {
+        int32_t json_length; 
+        char *json;
+        packet_data = _read_string(packet_data, &json, &json_length);
+
+        bot->callbacks.clientbound_status_response_cb(
+                bot,
+                json_length,
+                json
+                );
+        free(json);
+    }
+}
+
+void deserialize_clientbound_status_pong(char *packet_data, struct bot_agent *bot) {
+    if (bot->callbacks.clientbound_status_pong_cb != NULL) {
+        int64_t payload;
+        packet_data = _read(packet_data, &payload, sizeof(payload));
+        /* Maybe shouldn't be a user callback */
+        bot->callbacks.clientbound_status_pong_cb(
+                bot,
+                payload
+                );
+    }
+}
+
+void deserialize_clientbound_play_spawn_object(char *packet_data, struct bot_agent *bot) {
+    if (bot->callbacks.clientbound_play_spawn_object_cb != NULL) {
+        vint32_t entity_id;
+        char uuid[16];
+        int8_t type;
+        double x, y, z;
+        uint8_t pitch, yaw;
+        int32_t data;
+        int16_t velocity_x, velocity_y, velocity_z;
+        
+        packet_data = _read_vint32(packet_data, &entity_id);
+        packet_data = _read(packet_data, uuid, sizeof(uuid)); 
+        packet_data = _read(packet_data, &type, sizeof(type));
+        packet_data = _read_double(packet_data, &x);
+        packet_data = _read_double(packet_data, &y);
+        packet_data = _read_double(packet_data, &z);
+        packet_data = _read(packet_data, &pitch, sizeof(pitch));
+        packet_data = _read(packet_data, &yaw, sizeof(yaw));
+        packet_data = _read_int32_t(packet_data, &data);
+        packet_data = _read_int16_t(packet_data, &velocity_x);
+        packet_data = _read_int16_t(packet_data, &velocity_y);
+        packet_data = _read_int16_t(packet_data, &velocity_z);
+
+        bot->callbacks.clientbound_play_spawn_object_cb(
+                bot,
+                entity_id,
+                uuid,
+                type,
+                x,
+                y,
+                z,
+                pitch,
+                yaw,
+                data,
+                velocity_x,
+                velocity_y,
+                velocity_z
+                );
+    }
+}
+
+void deserialize_clientbound_play_spawn_experience_orb(char *packet_data, struct bot_agent *bot) {
+    if (bot->callbacks.clientbound_play_spawn_experience_orb_cb != NULL) {
+        vint32_t entity_id;
+        double x, y, z;
+        int16_t count;
+
+        packet_data = _read_vint32(packet_data, &entity_id);
+        packet_data = _read_double(packet_data, &x);
+        packet_data = _read_double(packet_data, &y);
+        packet_data = _read_double(packet_data, &z);
+        packet_data = _read_int16_t(packet_data, &count);
+
+        bot->callbacks.clientbound_play_spawn_experience_orb_cb(
+                bot,
+                entity_id,
+                x,
+                y,
+                z,
+                count
+                );
+    }
+}
+
+void deserialize_clientbound_play_spawn_global_entity(char *packet_data,
+        struct bot_agent *bot) {
+    if (bot->callbacks.clientbound_play_spawn_global_entity_cb != NULL) {
+        vint32_t entity_id;
+        int8_t type;
+        double x, y, z;
+
+        packet_data = _read_vint32(packet_data, &entity_id);
+        packet_data = _read(packet_data, &type, sizeof(type));
+        packet_data = _read_double(packet_data, &x);
+        packet_data = _read_double(packet_data, &y);
+        packet_data = _read_double(packet_data, &z);
+
+        bot->callbacks.clientbound_play_spawn_global_entity_cb(
+                bot,
+                entity_id,
+                type,
+                x,
+                y,
+                z
+                );
+    }
+}
+
+void deserialize_clientbound_play_spawn_mob(char *packet_data, struct bot_agent *bot) {
+    if (bot->callbacks.clientbound_play_spawn_mob_cb != NULL) {
+
+    }
+}
+
+void dispatch_packet_cb(struct bot_agent *bot) {
+    char *packet_data = bot->packet_data;
+    vint32_t packet_id;
+    packet_data = _read_vint32(packet_data, &packet_id);
+    switch (bot->current_state) {
+        case LOGIN:
+            switch (packet_id) {
+                case 0x00: /* clientbound login disconnect */
+                    deserialize_clientbound_login_disconnect(packet_data, bot);
+                    break;
+                case 0x01: /* clientbound login encryption request */
+                    deserialize_clientbound_login_encryption_request(packet_data, bot);
+                    break;
+                case 0x02: /* clientbound login login success */
+                    deserialize_clientbound_login_login_success(packet_data, bot);
+                    break;
+                case 0x03: /* clientbound login set compression */
+                    deserialize_clientbound_login_set_compression(packet_data, bot);
+                    break;
+            }
+            break;
+        case STATUS:
+            switch (packet_id) {
+                case 0x00: /* clientbound status response */
+                    deserialize_clientbound_status_response(packet_data, bot);
+                    break;
+                case 0x01:
+                    deserialize_clientbound_status_pong(packet_data, bot);
+                    break;
+            }
+            break;
+        case PLAY:
+            switch (packet_id) {
+                case 0x00:
+                    break;
+                case 0x01:
+                    break;
+                case 0x02:
+                    break;
+                case 0x03:
+                    break;
+                case 0x04:
+                    break;
+                case 0x05:
+                    break;
+                case 0x06:
+                    break;
+                case 0x07:
+                    break;
+                case 0x08:
+                    break;
+                case 0x09:
+                    break;
+                case 0x0a:
+                    break;
+                case 0x0b:
+                    break;
+                case 0x0c:
+                    break;
+                case 0x0d:
+                    break;
+                case 0x0e:
+                    break;
+                case 0x0f:
+                    break;
+                case 0x10:
+                    break;
+                case 0x11:
+                    break;
+                case 0x12:
+                    break;
+                case 0x13:
+                    break;
+                case 0x14:
+                    break;
+                case 0x15:
+                    break;
+                case 0x16:
+                    break;
+                case 0x17:
+                    break;
+                case 0x18:
+                    break;
+                case 0x19:
+                    break;
+                case 0x1a:
+                    break;
+                case 0x1b:
+                    break;
+                case 0x1c:
+                    break;
+                case 0x1d:
+                    break;
+                case 0x1e:
+                    break;
+                case 0x1f:
+                    break;
+                case 0x20:
+                    break;
+                case 0x21:
+                    break;
+                case 0x22:
+                    break;
+                case 0x23:
+                    break;
+                case 0x24:
+                    break;
+                case 0x25:
+                    break;
+                case 0x26:
+                    break;
+                case 0x27:
+                    break;
+                case 0x28:
+                    break;
+                case 0x29:
+                    break;
+                case 0x2a:
+                    break;
+                case 0x2b:
+                    break;
+                case 0x2c:
+                    break;
+                case 0x2d:
+                    break;
+                case 0x2e:
+                    break;
+                case 0x2f:
+                    break;
+                case 0x30:
+                    break;
+                case 0x31:
+                    break;
+                case 0x32:
+                    break;
+                case 0x33:
+                    break;
+                case 0x34:
+                    break;
+                case 0x35:
+                    break;
+                case 0x36:
+                    break;
+                case 0x37:
+                    break;
+                case 0x38:
+                    break;
+                case 0x39:
+                    break;
+                case 0x3a:
+                    break;
+                case 0x3b:
+                    break;
+                case 0x3c:
+                    break;
+                case 0x3d:
+                    break;
+                case 0x3e:
+                    break;
+                case 0x3f:
+                    break;
+                case 0x40:
+                    break;
+                case 0x41:
+                    break;
+                case 0x42:
+                    break;
+                case 0x43:
+                    break;
+                case 0x44:
+                    break;
+                case 0x45:
+                    break;
+                case 0x46:
+                    break;
+                case 0x47:
+                    break;
+                case 0x48:
+                    break;
+                case 0x49:
+                    break;
+                case 0x4a:
+                    break;
+                case 0x4b:
+                    break;
+            }
+            break;
+    }
+}
+
+/* It looks like we cannot make any assumptions about the data read into buf
+ * buf could either not have enough data for a full minecraft packet, or it
+ * could contain data for many packets. Kill me. 
+ * Precondition: buf->len > 5
+ **/
+void read_socket(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
+    struct bot_agent *bot = stream->data;
+    char *packet_data = buf->base;
+    size_t length = buf->len;
+    size_t bytes_read = 0;
+    while (bytes_read < length) {
+        switch (bot->socket_read_state) {
+            case SOCKET_READ_PACKET_START: /* reading from start of packet */
+                {
+                    /* read in the packet length */
+                    int varint_length = varint32(packet_data, &bot->packet_length);
+                    bytes_read += varint_length;
+                    /* Check if bot buffer is long enough */
+                    if (bot->packet_length > bot->packet_capacity) {
+                        free(bot->packet_data);
+                        bot->packet_data = malloc(bot->packet_length);
+                        bot->packet_capacity = bot->packet_length;
+                    }
+                    /* Check if the full packet is available in buf */
+                    if (bot->packet_length <= length - bytes_read) {
+                        memcpy(bot->packet_data, &packet_data[bytes_read], bot->packet_length);
+                        /* Parse the full packet, invoke callbacks */
+                        bytes_read += bot->packet_length;
+                    } else {
+                        memcpy(bot->packet_data, &packet_data[bytes_read], length - bytes_read);
+                        bytes_read = length;
+                        bot->packet_bytes_read = length - bytes_read;
+                        bot->socket_read_state = SOCKET_READ_PACKET_MIDDLE;
+                    }
+                    break;
+                }
+            case SOCKET_READ_PACKET_MIDDLE: /* reading from middle of packet */
+                {
+                    /* Check if rest of packet is available in buf */
+                    if (bot->packet_length - bot->packet_bytes_read <= length - bytes_read) {
+                        memcpy(&bot->packet_data[bot->packet_bytes_read], &packet_data[bytes_read], bot->packet_length - bot->packet_bytes_read);
+                        /* Parse the full packet, invoke callbacks */
+                        bytes_read += bot->packet_length;
+                        bot->socket_read_state = SOCKET_READ_PACKET_START;
+                    } else {
+                        memcpy(&bot->packet_data[bot->packet_bytes_read], &packet_data[bytes_read], length - bytes_read);
+                        bytes_read = length;
+                        bot->packet_bytes_read += length - bytes_read;
+                    }
+                }
+        }
+    }
+}

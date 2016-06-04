@@ -15,6 +15,8 @@ typedef void* property_t;
 typedef void* record_t;
 typedef void* slot_t;
 
+struct bot_agent;
+
 struct slot_type {
     int16_t block_id;
     int8_t count;
@@ -411,49 +413,21 @@ struct entity_property {
     struct entity_modifier *modifiers;
 };
 
-struct bot_agent {
-    uint32_t eid;
-    // 0: survival, 1: creative, 2: adventure. Bit 3 (0x8) is the hardcore flag
-    uint8_t gamemode;
-    // -1: nether, 0: overworld, 1: end
-    int8_t dimension;
-    // 0 thru 3 for Peaceful, Easy, Normal, Hard
-    uint8_t difficulty;
-    uint8_t max_players;
-    // String  default, flat, largeBiomes, amplified, default_1_1
-    char * level_type;
-    bool reduced_debug_info;
-
-    state current_state;
-
-    char *name;
-    double x;
-    double y;
-    double z;
-    float yaw;
-    float pitch;
-    int8_t flags;
-
-    uint8_t animation;
-
-    int32_t health;
-    int32_t food;
-    float saturation;
-
-    size_t packet_threshold;
-    uv_loop_t loop;
-    uv_tcp_t socket;
-    /* callbacks */ 
+enum SOCKET_READ_STATE {
+    SOCKET_READ_PACKET_START,
+    SOCKET_READ_PACKET_MIDDLE
 };
 
 struct _callbacks {
     /* login */
     void (*clientbound_login_disconnect_cb)(
             struct bot_agent *bot,
+            int32_t reason_length,
             char *reason
             );
     void (*clientbound_login_encryption_request_cb)(
             struct bot_agent *bot,
+            int32_t server_id_length,
             char *server_id,
             vint32_t public_key_length,
             char *public_key,
@@ -462,16 +436,19 @@ struct _callbacks {
             );
     void (*clientbound_login_login_success_cb)(
             struct bot_agent *bot,
+            int32_t uuid_length,
             char *uuid,
+            int32_t username_length,
             char *username
             );
-    void (*clientbount_login_set_compression_cb)(
+    void (*clientbound_login_set_compression_cb)(
             struct bot_agent *bot,
             vint32_t threshold
             );
     /* Status */
     void (*clientbound_status_response_cb)(
             struct bot_agent *bot,
+            int32_t json_length,
             char *json_response
             );
     void (*clientbound_status_pong_cb)(
@@ -490,9 +467,9 @@ struct _callbacks {
             uint8_t pitch,
             uint8_t yaw,
             int32_t data,
-            int16_t v_x,
-            int16_t v_y,
-            int16_t v_z
+            int16_t velocity_x,
+            int16_t velocity_y,
+            int16_t velocity_z
             );
     void (*clientbound_play_spawn_experience_orb_cb)(
             struct bot_agent *bot,
@@ -989,3 +966,47 @@ struct _callbacks {
             bool hide_particles
             );
 };
+
+struct bot_agent {
+    uint32_t eid;
+    // 0: survival, 1: creative, 2: adventure. Bit 3 (0x8) is the hardcore flag
+    uint8_t gamemode;
+    // -1: nether, 0: overworld, 1: end
+    int8_t dimension;
+    // 0 thru 3 for Peaceful, Easy, Normal, Hard
+    uint8_t difficulty;
+    uint8_t max_players;
+    // String  default, flat, largeBiomes, amplified, default_1_1
+    char * level_type;
+    bool reduced_debug_info;
+
+    state current_state;
+
+    char *name;
+    double x;
+    double y;
+    double z;
+    float yaw;
+    float pitch;
+    int8_t flags;
+
+    uint8_t animation;
+
+    int32_t health;
+    int32_t food;
+    float saturation;
+
+    size_t packet_threshold;
+    uv_loop_t loop;
+    enum SOCKET_READ_STATE socket_read_state;
+    uv_tcp_t socket;
+    uv_buf_t socket_buffer;
+    int32_t packet_capacity;
+    int32_t packet_length;
+    int32_t packet_bytes_read; /* how many packet bytes have been read */
+    char *packet_data;
+    /* callbacks */ 
+    struct _callbacks callbacks;
+};
+
+

@@ -131,6 +131,8 @@ void unregister_timer(bot_t *bot, timed_function *id);
  */
 void join_server(struct bot_agent *bot, char* server_host, int server_port);
 
+void disconnect(struct bot_agent *bot);
+
 /** \brief Sends a string across the network using a bot's socket
  *
  *  Sends a raw string across the network using a bot's socket. This function
