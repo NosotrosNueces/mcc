@@ -75,6 +75,7 @@ struct entity_metadata_entry {
         struct opt_uuid_type Opt_uuid;
         vint32_t Blockid;
     };
+    struct entity_metadata_entry *next;
 };
 
 struct entity_metadata {
@@ -497,7 +498,7 @@ struct _callbacks {
             double z,
             uint8_t yaw,
             uint8_t ptich,
-            int8_t head_pitch,
+            uint8_t head_pitch,
             int16_t v_x,
             int16_t v_y,
             int16_t v_z,

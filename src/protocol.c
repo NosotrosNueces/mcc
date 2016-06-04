@@ -1270,9 +1270,39 @@ void deserialize_clientbound_play_spawn_global_entity(char *packet_data,
     }
 }
 
+void *_read_entity_metadata(void *buf, struct entity_metadata *metadata) {
+    uint32_t num_entries = 0;
+
+}
+
 void deserialize_clientbound_play_spawn_mob(char *packet_data, struct bot_agent *bot) {
     if (bot->callbacks.clientbound_play_spawn_mob_cb != NULL) {
+        vint32_t entity_id;
+        char uuid[16];
+        uint8_t type;
+        double x, y, z;
+        uint8_t yaw, pitch, head_pitch;
+        int16_t v_x, v_y, v_z;
+        struct entity_metadata metadata;
 
+        packet_data = _read_vint32(packet_data, &entity_id);
+        packet_data = _read(packet_data, uuid, sizeof(uuid));
+        packet_data = _read(packet_data, &type, sizeof(type));
+        packet_data = _read_double(packet_data, &x);
+        packet_data = _read_double(packet_data, &y);
+        packet_data = _read_double(packet_data, &z);
+        packet_data = _read(packet_data, &yaw, sizeof(yaw));
+        packet_data = _read(packet_data, &pitch, sizeof(pitch));
+        packet_data = _read(packet_data, &head_pitch, sizeof(pitch));
+        packet_data = _read_int16_t(packet_data, &v_x);
+        packet_data = _read_int16_t(packet_data, &v_y);
+        packet_data = _read_int16_t(packet_data, &v_z);
+        packet_data = _read_entity_metadata(packet_data, &metadata);
+
+        bot->callbacks.clientbound_play_spawn_mob_cb(
+                bot,
+
+                );
     }
 }
 
