@@ -106,7 +106,7 @@ int32_t send_play_serverbound_plugin_message(
         struct bot_agent *bot,
         char *channel,
         uint32_t data_length,
-        void *data
+        char *data
         );
 
 int32_t send_play_serverbound_use_entity(

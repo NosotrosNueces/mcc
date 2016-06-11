@@ -1,7 +1,8 @@
 #pragma once
 
 #include <uv.h>
-#include "../cNBT/nbt.h"
+#include <stdbool.h>
+#include "nbt.h"
 
 typedef enum {HANDSHAKE, LOGIN, STATUS, PLAY, NUM_STATES} state;
 
@@ -17,12 +18,23 @@ typedef void* slot_t;
 
 struct bot_agent;
 
+enum NBT_TYPE {
+    NBT_TREE,
+    NBT_BINARY
+};
+
 struct slot_type {
     int16_t block_id;
     int8_t count;
     int16_t damage;
-    uint32_t nbt_length;
-    void *nbt_data;
+    enum NBT_TYPE type;
+    union {
+        struct nbt_tag *tree;
+        struct nbt_buffer {
+            uint32_t length;
+            char *data;
+        } nbt_binary;
+    };
 };
 
 enum ENTITY_METADATA_ENTRY_TYPE {
@@ -54,26 +66,26 @@ struct opt_position_type {
 
 struct opt_uuid_type {
     bool present;
-    char *uuid;
+    char uuid[16];
 };
 
 struct entity_metadata_entry {
     uint8_t index;
     enum ENTITY_METADATA_ENTRY_TYPE type;
     union {
-        int8_t Byte;
-        vint32_t Varint;
-        float Float;
-        char *String;
-        char *Chat;
-        struct slot_type Slot;
-        bool Boolean;
-        struct entity_rotation_type Rotation;
-        position_t Position;
-        struct opt_position_type Opt_position;
-        vint32_t Direction;
-        struct opt_uuid_type Opt_uuid;
-        vint32_t Blockid;
+        int8_t entity_byte;
+        vint32_t entity_varint;
+        float entity_float;
+        char *entity_string;
+        char *entity_chat;
+        struct slot_type entity_slot;
+        bool entity_boolean;
+        struct entity_rotation_type entity_rotation;
+        position_t entity_position;
+        struct opt_position_type entity_opt_position;
+        vint32_t entity_direction;
+        struct opt_uuid_type entity_opt_uuid;
+        vint32_t entity_blockid;
     };
     struct entity_metadata_entry *next;
 };
@@ -497,7 +509,7 @@ struct _callbacks {
             double y,
             double z,
             uint8_t yaw,
-            uint8_t ptich,
+            uint8_t pitch,
             uint8_t head_pitch,
             int16_t v_x,
             int16_t v_y,
@@ -508,6 +520,7 @@ struct _callbacks {
             struct bot_agent *bot,
             vint32_t entity_id,
             char *uuid,
+            int32_t title_length,
             char *title,
             position_t location,
             int8_t direction
@@ -543,7 +556,7 @@ struct _callbacks {
             struct bot_agent *bot,
             position_t location,
             uint8_t action,
-            void *nbt_data
+            struct nbt_tag *nbt
             );
     void (*clientbound_play_block_action_cb)(
             struct bot_agent *bot,
@@ -560,8 +573,7 @@ struct _callbacks {
     void (*clientbound_play_boss_bar_cb)(
             struct bot_agent *bot,
             char *uuid,
-            vint32_t action,
-            struct boss_bar_action action_data
+            struct boss_bar_action *action_data
             );
     void (*clientbound_play_server_difficulty_cb)(
             struct bot_agent *bot,
