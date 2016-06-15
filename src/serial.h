@@ -24,6 +24,7 @@ char *_read_uint64_t(char *buffer, uint64_t *val);
 char *_read_float(char *buffer, float *val);
 char *_read_double(char *buffer, double *val);
 char *_read_vint32(char *buf, vint32_t *val);
+char *_read_vint64(char *buf, vint64_t *val);
 char *_read_string(char *buf, char **strptr, int32_t *str_len);
 char *_read_slot(char *packet_raw, struct slot_type *slot_data);
 void _push(struct packet_write_buffer *buffer, void *data, size_t size);
@@ -36,6 +37,7 @@ void _push_uint64_t(struct packet_write_buffer *buffer, uint64_t val);
 void _push_float(struct packet_write_buffer *buffer, float val);
 void _push_double(struct packet_write_buffer *buffer, double val);
 void _push_vint32(struct packet_write_buffer *buffer, vint32_t val);
+void _push_vint64(struct packet_write_buffer *buffer, vint64_t val);
 void _push_string(struct packet_write_buffer *buffer, char *str);
 void _push_slot(struct packet_write_buffer *buffer, struct slot_type *slot_data);
 

@@ -165,12 +165,13 @@ struct explosion_record {
 };
 
 struct chunk_section {
-    uint8_t bits_per_block;
-    vint32_t palette_length;
-    vint32_t *palette;
     int32_t data_array[16][16][16];
     int8_t block_light[16][16][16];
     int8_t sky_light[16][16][16];
+};
+
+struct biome_record {
+    int8_t biome[16][16];
 };
 
 struct map_icon {
@@ -252,7 +253,7 @@ struct player_list_action_remove_player {
 };
 
 struct player_list_action {
-    char *uuid;
+    char uuid[16];
     union {
         struct player_list_action_add_player add_player;
         struct player_list_action_update_gamemode update_gamemode;
@@ -414,7 +415,7 @@ struct title_action {
 };
 
 struct entity_modifier {
-    char *uuid;
+    char uuid[16];
     double amount;
     int8_t operation;
 };
@@ -641,7 +642,7 @@ struct _callbacks {
             struct bot_agent *bot,
             char *channel,
             uint32_t data_length,
-            void *data
+            char *data
             );
     void (*clientbound_play_named_sound_effect_cb)(
             struct bot_agent *bot,
@@ -696,9 +697,9 @@ struct _callbacks {
             vint32_t primary_bit_mask,
             int32_t number_of_sections,
             struct chunk_section *data,
-            int8_t *biomes,
+            struct biome_record *biomes,
             vint32_t number_of_block_entities,
-            void *block_entities
+            struct nbt_tag **block_entities
             );
     void (*clientbound_play_effect_cb)(
             struct bot_agent *bot,
@@ -719,6 +720,7 @@ struct _callbacks {
             float offset_z,
             float particle_data,
             int32_t particle_count,
+            uint32_t data_length,
             vint32_t *data
             );
     void (*clientbound_play_join_game_cb)(
@@ -729,7 +731,7 @@ struct _callbacks {
             uint8_t difficulty,
             uint8_t max_players,
             char *level_type,
-            bool reduced_debuf_info
+            bool reduced_debug_info
             );
     void (*clientbound_play_map_cb)(
             struct bot_agent *bot,
@@ -737,7 +739,7 @@ struct _callbacks {
             int8_t scale,
             bool tracking_position,
             vint32_t icon_count,
-            struct map_icon *icon,
+            struct map_icon *icons,
             int8_t columns,
             int8_t rows,
             int8_t x,
@@ -790,7 +792,6 @@ struct _callbacks {
             );
     void (*clientbound_play_combat_event_cb)(
             struct bot_agent *bot,
-            vint32_t event_type,
             struct combat_event *event
             );
     void (*clientbound_play_player_list_item_cb)(
@@ -843,7 +844,6 @@ struct _callbacks {
             );
     void (*clientbound_play_world_border_cb)(
             struct bot_agent *bot,
-            vint32_t action_type,
             struct world_border_action *action
             );
     void (*clientbound_play_camera_cb)(
@@ -910,7 +910,6 @@ struct _callbacks {
     void (*clientbound_play_teams_cb)(
             struct bot_agent *bot,
             char *team_name,
-            int8_t mode,
             struct team_action *action
             );
     void (*clientbound_play_update_score_cb)(
@@ -931,7 +930,6 @@ struct _callbacks {
             );
     void (*clientbound_play_title_cb)(
             struct bot_agent *bot,
-            vint32_t action_type,
             struct title_action *action
             );
     void (*clientbound_play_sound_effect_cb)(
@@ -980,12 +978,18 @@ struct _callbacks {
             );
 };
 
+enum MINECRAFT_DIMENSION {
+    MINECRAFT_NETHER = -1,
+    MINECRAFT_OVERWORLD,
+    MINECRAFT_END
+};
+
 struct bot_agent {
     uint32_t eid;
     // 0: survival, 1: creative, 2: adventure. Bit 3 (0x8) is the hardcore flag
     uint8_t gamemode;
     // -1: nether, 0: overworld, 1: end
-    int8_t dimension;
+    enum MINECRAFT_DIMENSION dimension;
     // 0 thru 3 for Peaceful, Easy, Normal, Hard
     uint8_t difficulty;
     uint8_t max_players;

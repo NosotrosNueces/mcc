@@ -225,6 +225,17 @@ void _push_vint32(struct packet_write_buffer *buf, vint32_t val) {
     _push(buf, varint, len);
 }
 
+char *_read_vint64(char *buf, vint64_t *val) {
+    uint32_t bytes_read = varint64(buf, val);
+    return (char *)buf + bytes_read;
+}
+
+void _push_vint64(struct packet_write_buffer *buf, vint64_t val) {
+    char varint[10];
+    uint32_t len = varint64_encode(val, varint, sizeof(varint));
+    _push(buf, varint, len);
+}
+
 char *_read_string(char *buf, char **strptr, int32_t *str_len_opt) {
     int32_t str_len;
     uint32_t bytes_read = varint32(buf, &str_len);

@@ -119,9 +119,9 @@ int32_t send_play_serverbound_use_entity(
         vint32_t hand
 );
 
-int32_t send_play_serverbound_keepalive(
+int32_t send_play_serverbound_keep_alive(
 		struct bot_agent*        bot,
-		vint32_t      keepalive_id
+		vint32_t      keep_alive_id
 );
 
 int32_t send_play_serverbound_player_position(
