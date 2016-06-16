@@ -772,6 +772,10 @@ struct _callbacks {
             uint8_t pitch,
             bool on_ground
             );
+    void (*clientbound_play_entity_cb)(
+            struct bot_agent *bot,
+            vint32_t entity_id
+            );
     void (*clientbound_play_vehicle_move_cb)(
             struct bot_agent *bot,
             double x,

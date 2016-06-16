@@ -1777,6 +1777,13 @@ void deserialize_clientbound_play_keep_alive(char *packet_data, struct bot_agent
             bot,
             keep_alive_id
             );
+
+    if (bot->callbacks.clientbound_play_keep_alive_cb != NULL) {
+        bot->callbacks.clientbound_play_keep_alive_cb(
+                bot,
+                keep_alive_id
+                );
+    }
 }
 
 uint32_t palette_index(uint64_t *data, int bits_per_block, int index) {
@@ -2157,6 +2164,19 @@ void deserialize_clientbound_play_entity_look(char *packet_data, struct bot_agen
                 yaw,
                 pitch,
                 on_ground
+                );
+    }
+}
+
+void deserialize_clientbound_play_entity(char *packet_data, struct bot_agent *bot) {
+    if (bot->callbacks.clientbound_play_entity_cb != NULL) {
+        vint32_t entity_id;
+
+        packet_data = _read_vint32(packet_data, &entity_id);
+
+        bot->callbacks.clientbound_play_entity_cb(
+                bot,
+                entity_id
                 );
     }
 }
@@ -3046,156 +3066,232 @@ void dispatch_packet_cb(struct bot_agent *bot) {
         case PLAY:
             switch (packet_id) {
                 case 0x00:
+                    deserialize_clientbound_play_spawn_object(packet_data, bot);
                     break;
                 case 0x01:
+                    deserialize_clientbound_play_spawn_experience_orb(packet_data, bot);
                     break;
                 case 0x02:
+                    deserialize_clientbound_play_spawn_global_entity(packet_data, bot);
                     break;
                 case 0x03:
+                    deserialize_clientbound_play_spawn_mob(packet_data, bot);
                     break;
                 case 0x04:
+                    deserialize_clientbound_play_spawn_painting(packet_data, bot);
                     break;
                 case 0x05:
+                    deserialize_clientbound_play_spawn_player(packet_data, bot);
                     break;
                 case 0x06:
+                    deserialize_clientbound_play_animation(packet_data, bot);
                     break;
                 case 0x07:
+                    deserialize_clientbound_play_statistics(packet_data, bot);
                     break;
                 case 0x08:
+                    deserialize_clientbound_play_block_break_animation(packet_data, bot);
                     break;
                 case 0x09:
+                    deserialize_clientbound_play_update_block_entity(packet_data, bot);
                     break;
                 case 0x0a:
+                    deserialize_clientbound_play_block_action(packet_data, bot);
                     break;
                 case 0x0b:
+                    deserialize_clientbound_play_block_change(packet_data, bot);
                     break;
                 case 0x0c:
+                    deserialize_clientbound_play_boss_bar(packet_data, bot);
                     break;
                 case 0x0d:
+                    deserialize_clientbound_play_server_difficulty(packet_data, bot);
                     break;
                 case 0x0e:
+                    deserialize_clientbound_play_tab_complete(packet_data, bot);
                     break;
                 case 0x0f:
+                    deserialize_clientbound_play_chat_message(packet_data, bot);
                     break;
                 case 0x10:
+                    deserialize_clientbound_play_multi_block_change(packet_data, bot);
                     break;
                 case 0x11:
+                    deserialize_clientbound_play_confirm_transaction(packet_data, bot);
                     break;
                 case 0x12:
+                    deserialize_clientbound_play_close_window(packet_data, bot);
                     break;
                 case 0x13:
+                    deserialize_clientbound_play_open_window(packet_data, bot);
                     break;
                 case 0x14:
+                    deserialize_clientbound_play_window_items(packet_data, bot);
                     break;
                 case 0x15:
+                    deserialize_clientbound_play_window_property(packet_data, bot);
                     break;
                 case 0x16:
+                    deserialize_clientbound_play_set_slot(packet_data, bot);
                     break;
                 case 0x17:
+                    deserialize_clientbound_play_set_cooldown(packet_data, bot);
                     break;
                 case 0x18:
+                    deserialize_clientbound_play_plugin_message(packet_data, bot);
                     break;
                 case 0x19:
+                    deserialize_clientbound_play_named_sound_effect(packet_data, bot);
                     break;
                 case 0x1a:
+                    deserialize_clientbound_play_disconnect(packet_data, bot);
                     break;
                 case 0x1b:
+                    deserialize_clientbound_play_entity_status(packet_data, bot);
                     break;
                 case 0x1c:
+                    deserialize_clientbound_play_explosion(packet_data, bot);
                     break;
                 case 0x1d:
+                    deserialize_clientbound_play_unload_chunk(packet_data, bot);
                     break;
                 case 0x1e:
+                    deserialize_clientbound_play_change_game_state(packet_data, bot);
                     break;
                 case 0x1f:
+                    deserialize_clientbound_play_keep_alive(packet_data, bot);
                     break;
                 case 0x20:
+                    deserialize_clientbound_play_chunk_data(packet_data, bot);
                     break;
                 case 0x21:
+                    deserialize_clientbound_play_effect(packet_data, bot);
                     break;
                 case 0x22:
+                    deserialize_clientbound_play_particle(packet_data, bot);
                     break;
                 case 0x23:
+                    deserialize_clientbound_play_join_game(packet_data, bot);
                     break;
                 case 0x24:
+                    deserialize_clientbound_play_map(packet_data, bot);
                     break;
                 case 0x25:
+                    deserialize_clientbound_play_entity_relative_move(packet_data, bot);
                     break;
                 case 0x26:
+                    deserialize_clientbound_play_entity_look_and_relative_move(packet_data, bot);
                     break;
                 case 0x27:
+                    deserialize_clientbound_play_entity_look(packet_data, bot);
                     break;
                 case 0x28:
+                    deserialize_clientbound_play_entity(packet_data, bot);
                     break;
                 case 0x29:
+                    deserialize_clientbound_play_vehicle_move(packet_data, bot);
                     break;
                 case 0x2a:
+                    deserialize_clientbound_play_open_sign_editor(packet_data, bot);
                     break;
                 case 0x2b:
+                    deserialize_clientbound_play_player_abilities(packet_data, bot);
                     break;
                 case 0x2c:
+                    deserialize_clientbound_play_combat_event(packet_data, bot);
                     break;
                 case 0x2d:
+                    deserialize_clientbound_play_player_list_item(packet_data, bot);
                     break;
                 case 0x2e:
+                    deserialize_clientbound_play_player_position_and_look(packet_data, bot);
                     break;
                 case 0x2f:
+                    deserialize_clientbound_play_use_bed(packet_data, bot);
                     break;
                 case 0x30:
+                    deserialize_clientbound_play_destroy_entities(packet_data, bot);
                     break;
                 case 0x31:
+                    deserialize_clientbound_play_remove_entity_effect(packet_data, bot);
                     break;
                 case 0x32:
+                    deserialize_clientbound_play_resource_pack_send(packet_data, bot);
                     break;
                 case 0x33:
+                    deserialize_clientbound_play_respawn(packet_data, bot);
                     break;
                 case 0x34:
+                    deserialize_clientbound_play_entity_head_look(packet_data, bot);
                     break;
                 case 0x35:
+                    deserialize_clientbound_play_world_border(packet_data, bot);
                     break;
                 case 0x36:
+                    deserialize_clientbound_play_camera(packet_data, bot);
                     break;
                 case 0x37:
+                    deserialize_clientbound_play_held_item_change(packet_data, bot);
                     break;
                 case 0x38:
+                    deserialize_clientbound_play_display_scoreboard(packet_data, bot);
                     break;
                 case 0x39:
+                    deserialize_clientbound_play_entity_metadata(packet_data, bot);
                     break;
                 case 0x3a:
+                    deserialize_clientbound_play_attach_entity(packet_data, bot);
                     break;
                 case 0x3b:
+                    deserialize_clientbound_play_entity_velocity(packet_data, bot);
                     break;
                 case 0x3c:
+                    deserialize_clientbound_play_entity_equipment(packet_data, bot);
                     break;
                 case 0x3d:
+                    deserialize_clientbound_play_set_experience(packet_data, bot);
                     break;
                 case 0x3e:
+                    deserialize_clientbound_play_update_health(packet_data, bot);
                     break;
                 case 0x3f:
+                    deserialize_clientbound_play_scoreboard_objective(packet_data, bot);
                     break;
                 case 0x40:
+                    deserialize_clientbound_play_set_passengers(packet_data, bot);
                     break;
                 case 0x41:
+                    deserialize_clientbound_play_teams(packet_data, bot);
                     break;
                 case 0x42:
+                    deserialize_clientbound_play_update_score(packet_data, bot);
                     break;
                 case 0x43:
+                    deserialize_clientbound_play_spawn_position(packet_data, bot);
                     break;
                 case 0x44:
+                    deserialize_clientbound_play_time_update(packet_data, bot);
                     break;
                 case 0x45:
+                    deserialize_clientbound_play_title(packet_data, bot);
                     break;
                 case 0x46:
+                    deserialize_clientbound_play_sound_effect(packet_data, bot);
                     break;
                 case 0x47:
+                    deserialize_clientbound_play_player_list_header_and_footer(packet_data, bot);
                     break;
                 case 0x48:
+                    deserialize_clientbound_play_collect_item(packet_data, bot);
                     break;
                 case 0x49:
+                    deserialize_clientbound_play_entity_teleport(packet_data, bot);
                     break;
                 case 0x4a:
+                    deserialize_clientbound_play_entity_properties(packet_data, bot);
                     break;
                 case 0x4b:
+                    deserialize_clientbound_play_entity_effect(packet_data, bot);
                     break;
             }
             break;
@@ -3208,50 +3304,4 @@ void dispatch_packet_cb(struct bot_agent *bot) {
  * Precondition: buf->len > 5
  **/
 void read_socket(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
-    struct bot_agent *bot = stream->data;
-    char *packet_data = buf->base;
-    size_t length = buf->len;
-    size_t bytes_read = 0;
-    while (bytes_read < length) {
-        switch (bot->socket_read_state) {
-            case SOCKET_READ_PACKET_START: /* reading from start of packet */
-                {
-                    /* read in the packet length */
-                    int varint_length = varint32(packet_data, &bot->packet_length);
-                    bytes_read += varint_length;
-                    /* Check if bot buffer is long enough */
-                    if (bot->packet_length > bot->packet_capacity) {
-                        free(bot->packet_data);
-                        bot->packet_data = malloc(bot->packet_length);
-                        bot->packet_capacity = bot->packet_length;
-                    }
-                    /* Check if the full packet is available in buf */
-                    if (bot->packet_length <= length - bytes_read) {
-                        memcpy(bot->packet_data, &packet_data[bytes_read], bot->packet_length);
-                        /* Parse the full packet, invoke callbacks */
-                        bytes_read += bot->packet_length;
-                    } else {
-                        memcpy(bot->packet_data, &packet_data[bytes_read], length - bytes_read);
-                        bytes_read = length;
-                        bot->packet_bytes_read = length - bytes_read;
-                        bot->socket_read_state = SOCKET_READ_PACKET_MIDDLE;
-                    }
-                    break;
-                }
-            case SOCKET_READ_PACKET_MIDDLE: /* reading from middle of packet */
-                {
-                    /* Check if rest of packet is available in buf */
-                    if (bot->packet_length - bot->packet_bytes_read <= length - bytes_read) {
-                        memcpy(&bot->packet_data[bot->packet_bytes_read], &packet_data[bytes_read], bot->packet_length - bot->packet_bytes_read);
-                        /* Parse the full packet, invoke callbacks */
-                        bytes_read += bot->packet_length;
-                        bot->socket_read_state = SOCKET_READ_PACKET_START;
-                    } else {
-                        memcpy(&bot->packet_data[bot->packet_bytes_read], &packet_data[bytes_read], length - bytes_read);
-                        bytes_read = length;
-                        bot->packet_bytes_read += length - bytes_read;
-                    }
-                }
-        }
-    }
 }
