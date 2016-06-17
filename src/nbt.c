@@ -106,6 +106,7 @@ char *_nbt_parse_tag_compound(char *data, struct nbt_compound **compound, struct
         current = current->next;
         data = _nbt_parse_tag(data, &current->payload, type, 1, bot);
     }
+    current->next = NULL;
     *compound = tmp.next;
     return data;
 }
@@ -119,11 +120,65 @@ char *_nbt_parse_tag_int_array(char *data, struct nbt_int_array *array, struct b
     return data;
 }
 
-struct nbt_tag *nbt_parse(char *data, uint32_t *bytes_read, struct bot_agent *bot) {
-    struct nbt_tag *node = malloc(sizeof(struct nbt_tag));
+char *nbt_parse(char *data, struct nbt_tag *node, struct bot_agent *bot) {
     int8_t type;
     char *ptr = _read(data, &type, sizeof(type), bot);
     ptr = _nbt_parse_tag(ptr, node, type, 1, bot);
-    *bytes_read = ptr - data;
-    return node;
+    return ptr;
+}
+
+void free_nbt_compound(struct nbt_compound *compound) {
+    if (compound == NULL) {
+        return;
+    }
+    free_nbt_compound(compound->next);
+    free_nbt(&compound->payload);
+    free(compound);
+}
+
+void free_nbt(struct nbt_tag *nbt) {
+    /* free the string */     
+    if (nbt->name.str != NULL) {
+        free(nbt->name.str);
+    }
+    switch(nbt->type) {
+        case NBT_TAG_END_TYPE:
+            break;
+        case NBT_TAG_BYTE_TYPE:
+            break;
+        case NBT_TAG_SHORT_TYPE:
+            break;
+        case NBT_TAG_INT_TYPE:
+            break;
+        case NBT_TAG_LONG_TYPE:
+            break;
+        case NBT_TAG_FLOAT_TYPE:
+            break;
+        case NBT_TAG_DOUBLE_TYPE:
+            break;
+        case NBT_TAG_BYTE_ARRAY_TYPE:
+            free(nbt->tag_byte_array.data);
+            break;
+        case NBT_TAG_STRING_TYPE:
+            free(nbt->tag_string.str);
+            break;
+        case NBT_TAG_LIST_TYPE:
+        {
+            struct nbt_list *tag_list = &nbt->tag_list;
+            for (int i = 0; i < nbt->tag_list.length; i++) {
+                free_nbt(&tag_list->elements[i]);
+            }
+            free(tag_list->elements);
+            break;
+        }
+        case NBT_TAG_COMPOUND_TYPE:
+        {
+            struct nbt_compound *tag_compound = nbt->tag_compound;
+            free_nbt_compound(tag_compound);
+            break;
+        }
+        case NBT_TAG_INT_ARRAY:
+            free(nbt->tag_int_array.data);
+            break;
+    }
 }

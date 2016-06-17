@@ -18,6 +18,68 @@ typedef void* slot_t;
 
 struct bot_agent;
 
+/* nbt types */
+
+enum NBT_TAG_TYPE {
+    NBT_TAG_END_TYPE,
+    NBT_TAG_BYTE_TYPE,
+    NBT_TAG_SHORT_TYPE,
+    NBT_TAG_INT_TYPE,
+    NBT_TAG_LONG_TYPE,
+    NBT_TAG_FLOAT_TYPE,
+    NBT_TAG_DOUBLE_TYPE,
+    NBT_TAG_BYTE_ARRAY_TYPE,
+    NBT_TAG_STRING_TYPE,
+    NBT_TAG_LIST_TYPE,
+    NBT_TAG_COMPOUND_TYPE,
+    NBT_TAG_INT_ARRAY
+};
+
+struct nbt_byte_array {
+    int32_t length;
+    int8_t *data;
+};
+
+struct nbt_string {
+    int16_t length;
+    char *str;
+};
+
+struct nbt_list {
+    enum NBT_TAG_TYPE type;
+    int32_t length;
+    struct nbt_tag *elements;
+};
+
+struct nbt_int_array {
+    int32_t length;
+    int32_t *data;
+};
+
+struct nbt_tag {
+    enum NBT_TAG_TYPE type;
+    struct nbt_string name;
+    union {
+        int8_t tag_byte;
+        int16_t tag_short;
+        int32_t tag_int;
+        int64_t tag_long;
+        float tag_float;
+        double tag_double;
+        struct nbt_byte_array tag_byte_array;
+        struct nbt_string tag_string;
+        struct nbt_list tag_list;
+        struct nbt_compound *tag_compound;
+        struct nbt_int_array tag_int_array;
+    };
+};
+
+struct nbt_compound {
+    struct nbt_tag payload;
+    struct nbt_compound *next;
+};
+
+
 enum NBT_TYPE {
     NBT_TREE,
     NBT_BINARY
@@ -29,7 +91,7 @@ struct slot_type {
     int16_t damage;
     enum NBT_TYPE type;
     union {
-        struct nbt_tag *tree;
+        struct nbt_tag tree;
         struct nbt_buffer {
             uint32_t length;
             char *data;
@@ -431,12 +493,10 @@ struct _callbacks {
     /* login */
     void (*clientbound_login_disconnect_cb)(
             struct bot_agent *bot,
-            int32_t reason_length,
             char *reason
             );
     void (*clientbound_login_encryption_request_cb)(
             struct bot_agent *bot,
-            int32_t server_id_length,
             char *server_id,
             vint32_t public_key_length,
             char *public_key,
@@ -445,9 +505,7 @@ struct _callbacks {
             );
     void (*clientbound_login_login_success_cb)(
             struct bot_agent *bot,
-            int32_t uuid_length,
             char *uuid,
-            int32_t username_length,
             char *username
             );
     void (*clientbound_login_set_compression_cb)(
@@ -457,7 +515,6 @@ struct _callbacks {
     /* Status */
     void (*clientbound_status_response_cb)(
             struct bot_agent *bot,
-            int32_t json_length,
             char *json_response
             );
     void (*clientbound_status_pong_cb)(
@@ -516,7 +573,6 @@ struct _callbacks {
             struct bot_agent *bot,
             vint32_t entity_id,
             char *uuid,
-            int32_t title_length,
             char *title,
             position_t location,
             int8_t direction
@@ -694,7 +750,7 @@ struct _callbacks {
             struct chunk_section *data,
             struct biome_record *biomes,
             vint32_t number_of_block_entities,
-            struct nbt_tag **block_entities
+            struct nbt_tag *block_entities
             );
     void (*clientbound_play_effect_cb)(
             struct bot_agent *bot,

@@ -856,27 +856,25 @@ int32_t send_play_serverbound_use_item(
 
 void deserialize_clientbound_login_disconnect(char *packet_data, struct bot_agent *bot) {
     if (bot->callbacks.clientbound_login_disconnect_cb != NULL) {
-        int32_t length;
         char *reason;
-        packet_data = _read_string(packet_data, &reason, &length, bot);
+        packet_data = _read_string(packet_data, &reason, NULL, bot);
         bot->callbacks.clientbound_login_disconnect_cb(
                 bot,
-                length,
                 reason
                 );
+        free(reason);
     }
 }
 
 void deserialize_clientbound_login_encryption_request(char *packet_data, struct bot_agent *bot) {
     if (bot->callbacks.clientbound_login_encryption_request_cb != NULL) {
-        int32_t server_id_length;
         char *server_id;
         vint32_t public_key_length;
         char *public_key;
         vint32_t verify_token_length;
         char *verify_token;
 
-        packet_data = _read_string(packet_data, &server_id, &server_id_length, bot);
+        packet_data = _read_string(packet_data, &server_id, NULL, bot);
         packet_data = _read_vint32(packet_data, &public_key_length, bot);
         public_key = malloc(public_key_length);
         packet_data = _read(packet_data, public_key, public_key_length, bot);
@@ -886,7 +884,6 @@ void deserialize_clientbound_login_encryption_request(char *packet_data, struct 
 
         bot->callbacks.clientbound_login_encryption_request_cb(
                 bot,
-                server_id_length,
                 server_id,
                 public_key_length,
                 public_key,
@@ -900,25 +897,21 @@ void deserialize_clientbound_login_encryption_request(char *packet_data, struct 
 }
 
 void deserialize_clientbound_login_login_success(char *packet_data, struct bot_agent *bot) {
-    int32_t uuid_length; 
     char *uuid;
-    int32_t username_length;
     char *username;
 
-    packet_data = _read_string(packet_data, &uuid, &uuid_length, bot);
-    packet_data = _read_string(packet_data, &username, &username_length, bot);
+    packet_data = _read_string(packet_data, &uuid, NULL, bot);
+    packet_data = _read_string(packet_data, &username, NULL, bot);
     bot->current_state = PLAY;
     if (bot->callbacks.clientbound_login_login_success_cb != NULL) {
         bot->callbacks.clientbound_login_login_success_cb(
                 bot,
-                uuid_length,
                 uuid,
-                username_length,
                 username
                 );
-        free(uuid);
-        free(username);
     }
+    free(uuid);
+    free(username);
 }
 
 void deserialize_clientbound_login_set_compression(char *packet_data, struct bot_agent *bot) {
@@ -937,13 +930,11 @@ void deserialize_clientbound_login_set_compression(char *packet_data, struct bot
 
 void deserialize_clientbound_status_response(char *packet_data, struct bot_agent *bot) {
     if (bot->callbacks.clientbound_status_response_cb != NULL) {
-        int32_t json_length; 
         char *json;
-        packet_data = _read_string(packet_data, &json, &json_length, bot);
+        packet_data = _read_string(packet_data, &json, NULL, bot);
 
         bot->callbacks.clientbound_status_response_cb(
                 bot,
-                json_length,
                 json
                 );
         free(json);
@@ -1050,8 +1041,18 @@ void deserialize_clientbound_play_spawn_global_entity(char *packet_data,
     }
 }
 
+void free_slot(struct slot_type *slot) {
+    switch(slot->type) {
+        case NBT_TREE:
+            
+            break;
+        case NBT_BINARY:
+            free(slot->nbt_binary.data);
+            break;
+    }
+}
+
 char *_read_entity_metadata(char *packet_data, struct entity_metadata *metadata, struct bot_agent *bot) {
-    int32_t dummy_length;
     char *packet_ptr = packet_data;
     struct entity_metadata_entry dummy;
     dummy.next = NULL;
@@ -1077,10 +1078,10 @@ char *_read_entity_metadata(char *packet_data, struct entity_metadata *metadata,
                 packet_ptr = _read_float(packet_ptr, &current_entry->entity_float, bot);
                 break;
             case ENTITY_METADATA_STRING:
-                packet_ptr = _read_string(packet_ptr, &current_entry->entity_string, &dummy_length, bot);
+                packet_ptr = _read_string(packet_ptr, &current_entry->entity_string, NULL, bot);
                 break;
             case ENTITY_METADATA_CHAT:
-                packet_ptr = _read_string(packet_ptr, &current_entry->entity_chat, &dummy_length, bot);
+                packet_ptr = _read_string(packet_ptr, &current_entry->entity_chat, NULL, bot);
                 break;
             case ENTITY_METADATA_SLOT:
                 packet_ptr = _read_slot(packet_ptr, &current_entry->entity_slot, bot);
@@ -1124,8 +1125,39 @@ char *_read_entity_metadata(char *packet_data, struct entity_metadata *metadata,
                 break;
         }
     }
+
+    current_entry->next = NULL;
+    
     metadata->entries = dummy.next;
     return packet_ptr;
+}
+
+void free_entity_metadata_entries(struct entity_metadata_entry *metadata) {
+    if (metadata == NULL) {
+        return;
+    }
+    free_entity_metadata_entries(metadata->next);
+    switch(metadata->type) {
+        case ENTITY_METADATA_STRING:
+            free(metadata->entity_string);
+            break;
+        case ENTITY_METADATA_CHAT:
+            free(metadata->entity_chat);
+            break;
+        case ENTITY_METADATA_BYTE:
+        case ENTITY_METADATA_VARINT:
+        case ENTITY_METADATA_FLOAT:
+        case ENTITY_METADATA_SLOT:
+        case ENTITY_METADATA_BOOLEAN:
+        case ENTITY_METADATA_ROTATION:
+        case ENTITY_METADATA_POSITION:
+        case ENTITY_METADATA_OPTPOSITION:
+        case ENTITY_METADATA_DIRECTION:
+        case ENTITY_METADATA_OPTUUID:
+        case ENTITY_METADATA_BLOCKID:
+            break;
+    }
+    free(metadata);
 }
 
 void deserialize_clientbound_play_spawn_mob(char *packet_data, struct bot_agent *bot) {
@@ -1168,6 +1200,8 @@ void deserialize_clientbound_play_spawn_mob(char *packet_data, struct bot_agent 
                 v_z,
                 &metadata
                 );
+
+        free_entity_metadata_entries(metadata.entries);
     }
 }
 
@@ -1175,14 +1209,13 @@ void deserialize_clientbound_play_spawn_painting(char *packet_data, struct bot_a
     if (bot->callbacks.clientbound_play_spawn_painting_cb != NULL) {
         vint32_t entity_id;
         char uuid[16];
-        int32_t title_length;
         char *title;
         position_t location;
         int8_t direction;
         
         packet_data = _read_vint32(packet_data, &entity_id, bot);
         packet_data = _read(packet_data, uuid, sizeof(uuid), bot);
-        packet_data = _read_string(packet_data, &title, &title_length, bot);
+        packet_data = _read_string(packet_data, &title, NULL, bot);
         packet_data = _read_uint64_t(packet_data, &location, bot);
         packet_data = _read(packet_data, &direction, sizeof(direction), bot);
 
@@ -1190,11 +1223,12 @@ void deserialize_clientbound_play_spawn_painting(char *packet_data, struct bot_a
                 bot,
                 entity_id,
                 uuid,
-                title_length,
                 title,
                 location,
                 direction
                 );
+
+        free(title);
     }
 }
 
@@ -1245,29 +1279,28 @@ void deserialize_clientbound_play_animation(char *packet_data, struct bot_agent 
     }
 }
 
-char *_read_statistic(char *packet_data, int32_t count, struct statistic_type *statistics, struct bot_agent *bot) {
-    int32_t dummy_length;
-    for (int i = 0; i < count; i++) {
-        packet_data = _read_string(packet_data, &statistics[i].name, &dummy_length, bot);
-        packet_data = _read_vint32(packet_data, &statistics[i].value, bot);
-    }
-    return packet_data;
-}
-
 void deserialize_clientbound_play_statistics(char *packet_data, struct bot_agent *bot) {
     if (bot->callbacks.clientbound_play_statistics_cb != NULL) {
         vint32_t count;
-        struct statistic_type *statistic;
+        struct statistic_type *statistics;
 
         packet_data = _read_vint32(packet_data, &count, bot);
-        statistic = malloc(count * sizeof(struct statistic_type)); 
-        packet_data = _read_statistic(packet_data, count, statistic, bot);
+        statistics = malloc(count * sizeof(struct statistic_type)); 
+        for (int i = 0; i < count; i++) {
+            packet_data = _read_string(packet_data, &statistics[i].name, NULL, bot);
+            packet_data = _read_vint32(packet_data, &statistics[i].value, bot);
+        }
 
         bot->callbacks.clientbound_play_statistics_cb(
                 bot,
                 count,
-                statistic
+                statistics
                 );
+
+        for (int i = 0; i < count; i++) {
+            free(statistics[i].name);
+        }
+        free(statistics);
     }
 }
 
@@ -1294,20 +1327,20 @@ void deserialize_clientbound_play_update_block_entity(char *packet_data, struct 
     if (bot->callbacks.clientbound_play_update_block_entity_cb != NULL) {
         position_t location;
         uint8_t action;
-        struct nbt_tag *nbt;
+        struct nbt_tag nbt;
         
         packet_data = _read_uint64_t(packet_data, &location, bot);
         packet_data = _read(packet_data, &action, sizeof(action), bot);
-        uint32_t bytes_read;
-        nbt = nbt_parse(packet_data, &bytes_read, bot);
-        packet_data += bytes_read;
+        packet_data = nbt_parse(packet_data, &nbt, bot);
 
         bot->callbacks.clientbound_play_update_block_entity_cb(
                 bot,
                 location,
                 action,
-                nbt
+                &nbt
                 );
+
+        free_nbt(&nbt);
     }
 }
 
@@ -1345,6 +1378,25 @@ void deserialize_clientbound_play_block_change(char *packet_data, struct bot_age
                 location,
                 block_id
                 );
+    }
+}
+
+void free_boss_bar_action(struct boss_bar_action *action) {
+    switch(action->action_type) {
+        case BOSS_BAR_ADD:
+            free(action->add.title);
+            break;
+        case BOSS_BAR_REMOVE:
+            break;
+        case BOSS_BAR_UPDATE_HEALTH:
+            break;
+        case BOSS_BAR_UPDATE_TITLE:
+            free(action->update_title.title);
+            break;
+        case BOSS_BAR_UPDATE_STYLE:
+            break;
+        case BOSS_BAR_UPDATE_FLAGS:
+            break;
     }
 }
 
@@ -1409,6 +1461,7 @@ void deserialize_clientbound_play_boss_bar(char *packet_data, struct bot_agent *
                 &action_data
                 );
 
+        free_boss_bar_action(&action_data);
     }
 }
 
@@ -1441,6 +1494,11 @@ void deserialize_clientbound_play_tab_complete(char *packet_data, struct bot_age
                 count,
                 matches
                 );
+
+        for (int i = 0; i < count; i++) {
+            free(matches[i]);
+        }
+        free(matches);
     }
 }
 
@@ -1457,6 +1515,8 @@ void deserialize_clientbound_play_chat_message(char *packet_data, struct bot_age
                 json_data,
                 position
                 );
+
+        free(json_data);
     }
 }
 
@@ -1483,6 +1543,7 @@ void deserialize_clientbound_play_multi_block_change(char *packet_data, struct b
                 record_count,
                 record
                 );
+        free(record);
     }
 }
 
@@ -1545,6 +1606,9 @@ void deserialize_clientbound_play_open_window(char *packet_data, struct bot_agen
                 number_of_slots,
                 entity_id
                 );
+
+        free(window_type);
+        free(window_title);
     }
 }
 
@@ -1567,6 +1631,8 @@ void deserialize_clientbound_play_window_items(char *packet_data, struct bot_age
                 count,
                 slot_data
                 );
+        
+        free(slot_data);
     }
 }
 
@@ -1640,6 +1706,7 @@ void deserialize_clientbound_play_plugin_message(char *packet_data, struct bot_a
                 data_length,
                 data
                 );
+        free(data);
     }
 }
 
@@ -1669,6 +1736,8 @@ void deserialize_clientbound_play_named_sound_effect(char *packet_data, struct b
                 volume,
                 pitch
                 );
+
+        free(sound_name);
     }
 }
 
@@ -1682,6 +1751,8 @@ void deserialize_clientbound_play_disconnect(char *packet_data, struct bot_agent
                 bot,
                 reason
                 );
+
+        free(reason);
     }
 }
 
@@ -1735,6 +1806,7 @@ void deserialize_clientbound_play_explosion(char *packet_data, struct bot_agent 
                 player_motion_y,
                 player_motion_z
                 );
+        free(records);
     }
 }
 
@@ -1815,44 +1887,57 @@ uint32_t palette_index(uint64_t *data, int bits_per_block, int index) {
 #define TO_Y(index) (index / CHUNK_DIM / CHUNK_DIM)
 #define TO_Z(index) ((index / CHUNK_DIM) % CHUNK_DIM)
 
-char *_read_chunk_sections(char *packet_data, int32_t number_of_sections, struct chunk_section *data, int overworld, struct bot_agent *bot) {
-    for (int i = 0; i < number_of_sections; i++) {
-        uint8_t bits_per_block;
-        packet_data = _read(packet_data, &bits_per_block, sizeof(bits_per_block), bot);
-        if (bits_per_block < 4 && bits_per_block > 0) {
-            bits_per_block = 4;
+char *_read_chunk_sections(char *packet_data, struct chunk_section *data, int overworld, struct bot_agent *bot) {
+    uint8_t bits_per_block;
+    packet_data = _read(packet_data, &bits_per_block, sizeof(bits_per_block), bot);
+    if (bits_per_block < 4 && bits_per_block > 0) {
+        bits_per_block = 4;
+    }
+    
+    vint32_t palette_length;
+    packet_data = _read_vint32(packet_data, &palette_length, bot);
+
+    int use_palette = palette_length > 0 && bits_per_block > 0 && bits_per_block < 9;
+
+    vint32_t *palette = malloc(palette_length * sizeof(vint32_t));
+    for (int j = 0; j < palette_length; j++) {
+        packet_data = _read_vint32(packet_data, &palette[j], bot);
+    }
+
+    vint32_t data_array_length;
+    packet_data = _read_vint32(packet_data, &data_array_length, bot);
+    uint64_t *data_array = malloc(data_array_length * sizeof(uint64_t));
+    for (int j = 0; j < data_array_length; j++) {
+        packet_data = _read_uint64_t(packet_data, &data_array[j], bot);
+    }
+    
+    for (int j = 0; j < CHUNK_DIM * CHUNK_DIM * CHUNK_DIM; j++) {
+        int block_data = palette_index(data_array, bits_per_block, j); 
+        if (!use_palette) {
+            data->data_array[TO_X(j)][TO_Y(j)][TO_Z(j)] = block_data;
+        } else if (block_data < palette_length) {
+            data->data_array[TO_X(j)][TO_Y(j)][TO_Z(j)] =
+                palette[block_data];
+
+        } else {
+            data->data_array[TO_X(j)][TO_Y(j)][TO_Z(j)] = 0;
         }
-        
-        vint32_t palette_length;
-        packet_data = _read_vint32(packet_data, &palette_length, bot);
+    }
 
-        int use_palette = palette_length > 0 && bits_per_block > 0 && bits_per_block < 9;
+    if (bot->packet_length - (packet_data - bot->packet_data) < CHUNK_DIM * CHUNK_DIM * CHUNK_DIM / 2) {
+        bot->mcc_status = MCC_PARSE_ERROR;
+        assert(0);
+    }
+    for (int j = 0; j < CHUNK_DIM * CHUNK_DIM * CHUNK_DIM / 2; j++) {
+        uint8_t even = packet_data[j] & 0x0f;
+        uint8_t odd = packet_data[j] >> 4;
+        int even_index = 2 * j, odd_index = 2 * j + 1;
+        data->block_light[TO_X(even_index)][TO_Y(even_index)][TO_Z(even_index)] = even;
+        data->block_light[TO_X(odd_index)][TO_Y(odd_index)][TO_Z(odd_index)] = odd;
+    }
+    packet_data += CHUNK_DIM * CHUNK_DIM * CHUNK_DIM / 2;
 
-        vint32_t *palette = malloc(palette_length * sizeof(vint32_t));
-        for (int j = 0; j < palette_length; j++) {
-            packet_data = _read_vint32(packet_data, &palette[j], bot);
-        }
-
-        vint32_t data_array_length;
-        packet_data = _read_vint32(packet_data, &data_array_length, bot);
-        uint64_t *data_array = malloc(data_array_length * sizeof(uint64_t));
-        for (int j = 0; j < data_array_length; j++) {
-            packet_data = _read_uint64_t(packet_data, &data_array[j], bot);
-        }
-        
-        for (int j = 0; j < CHUNK_DIM * CHUNK_DIM * CHUNK_DIM; j++) {
-            int block_data = palette_index(data_array, bits_per_block, j); 
-            if (!use_palette) {
-                data[i].data_array[TO_X(j)][TO_Y(j)][TO_Z(j)] = block_data;
-            } else if (block_data < palette_length) {
-                data[i].data_array[TO_X(j)][TO_Y(j)][TO_Z(j)] =
-                    palette[block_data];
-
-            } else {
-                data[i].data_array[TO_X(j)][TO_Y(j)][TO_Z(j)] = 0;
-            }
-        }
-
+    if (overworld) {
         if (bot->packet_length - (packet_data - bot->packet_data) < CHUNK_DIM * CHUNK_DIM * CHUNK_DIM / 2) {
             bot->mcc_status = MCC_PARSE_ERROR;
             assert(0);
@@ -1861,29 +1946,14 @@ char *_read_chunk_sections(char *packet_data, int32_t number_of_sections, struct
             uint8_t even = packet_data[j] & 0x0f;
             uint8_t odd = packet_data[j] >> 4;
             int even_index = 2 * j, odd_index = 2 * j + 1;
-            data[i].block_light[TO_X(even_index)][TO_Y(even_index)][TO_Z(even_index)] = even;
-            data[i].block_light[TO_X(odd_index)][TO_Y(odd_index)][TO_Z(odd_index)] = odd;
+            data->sky_light[TO_X(even_index)][TO_Y(even_index)][TO_Z(even_index)] = even;
+            data->sky_light[TO_X(odd_index)][TO_Y(odd_index)][TO_Z(odd_index)] = odd;
         }
         packet_data += CHUNK_DIM * CHUNK_DIM * CHUNK_DIM / 2;
-
-        if (overworld) {
-            if (bot->packet_length - (packet_data - bot->packet_data) < CHUNK_DIM * CHUNK_DIM * CHUNK_DIM / 2) {
-                bot->mcc_status = MCC_PARSE_ERROR;
-                assert(0);
-            }
-            for (int j = 0; j < CHUNK_DIM * CHUNK_DIM * CHUNK_DIM / 2; j++) {
-                uint8_t even = packet_data[j] & 0x0f;
-                uint8_t odd = packet_data[j] >> 4;
-                int even_index = 2 * j, odd_index = 2 * j + 1;
-                data[i].sky_light[TO_X(even_index)][TO_Y(even_index)][TO_Z(even_index)] = even;
-                data[i].sky_light[TO_X(odd_index)][TO_Y(odd_index)][TO_Z(odd_index)] = odd;
-            }
-            packet_data += CHUNK_DIM * CHUNK_DIM * CHUNK_DIM / 2;
-        }
-
-        free(palette);
-        free(data_array);
     }
+
+    free(palette);
+    free(data_array);
     return packet_data;
 }
 
@@ -1908,7 +1978,7 @@ void deserialize_clientbound_play_chunk_data(char *packet_data, struct bot_agent
         struct chunk_section *data;
         struct biome_record biomes;
         vint32_t number_of_block_entities;
-        struct nbt_tag **block_entities;  
+        struct nbt_tag *block_entities;  
 
         packet_data = _read_int32_t(packet_data, &chunk_x, bot);
         packet_data = _read_int32_t(packet_data, &chunk_z, bot);
@@ -1919,16 +1989,16 @@ void deserialize_clientbound_play_chunk_data(char *packet_data, struct bot_agent
         int32_t number_of_sections = __builtin_popcount(primary_bit_mask);
         data = malloc(number_of_sections * sizeof(struct chunk_section));
         packet_data = _read_vint32(packet_data, &size, bot);
-        packet_data = _read_chunk_sections(packet_data, number_of_sections, data, bot->dimension == MINECRAFT_OVERWORLD, bot);
+        for (int i = 0; i < number_of_sections; i++) {
+            packet_data = _read_chunk_sections(packet_data, &data[i], bot->dimension == MINECRAFT_OVERWORLD, bot);
+        }
         if (ground_up_continuous) {
             packet_data = _read_biomes(packet_data, &biomes, bot);
         }
         packet_data = _read_vint32(packet_data, &number_of_block_entities, bot);
-        block_entities = malloc(number_of_block_entities * sizeof(struct nbt_tag *));
+        block_entities = malloc(number_of_block_entities * sizeof(struct nbt_tag));
         for (int i = 0; i < number_of_block_entities; i++) {
-            uint32_t bytes_read;
-            block_entities[i] = nbt_parse(packet_data, &bytes_read, bot);
-            packet_data += bytes_read;
+            packet_data = nbt_parse(packet_data, &block_entities[i], bot);
         }
         
         bot->callbacks.clientbound_play_chunk_data_cb(
@@ -1943,6 +2013,13 @@ void deserialize_clientbound_play_chunk_data(char *packet_data, struct bot_agent
                 number_of_block_entities,
                 block_entities
                 );
+
+        
+        free(data);
+        free(block_entities);
+        for (int i = 0; i < number_of_block_entities; i++) {
+            free_nbt(&block_entities[i]);
+        }
     }
 }
 
@@ -2018,6 +2095,7 @@ void deserialize_clientbound_play_particle(char *packet_data, struct bot_agent *
                 data_length,
                 data
                 );
+        free(data);
     }
 }
 
@@ -2051,6 +2129,8 @@ void deserialize_clientbound_play_join_game(char *packet_data, struct bot_agent 
                 level_type,
                 reduced_debug_info
                 );
+
+        free(level_type);
     }
 }
 
@@ -2101,6 +2181,11 @@ void deserialize_clientbound_play_map(char *packet_data, struct bot_agent *bot) 
                 length,
                 data
                 );
+
+        free(icons);
+        if (data != NULL) {
+            free(data);
+        }
     }
 }
 
@@ -2249,6 +2334,18 @@ void deserialize_clientbound_play_player_abilities(char *packet_data, struct bot
     }
 }
 
+void free_combat_event(struct combat_event *event) {
+    switch(event->type) {
+        case COMBAT_EVENT_ENTER_COMBAT:
+            break;
+        case COMBAT_EVENT_END_COMBAT:
+            break;
+        case COMBAT_EVENT_ENTITY_DEAD:
+            free(event->entity_dead.message);
+            break;
+    }
+}
+
 char *_read_combat_event(char *packet_data, enum COMBAT_EVENT_TYPE type, struct combat_event *event, struct bot_agent *bot) {
     event->type = type;
     switch(type) {
@@ -2280,60 +2377,100 @@ void deserialize_clientbound_play_combat_event(char *packet_data, struct bot_age
                 bot,
                 &event
                 );
+
+        free_combat_event(&event);
     }
 }
 
-char *_read_player_list_actions(char *packet_data, enum PLAYER_LIST_ACTION_TYPE type, int32_t number_of_players, struct player_list_action *player_actions, struct bot_agent *bot) {
-    for (int i = 0; i < number_of_players; i++) {
-        packet_data = _read(packet_data, player_actions[i].uuid, sizeof(player_actions[i].uuid), bot);
-        switch(type) {
-            case PLAYER_LIST_ADD_PLAYER:
-            {
-                struct player_list_action_add_player *add_player = &player_actions[i].add_player;
-                packet_data = _read_string(packet_data, &add_player->name, NULL, bot);
-                packet_data = _read_vint32(packet_data, &add_player->number_of_properties, bot);
-                add_player->properties = malloc(add_player->number_of_properties * sizeof(struct player_property));
-                for (int j = 0; j < add_player->number_of_properties; j++) {
-                    struct player_property *property = &add_player->properties[i];
-                    packet_data = _read_string(packet_data, &property->name, NULL, bot);
-                    packet_data = _read_string(packet_data, &property->value, NULL, bot);
-                    int8_t b;
-                    packet_data = _read(packet_data, &b, sizeof(b), bot);
-                    property->is_signed = b ? true : false;
-                    if (property->is_signed) {
-                        packet_data = _read_string(packet_data, &property->signature, NULL, bot);
-                    }
+void free_player_list_action(struct player_list_action *player_action, enum PLAYER_LIST_ACTION_TYPE type) {
+    switch (type) {
+        case PLAYER_LIST_ADD_PLAYER:
+        {
+            struct player_list_action_add_player *add_player = &player_action->add_player;
+            free(add_player->name);
+            for (int i = 0; i < add_player->number_of_properties; i++) {
+                struct player_property *property = &add_player->properties[i];
+                free(property->name);
+                free(property->value);
+                if (property->signature != NULL) {
+                    free(property->signature);
                 }
-                packet_data = _read_vint32(packet_data, &add_player->gamemode, bot);
-                packet_data = _read_vint32(packet_data, &add_player->ping, bot);
-                int8_t b;
-                packet_data = _read(packet_data, &b, sizeof(b), bot);
-                add_player->has_display_name = b ? true : false;
-                if (add_player->has_display_name) {
-                    packet_data = _read_string(packet_data, &add_player->display_name, NULL, bot);
-                }
-                break;
             }
-            case PLAYER_LIST_UPDATE_GAMEMODE:
-                packet_data = _read_vint32(packet_data, &player_actions[i].update_gamemode.gamemode, bot);
-                break;
-            case PLAYER_LIST_UPDATE_LATENCY:
-                packet_data = _read_vint32(packet_data, &player_actions[i].update_latency.ping, bot);
-                break;
-            case PLAYER_LIST_UPDATE_DISPLAY_NAME:
-            {
-                int8_t b;
-                packet_data = _read(packet_data, &b, sizeof(b), bot);
-                player_actions[i].update_display_name.has_display_name = b ? true : false;
-                if (player_actions[i].update_display_name.has_display_name) {
-                    packet_data = _read_string(packet_data, &player_actions[i].update_display_name.display_name, NULL, bot);
-                }
-                break;
+            if (add_player->display_name != NULL) {
+                free(add_player->display_name);
             }
-            case PLAYER_LIST_REMOVE_PLAYER:
-                /* no fields */
-                break;
+            break;
         }
+        case PLAYER_LIST_UPDATE_GAMEMODE:
+            break;
+        case PLAYER_LIST_UPDATE_LATENCY:
+            break;
+        case PLAYER_LIST_UPDATE_DISPLAY_NAME:
+            if (player_action->update_display_name.display_name != NULL) {
+                free(player_action->update_display_name.display_name);
+            }
+            break;
+        case PLAYER_LIST_REMOVE_PLAYER:
+            break;
+
+    }
+}
+
+char *_read_player_list_actions(char *packet_data, enum PLAYER_LIST_ACTION_TYPE type, struct player_list_action *player_actions, struct bot_agent *bot) {
+    packet_data = _read(packet_data, player_actions->uuid, sizeof(player_actions->uuid), bot);
+    switch(type) {
+        case PLAYER_LIST_ADD_PLAYER:
+        {
+            struct player_list_action_add_player *add_player = &player_actions->add_player;
+            packet_data = _read_string(packet_data, &add_player->name, NULL, bot);
+            packet_data = _read_vint32(packet_data, &add_player->number_of_properties, bot);
+            add_player->properties = malloc(add_player->number_of_properties * sizeof(struct player_property));
+            for (int j = 0; j < add_player->number_of_properties; j++) {
+                struct player_property *property = &add_player->properties[j];
+                packet_data = _read_string(packet_data, &property->name, NULL, bot);
+                packet_data = _read_string(packet_data, &property->value, NULL, bot);
+                int8_t b;
+                packet_data = _read(packet_data, &b, sizeof(b), bot);
+                property->is_signed = b ? true : false;
+                if (property->is_signed) {
+                    packet_data = _read_string(packet_data, &property->signature, NULL, bot);
+                } else {
+                    property->signature = NULL;
+                }
+            }
+            packet_data = _read_vint32(packet_data, &add_player->gamemode, bot);
+            packet_data = _read_vint32(packet_data, &add_player->ping, bot);
+            int8_t b;
+            packet_data = _read(packet_data, &b, sizeof(b), bot);
+            add_player->has_display_name = b ? true : false;
+            if (add_player->has_display_name) {
+                packet_data = _read_string(packet_data, &add_player->display_name, NULL, bot);
+            } else {
+                add_player->display_name = NULL;
+            }
+            break;
+        }
+        case PLAYER_LIST_UPDATE_GAMEMODE:
+            packet_data = _read_vint32(packet_data, &player_actions->update_gamemode.gamemode, bot);
+            break;
+        case PLAYER_LIST_UPDATE_LATENCY:
+            packet_data = _read_vint32(packet_data, &player_actions->update_latency.ping, bot);
+            break;
+        case PLAYER_LIST_UPDATE_DISPLAY_NAME:
+        {
+            int8_t b;
+            packet_data = _read(packet_data, &b, sizeof(b), bot);
+            player_actions->update_display_name.has_display_name = b ? true : false;
+            if (player_actions->update_display_name.has_display_name) {
+                packet_data = _read_string(packet_data, &player_actions->update_display_name.display_name, NULL, bot);
+            } else {
+                player_actions->update_display_name.display_name = NULL;
+            }
+            break;
+        }
+        case PLAYER_LIST_REMOVE_PLAYER:
+            /* no fields */
+            break;
     }
     return packet_data;
 }
@@ -2347,7 +2484,9 @@ void deserialize_clientbound_play_player_list_item(char *packet_data, struct bot
         packet_data = _read_vint32(packet_data, &action_type, bot);
         packet_data = _read_vint32(packet_data, &number_of_players, bot);
         player_actions = malloc(number_of_players * sizeof(struct player_list_action));
-        packet_data = _read_player_list_actions(packet_data, action_type, number_of_players, player_actions, bot);
+        for (int i = 0; i < number_of_players; i++) {
+            packet_data = _read_player_list_actions(packet_data, action_type, &player_actions[i], bot);
+        }
         
         bot->callbacks.clientbound_play_player_list_item_cb(
                 bot,
@@ -2355,6 +2494,11 @@ void deserialize_clientbound_play_player_list_item(char *packet_data, struct bot
                 number_of_players,
                 player_actions
                 );
+
+        for (int i = 0; i < number_of_players; i++) {
+            free_player_list_action(&player_actions[i], action_type);
+        }
+        free(player_actions);
     }
 }
 
@@ -2418,6 +2562,7 @@ void deserialize_clientbound_play_destroy_entities(char *packet_data, struct bot
                 count,
                 entity_ids
                 );
+        free(entity_ids);
     }
 }
 
@@ -2450,6 +2595,9 @@ void deserialize_clientbound_play_resource_pack_send(char *packet_data, struct b
                 url,
                 hash
                 );
+
+        free(url);
+        free(hash);
     }
 }
 
@@ -2472,6 +2620,8 @@ void deserialize_clientbound_play_respawn(char *packet_data, struct bot_agent *b
                 gamemode,
                 level_type
                 );
+
+        free(level_type);
     }
 }
 
@@ -2574,6 +2724,14 @@ void deserialize_clientbound_play_display_scoreboard(char *packet_data, struct b
 
         packet_data = _read(packet_data, &position, sizeof(position), bot);
         packet_data = _read_string(packet_data, &score_name, NULL, bot);
+
+        bot->callbacks.clientbound_play_display_scoreboard_cb(
+                bot,
+                position,
+                score_name
+                );
+
+        free(score_name);
     }
 }
 
@@ -2704,6 +2862,12 @@ void deserialize_clientbound_play_scoreboard_objective(char *packet_data, struct
                 objective_value,
                 type
                 );
+
+        free(objective_name);
+        if (objective_value != NULL)
+            free(objective_value);
+        if (type != NULL)
+            free(type);
     }
 }
 
@@ -2725,6 +2889,57 @@ void deserialize_clientbound_play_set_passengers(char *packet_data, struct bot_a
                 passenger_count,
                 passengers
                 );
+
+        free(passengers);
+    }
+}
+
+void free_team_action(struct team_action *action) {
+    switch(action->type) {
+        case TEAM_ACTION_CREATE_TEAM:
+        {
+            struct team_action_create_team *create_team = &action->create_team;
+            free(create_team->team_display_name);
+            free(create_team->team_prefix);
+            free(create_team->team_suffix);
+            free(create_team->name_tag_visibility);
+            free(create_team->collision_rule);
+            for (int i = 0; i < create_team->player_count; i++) {
+                free(create_team->players[i]);
+            }
+            free(create_team->players);
+            break;
+        }
+        case TEAM_ACTION_REMOVE_TEAM:
+            break;
+        case TEAM_ACTION_UPDATE_TEAM_INFO:
+        {
+            struct team_action_update_team_info *update_team_info = &action->update_team_info;
+            free(update_team_info->team_display_name);
+            free(update_team_info->team_prefix);
+            free(update_team_info->team_suffix);
+            free(update_team_info->name_tag_visibility);
+            free(update_team_info->collision_rule);
+            break;
+        }
+        case TEAM_ACTION_ADD_PLAYERS_TO_TEAM:
+        {
+            struct team_action_add_players_to_team *add_players_to_team = &action->add_players_to_team;
+            for (int i = 0; i < add_players_to_team->player_count; i++) {
+                free(add_players_to_team->players[i]);
+            }
+            free(add_players_to_team->players);
+            break;
+        }
+        case TEAM_ACTION_REMOVE_PLAYERS_FROM_TEAM:
+        {
+            struct team_action_remove_players_from_team *remove_players_from_team = &action->remove_players_from_team;
+            for (int i = 0; i < remove_players_from_team->player_count; i++) {
+                free(remove_players_from_team->players[i]);
+            }
+            free(remove_players_from_team->players);
+            break;
+        }
     }
 }
 
@@ -2803,6 +3018,9 @@ void deserialize_clientbound_play_teams(char *packet_data, struct bot_agent *bot
                 team_name,
                 &action
                 );
+        
+        free(team_name);
+        free_team_action(&action);
     }
 }
 
@@ -2827,6 +3045,9 @@ void deserialize_clientbound_play_update_score(char *packet_data, struct bot_age
                 objective_name,
                 value
                 );
+
+        free(score_name);
+        free(objective_name);
     }
 }
 
@@ -2855,6 +3076,23 @@ void deserialize_clientbound_play_time_update(char *packet_data, struct bot_agen
                 world_age,
                 time_of_day
                 );
+    }
+}
+
+void free_title_action(struct title_action *action) {
+    switch(action->type) {
+        case TITLE_ACTION_SET_TITLE:
+            free(action->set_title.title_text);
+            break;
+        case TITLE_ACTION_SET_SUBTITLE:
+            free(action->set_subtitle.subtitle_text);
+            break;
+        case TITLE_ACTION_SET_TIMES_AND_DISPLAY:
+            break;
+        case TITLE_ACTION_HIDE:
+            break;
+        case TITLE_ACTION_RESET:
+            break;
     }
 }
 
@@ -2894,6 +3132,8 @@ void deserialize_clientbound_play_title(char *packet_data, struct bot_agent *bot
                 bot,
                 &action
                 );
+
+        free_title_action(&action);
     }
 }
 
@@ -2937,6 +3177,9 @@ void deserialize_clientbound_play_player_list_header_and_footer(char *packet_dat
                 header,
                 footer
                 );
+
+        free(header);
+        free(footer);
     }
 }
 
@@ -2986,6 +3229,11 @@ void deserialize_clientbound_play_entity_teleport(char *packet_data, struct bot_
     }
 }
 
+void free_entity_property(struct entity_property *property) {
+    free(property->key);
+    free(property->modifiers);
+}
+
 char *_read_entity_property(char *packet_data, struct entity_property *property, struct bot_agent *bot) {
     packet_data = _read_string(packet_data, &property->key, NULL, bot);
     packet_data = _read_double(packet_data, &property->value, bot);
@@ -3018,6 +3266,11 @@ void deserialize_clientbound_play_entity_properties(char *packet_data, struct bo
                 number_of_properties,
                 properties
                 );
+
+        for (int i = 0; i < number_of_properties; i++) {
+            free_entity_property(&properties[i]);
+        }
+        free(properties);
     }
 }
 
@@ -3318,6 +3571,9 @@ void dispatch_packet_cb(char *packet_data, struct bot_agent *bot) {
                     assert(0);
             }
             break;
+        default:
+            fprintf(stderr, "Impossible state: %d\n", bot->current_state);
+            assert(0);
     }
 }
 

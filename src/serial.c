@@ -299,9 +299,7 @@ char *_read_slot(char *packet_raw, struct slot_type *slot_data, struct bot_agent
     packet_raw = _read(packet_raw, &slot_data->count, sizeof(slot_data->count), bot);
     packet_raw = _read_int16_t(packet_raw, &slot_data->damage, bot);
 
-    uint32_t bytes_read;
-    slot_data->tree = nbt_parse(packet_raw, &bytes_read, bot);
-    packet_raw += bytes_read;
+    packet_raw = nbt_parse(packet_raw, &slot_data->tree, bot);
     return packet_raw;
 }
 
