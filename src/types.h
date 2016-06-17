@@ -2,7 +2,7 @@
 
 #include <uv.h>
 #include <stdbool.h>
-#include "nbt.h"
+//#include "nbt.h"
 
 typedef enum {HANDSHAKE, LOGIN, STATUS, PLAY, NUM_STATES} state;
 
@@ -425,11 +425,6 @@ struct entity_property {
     double value;
     vint32_t number_of_modifiers;
     struct entity_modifier *modifiers;
-};
-
-enum SOCKET_READ_STATE {
-    SOCKET_READ_PACKET_START,
-    SOCKET_READ_PACKET_MIDDLE
 };
 
 struct _callbacks {
@@ -988,6 +983,16 @@ enum MINECRAFT_DIMENSION {
     MINECRAFT_END
 };
 
+enum PACKET_READ_STATE {
+    PACKET_READ_START,
+    PACKET_READ_MIDDLE
+};
+
+enum MCC_ERR {
+    MCC_OK,
+    MCC_PARSE_ERROR
+};
+
 struct bot_agent {
     uint32_t eid;
     // 0: survival, 1: creative, 2: adventure. Bit 3 (0x8) is the hardcore flag
@@ -1019,15 +1024,15 @@ struct bot_agent {
 
     size_t packet_threshold;
     uv_loop_t loop;
-    enum SOCKET_READ_STATE socket_read_state;
     uv_tcp_t socket;
-    uv_buf_t socket_buffer;
+
+    int mcc_status;
+
     int32_t packet_capacity;
     int32_t packet_length;
-    int32_t packet_bytes_read; /* how many packet bytes have been read */
-    char *packet_data;
+    int32_t packet_bytes_read; /* how many packet bytes have been read into buffer */
+    char *packet_buffer; /* the buffer into which socket stream data is copied */
+    char *packet_data; /* pointer to the start of a packet within packet_buffer */
     /* callbacks */ 
     struct _callbacks callbacks;
 };
-
-

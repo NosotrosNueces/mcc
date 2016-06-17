@@ -1,14 +1,20 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include "serial.h"
+#include "nbt.h"
 
 #define expect_more(x) (x & 0x80)
 
-int varint64(char *data, int64_t *value)
+int varint64(char *data, int32_t bytes_left, int64_t *value)
 {
     int64_t result = 0;
     int shifts = 0;
     do {
+        if (bytes_left <= 0) {
+            return -1;
+        }
+        bytes_left--;
         result |= ((0x7F & *data) << (shifts * 7));
         shifts++;
     } while (expect_more(*data++));
@@ -17,11 +23,15 @@ int varint64(char *data, int64_t *value)
 }
 
 // returns the number of bytes read from data
-int varint32(char *data, int32_t *value)
+int varint32(char *data, int32_t bytes_left, int32_t *value)
 {
     int32_t result = 0;
     int shifts = 0;
     do {
+        if (bytes_left <= 0) {
+            return -1;
+        }
+        bytes_left--;
         result |= ((0x7F & *data) << (shifts * 7));
         shifts++;
     } while (expect_more(*data++));
@@ -87,57 +97,62 @@ uint64_t ntohll(uint64_t number)
  * checking every time we push to the buffer
  **/
 
-char *_read(char *buffer, void *storage, size_t size)
+char *_read(char *buffer, void *storage, size_t size, struct bot_agent *bot)
 {
+    /* Bounds checking */
+    if (bot->mcc_status == MCC_PARSE_ERROR || bot->packet_length - (buffer - bot->packet_data) < size) {
+        bot->mcc_status = MCC_PARSE_ERROR;
+        assert(0);
+    }
     memcpy(storage, buffer, size);
     return ((char *)buffer + size);
 }
 
-char *_read_int16_t(char *buffer, int16_t *val) {
-    buffer = _read(buffer, val, sizeof(*val));
+char *_read_int16_t(char *buffer, int16_t *val, struct bot_agent *bot) {
+    buffer = _read(buffer, val, sizeof(*val), bot);
     *val = ntohs(*val);
     return buffer;
 }
 
-char *_read_uint16_t(char *buffer, uint16_t *val) {
-    buffer = _read(buffer, val, sizeof(*val));
+char *_read_uint16_t(char *buffer, uint16_t *val, struct bot_agent *bot) {
+    buffer = _read(buffer, val, sizeof(*val), bot);
     *val = ntohs(*val);
     return buffer;
 }
 
-char *_read_int32_t(char *buffer, int32_t *val) {
-    buffer = _read(buffer, val, sizeof(*val));
+char *_read_int32_t(char *buffer, int32_t *val, struct bot_agent *bot) {
+    buffer = _read(buffer, val, sizeof(*val), bot);
     *val = ntohl(*val);
     return buffer;
 }
 
-char *_read_uint32_t(char *buffer, uint32_t *val) {
-    buffer = _read(buffer, val, sizeof(*val));
+char *_read_uint32_t(char *buffer, uint32_t *val, struct bot_agent *bot) {
+    buffer = _read(buffer, val, sizeof(*val), bot);
     *val = ntohl(*val);
     return buffer;
 }
 
-char *_read_int64_t(char *buffer, int64_t *val) {
-    buffer = _read(buffer, val, sizeof(*val));
+char *_read_int64_t(char *buffer, int64_t *val, struct bot_agent *bot) {
+    buffer = _read(buffer, val, sizeof(*val), bot);
     *val = ntohll(*val);
     return buffer;
 }
 
-char *_read_uint64_t(char *buffer, uint64_t *val) {
-    buffer = _read(buffer, val, sizeof(*val));
+char *_read_uint64_t(char *buffer, uint64_t *val, struct bot_agent *bot) {
+    buffer = _read(buffer, val, sizeof(*val), bot);
     *val = ntohll(*val);
     return buffer;
 }
 
-char *_read_float(char *buffer, float *val) {
-    buffer = _read(buffer, val, sizeof(*val));
+char *_read_float(char *buffer, float *val, struct bot_agent *bot) {
+    buffer = _read(buffer, val, sizeof(*val), bot);
     uint32_t *x = (uint32_t *)val; 
     *x = ntohl(*x);
     return buffer;
 }
 
-char *_read_double(char *buffer, double *val) {
-    buffer = _read(buffer, val, sizeof(*val));
+char *_read_double(char *buffer, double *val, struct bot_agent *bot) {
+    buffer = _read(buffer, val, sizeof(*val), bot);
     uint64_t *x = (uint64_t *)val;
     *x = ntohll(*x);
     return buffer;
@@ -214,8 +229,16 @@ void _push_double(struct packet_write_buffer *buffer, double val) {
     _push(buffer, &val, sizeof(val));
 }
 
-char *_read_vint32(char *buf, vint32_t *val) {
-    uint32_t bytes_read = varint32(buf, val);
+char *_read_vint32(char *buf, vint32_t *val, struct bot_agent *bot) {
+    if (bot->mcc_status == MCC_PARSE_ERROR) {
+        assert(0);
+    }
+    uint32_t bytes_left = bot->packet_length - (buf - bot->packet_data);
+    uint32_t bytes_read = varint32(buf, bytes_left, val);
+    if (bytes_read == -1) {
+        bot->mcc_status = MCC_PARSE_ERROR;
+        assert(0);
+    }
     return (char *)buf + bytes_read;
 }
 
@@ -225,9 +248,17 @@ void _push_vint32(struct packet_write_buffer *buf, vint32_t val) {
     _push(buf, varint, len);
 }
 
-char *_read_vint64(char *buf, vint64_t *val) {
-    uint32_t bytes_read = varint64(buf, val);
-    return (char *)buf + bytes_read;
+char *_read_vint64(char *buf, vint64_t *val, struct bot_agent *bot) {
+    if (bot->mcc_status == MCC_PARSE_ERROR) {
+        assert(0);
+    }
+    uint32_t bytes_left = bot->packet_length - (buf - bot->packet_data);
+    uint32_t bytes_read = varint64(buf, bytes_left, val);
+    if (bytes_read == -1) {
+        bot->mcc_status = MCC_PARSE_ERROR;
+        assert(0);
+    }
+    return buf;
 }
 
 void _push_vint64(struct packet_write_buffer *buf, vint64_t val) {
@@ -236,17 +267,19 @@ void _push_vint64(struct packet_write_buffer *buf, vint64_t val) {
     _push(buf, varint, len);
 }
 
-char *_read_string(char *buf, char **strptr, int32_t *str_len_opt) {
+char *_read_string(char *buf, char **strptr, int32_t *str_len_opt, struct bot_agent *bot) {
     int32_t str_len;
-    uint32_t bytes_read = varint32(buf, &str_len);
-    buf = (char *)buf + bytes_read;
+    
+    buf = _read_vint32(buf, &str_len, bot);
+
     *strptr = malloc(str_len + 1);
-    memcpy(*strptr, buf, str_len);
+    buf = _read(buf, *strptr, str_len, bot);
     (*strptr)[str_len] = '\0';
+
     if (str_len_opt != NULL) {
         *str_len_opt = str_len;
     }
-    return (char *)buf + str_len;
+    return buf;
 }
 
 void _push_string(struct packet_write_buffer *buf, char *str) {
@@ -258,16 +291,16 @@ void _push_string(struct packet_write_buffer *buf, char *str) {
     _push(buf, str, s_len);
 }
 
-char *_read_slot(char *packet_raw, struct slot_type *slot_data) {
-    packet_raw = _read_int16_t(packet_raw, &slot_data->block_id);
+char *_read_slot(char *packet_raw, struct slot_type *slot_data, struct bot_agent *bot) {
+    packet_raw = _read_int16_t(packet_raw, &slot_data->block_id, bot);
     if (slot_data->block_id == -1) {
         return packet_raw;
     }
-    packet_raw = _read(packet_raw, &slot_data->count, sizeof(slot_data->count));
-    packet_raw = _read_int16_t(packet_raw, &slot_data->damage);
+    packet_raw = _read(packet_raw, &slot_data->count, sizeof(slot_data->count), bot);
+    packet_raw = _read_int16_t(packet_raw, &slot_data->damage, bot);
 
     uint32_t bytes_read;
-    slot_data->tree = nbt_parse(packet_raw, &bytes_read);
+    slot_data->tree = nbt_parse(packet_raw, &bytes_read, bot);
     packet_raw += bytes_read;
     return packet_raw;
 }

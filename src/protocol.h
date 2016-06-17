@@ -1,9 +1,8 @@
 #pragma once
 
 #include <stdint.h>
-#include "bot.h"
 #include <stdbool.h>
-#include "types.h"
+#include "bot.h"
 
 #define DEFAULT_THRESHOLD (512)
 
@@ -247,3 +246,5 @@ int32_t send_play_serverbound_use_item(
         struct bot_agent *bot,
         vint32_t hand
         );
+
+void read_socket(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf);

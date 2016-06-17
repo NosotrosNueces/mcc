@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "types.h"
 
 enum NBT_TAG_TYPE {
     NBT_TAG_END_TYPE,
@@ -62,4 +63,4 @@ struct nbt_compound {
 };
 
 void nbt_print(struct nbt_tag *n);
-struct nbt_tag *nbt_parse(char *data, uint32_t *bytes_read);
+struct nbt_tag *nbt_parse(char *data, uint32_t *bytes_read, struct bot_agent *bot);
