@@ -35,7 +35,7 @@ $(OBJ)/%.o: $(SRC)/%.c | $(OBJ)
 
 # Rule for making shared object file
 $(SHAREDLIB): $(OBJECTS) | $(LIB)
-	$(CC) -shared -o $@ $(OBJECTS)
+	$(CC) -shared -o $@ $(OBJECTS) $(LDFLAGS)
 
 .PHONY: test
 test: CFLAGS += -g
