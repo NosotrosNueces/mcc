@@ -37,11 +37,59 @@ void player_list_item (
     }
 }
 
+void chunk_data(
+        struct bot_agent *bot,
+        int32_t chunk_x,
+        int32_t chunk_z,
+        bool gound_up_continuous,
+        vint32_t primary_bit_mask,
+        int32_t number_of_sections,
+        struct chunk_section *data,
+        struct biome_record *biomes,
+        vint32_t number_of_block_entities,
+        struct nbt_tag *block_entities
+        ) {
+
+    printf("Xcoord, Zcoord: %d, %d\n", chunk_x * 16, chunk_z * 16);
+    int chunk_index = 0;
+    for (int i = 0; i < 16; i++) { 
+        if (((1 << i) & primary_bit_mask) == 0) {
+            continue;
+        }
+        printf("YCoord: %d\n", i * 16);
+        for (int y = 0; y < 16; y++) {
+            printf("Y: %d\n", y);
+            for (int z = 0; z < 16; z++) {
+                printf("    Z: %d\n", z);
+                printf("        X: ");
+                for (int x = 0; x < 16; x++) {
+                    printf("%d, ", x);
+                }
+                printf("\n           ");
+                for (int x = 0; x < 16; x++) {
+                    printf("%d, ", data[chunk_index].data_array[x][y][z]);
+                }
+                printf("\n");
+            }
+        }
+        chunk_index++;
+    }
+    
+    printf("Biomes");
+    for (int z = 0; z < 16; z++) {
+        printf("");
+        for (int x = 0; x < 16; x++) {
+            
+        }
+    }
+}
+
 
 int main() {
     struct bot_agent bot;
     init_bot(&bot, "foo");
     bot.callbacks.clientbound_play_player_list_item_cb = player_list_item;
+    bot.callbacks.clientbound_play_chunk_data_cb = chunk_data;
     join_server(&bot, "localhost", 25565);
     uv_run(&bot.loop, UV_RUN_DEFAULT);
     while(1);

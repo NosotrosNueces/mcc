@@ -13,8 +13,14 @@ int varint64(char *data, int32_t bytes_left, int64_t *value);
 int varint32(char *data, int32_t bytes_left, int32_t *value);
 int varint64_encode(int64_t value, char *data, int len);
 int varint32_encode(int32_t value, char *data, int len);
+
+#ifndef htonll
 uint64_t htonll(uint64_t number);
+#endif
+
+#ifndef ntohll
 uint64_t ntohll(uint64_t number);
+#endif
 char *_read(char *buffer, void *storage, size_t size, struct bot_agent *bot);
 char *_read_int16_t(char *buffer, int16_t *val, struct bot_agent *bot);
 char *_read_uint16_t(char *buffer, uint16_t *val, struct bot_agent *bot);

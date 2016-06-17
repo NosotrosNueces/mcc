@@ -73,6 +73,7 @@ int varint32_encode(int32_t value, char *data, int len)
     return i;
 }
 
+#ifndef htonll
 uint64_t htonll(uint64_t number)
 {
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
@@ -80,7 +81,9 @@ uint64_t htonll(uint64_t number)
 #endif
     return number;
 }
+#endif
 
+#ifndef ntohll
 uint64_t ntohll(uint64_t number)
 {
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
@@ -88,6 +91,7 @@ uint64_t ntohll(uint64_t number)
 #endif
     return number;
 }
+#endif
 
 /* When reading from an incoming packet, we already know the length. Therefore
  * we do not have to do any length checking except in the very beginning.
