@@ -27,6 +27,7 @@ void init_bot(struct bot_agent *bot, char *name) {
 	uv_tcp_init(&bot->loop, &bot->socket);
     bot->socket.data = bot;
     bot->current_state = HANDSHAKE;
+    bot->mcc_status = MCC_OK;
 
     bot->packet_capacity = 512;
     bot->packet_length = 0;
