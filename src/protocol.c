@@ -674,7 +674,6 @@ int32_t send_play_serverbound_steer_vehicle(
 
 int32_t send_play_serverbound_resource_pack_status(
         struct bot_agent *bot,
-        char *hash,
         vint32_t result
         )
 {
@@ -684,7 +683,6 @@ int32_t send_play_serverbound_resource_pack_status(
     char *data_start = buf.ptr;
 
     _push_vint32(&buf, 0x16);
-    _push_string(&buf, hash);
     _push_vint32(&buf, result);
 
     uint32_t length = buf.ptr - data_start;
@@ -1716,7 +1714,7 @@ void deserialize_clientbound_play_named_sound_effect(char *packet_data, struct b
         vint32_t sound_category;
         int32_t effect_position_x, effect_position_y, effect_position_z;
         float volume;
-        uint8_t pitch;
+        float pitch;
 
         packet_data = _read_string(packet_data, &sound_name, NULL, bot);
         packet_data = _read_vint32(packet_data, &sound_category, bot);
@@ -1724,7 +1722,7 @@ void deserialize_clientbound_play_named_sound_effect(char *packet_data, struct b
         packet_data = _read_int32_t(packet_data, &effect_position_y, bot);
         packet_data = _read_int32_t(packet_data, &effect_position_z, bot);
         packet_data = _read_float(packet_data, &volume, bot);
-        packet_data = _read(packet_data, &pitch, sizeof(pitch), bot);
+        packet_data = _read_float(packet_data, &pitch, bot);
 
         bot->callbacks.clientbound_play_named_sound_effect_cb(
                 bot,
@@ -1847,8 +1845,6 @@ void deserialize_clientbound_play_keep_alive(char *packet_data, struct bot_agent
 
     packet_data = _read_vint32(packet_data, &keep_alive_id, bot);
 
-    printf("Keep alive id: %d\n", keep_alive_id);
-    
     send_play_serverbound_keep_alive(
             bot,
             keep_alive_id
@@ -3142,7 +3138,7 @@ void deserialize_clientbound_play_sound_effect(char *packet_data, struct bot_age
         vint32_t sound_id, sound_category;
         int32_t effect_position_x, effect_position_y, effect_position_z;
         float volume;
-        uint8_t pitch;
+        float pitch;
 
         packet_data = _read_vint32(packet_data, &sound_id, bot);
         packet_data = _read_vint32(packet_data, &sound_category, bot);
@@ -3150,7 +3146,7 @@ void deserialize_clientbound_play_sound_effect(char *packet_data, struct bot_age
         packet_data = _read_int32_t(packet_data, &effect_position_y, bot);
         packet_data = _read_int32_t(packet_data, &effect_position_z, bot);
         packet_data = _read_float(packet_data, &volume, bot);
-        packet_data = _read(packet_data, &pitch, sizeof(pitch), bot);
+        packet_data = _read_float(packet_data, &pitch, bot);
 
         bot->callbacks.clientbound_play_sound_effect_cb(
                 bot,

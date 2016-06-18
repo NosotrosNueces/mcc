@@ -703,7 +703,7 @@ struct _callbacks {
             int32_t effect_position_y,
             int32_t effect_position_z,
             float volume,
-            uint8_t pitch
+            float pitch
             );
     void (*clientbound_play_disconnect_cb)(
             struct bot_agent *bot,
@@ -995,7 +995,7 @@ struct _callbacks {
             int32_t effect_position_y,
             int32_t effect_position_z,
             float volume,
-            uint8_t pitch
+            float pitch
             );
     void (*clientbound_play_player_list_header_and_footer_cb)(
             struct bot_agent *bot,

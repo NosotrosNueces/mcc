@@ -14,7 +14,7 @@
 #include "protocol.h"
 #include "types.h"
 
-#define PROTOCOL_VERSION 110
+#define PROTOCOL_VERSION 210
 
 void init_callbacks(struct _callbacks *callbacks);
 

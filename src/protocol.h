@@ -198,7 +198,6 @@ int32_t send_play_serverbound_steer_vehicle(
 
 int32_t send_play_serverbound_resource_pack_status(
         struct bot_agent *bot,
-        char *hash,
         vint32_t result
 );
 
