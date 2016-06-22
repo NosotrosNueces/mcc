@@ -171,7 +171,7 @@ int main() {
     struct bot_agent bot;
     init_bot(&bot, "foo");
     bot.callbacks.clientbound_play_player_list_item_cb = player_list_item;
-    //bot.callbacks.clientbound_play_chunk_data_cb = chunk_data;
+    bot.callbacks.clientbound_play_chunk_data_cb = chunk_data;
     bot.callbacks.clientbound_play_spawn_player_cb = spawn_player;
     bot.callbacks.clientbound_play_update_health_cb = update_health;    
     list_init(&player_list);

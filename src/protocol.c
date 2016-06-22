@@ -2193,25 +2193,34 @@ void deserialize_clientbound_play_particle(char *packet_data, struct bot_agent *
 }
 
 void deserialize_clientbound_play_join_game(char *packet_data, struct bot_agent *bot) {
+    int32_t entity_id;
+    uint8_t gamemode;
+    int32_t dimension;
+    uint8_t difficulty;
+    uint8_t max_players;
+    char *level_type;
+    bool reduced_debug_info;
+
+    packet_data = _read_int32_t(packet_data, &entity_id, bot);
+    packet_data = _read(packet_data, &gamemode, sizeof(gamemode), bot);
+    packet_data = _read_int32_t(packet_data, &dimension, bot);
+    packet_data = _read(packet_data, &difficulty, sizeof(difficulty), bot);
+    packet_data = _read(packet_data, &max_players, sizeof(max_players), bot);
+    packet_data = _read_string(packet_data, &level_type, NULL, bot);
+    int8_t b;
+    packet_data = _read(packet_data, &b, sizeof(b), bot);
+    reduced_debug_info = b ? true : false;
+   
+    bot->eid = entity_id;
+    bot->gamemode = gamemode;
+    bot->dimension = dimension;
+    bot->difficulty = difficulty;;
+    bot->max_players = max_players;
+    bot->level_type = malloc(strlen(level_type) + 1); 
+    strcpy(bot->level_type, level_type);
+    bot->reduced_debug_info = reduced_debug_info;
+
     if (bot->callbacks.clientbound_play_join_game_cb != NULL) {
-        int32_t entity_id;
-        uint8_t gamemode;
-        int32_t dimension;
-        uint8_t difficulty;
-        uint8_t max_players;
-        char *level_type;
-        bool reduced_debug_info;
-
-        packet_data = _read_int32_t(packet_data, &entity_id, bot);
-        packet_data = _read(packet_data, &gamemode, sizeof(gamemode), bot);
-        packet_data = _read_int32_t(packet_data, &dimension, bot);
-        packet_data = _read(packet_data, &difficulty, sizeof(difficulty), bot);
-        packet_data = _read(packet_data, &max_players, sizeof(max_players), bot);
-        packet_data = _read_string(packet_data, &level_type, NULL, bot);
-        int8_t b;
-        packet_data = _read(packet_data, &b, sizeof(b), bot);
-        reduced_debug_info = b ? true : false;
-
         bot->callbacks.clientbound_play_join_game_cb(
                 bot,
                 entity_id,

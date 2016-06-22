@@ -1051,7 +1051,7 @@ enum MCC_ERR {
 };
 
 struct bot_agent {
-    uint32_t eid;
+    int32_t eid;
     // 0: survival, 1: creative, 2: adventure. Bit 3 (0x8) is the hardcore flag
     uint8_t gamemode;
     // -1: nether, 0: overworld, 1: end
