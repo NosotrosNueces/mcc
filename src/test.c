@@ -160,7 +160,7 @@ void update_health (
             vint32_t food,
             float food_saturation
             ) {
-    if (health < 0.0) {
+    if (health <= 0.0) {
         send_play_serverbound_client_status(bot, 0);
     }
     printf("Update health: %f\n", health);

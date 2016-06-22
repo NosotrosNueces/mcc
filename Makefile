@@ -6,7 +6,7 @@ SA      = scan-build
 DIR 	:= $(pwd)
 
 CFLAGS  = -c -fpic -Wall -Isrc --std=gnu99 -g
-LDFLAGS = -lpthread -lm -luv
+LDFLAGS = -lpthread -lm -luv -lz
 
 SRC		= src
 LIB		= lib

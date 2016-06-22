@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <assert.h>
 #include <uv.h>
+#include <zlib.h>
 #include "bot.h"
 #include "protocol.h"
 #include "types.h"
@@ -21,7 +22,6 @@ void init_callbacks(struct _callbacks *callbacks);
 /* Populates the bot struct with default values */
 void init_bot(struct bot_agent *bot, char *name) {
     bot->name = name;
-    bot->packet_threshold = DEFAULT_THRESHOLD;
     bot->current_state = LOGIN;
     uv_loop_init(&bot->loop);
 	uv_tcp_init(&bot->loop, &bot->socket);
@@ -33,6 +33,21 @@ void init_bot(struct bot_agent *bot, char *name) {
     bot->packet_length = 0;
     bot->packet_bytes_read = 0;
     bot->packet_buffer = malloc(bot->packet_capacity);
+
+    bot->compression_enabled = false;
+    bot->compression_threshold = -1;
+    bot->compression_stream.zalloc = Z_NULL;
+    bot->compression_stream.zfree = Z_NULL;
+    bot->compression_stream.opaque = Z_NULL;
+    deflateInit(&bot->compression_stream, Z_DEFAULT_COMPRESSION);
+
+    bot->decompression_stream.zalloc = Z_NULL;
+    bot->decompression_stream.zfree = Z_NULL;
+    bot->decompression_stream.opaque = Z_NULL;
+    bot->decompression_stream.avail_in = 0;
+    bot->decompression_stream.next_in = Z_NULL;
+    inflateInit(&bot->decompression_stream);
+
     init_callbacks(&bot->callbacks);
 }
 
@@ -152,26 +167,3 @@ void disconnect(struct bot_agent *bot)
     uv_close((uv_handle_t *)&bot->socket, NULL);
 }
 
-void on_write(uv_write_t *req, int status) {
-    free(req->data);
-    free(req);
-}
-
-int send_string(struct bot_agent *bot, char *str)
-{
-    size_t len = strlen(str) + 1; // to include null character
-    uv_write_t *req = malloc(sizeof(uv_write_t));
-    uv_buf_t buf = uv_buf_init(malloc(len), len);
-    memcpy(buf.base, str, len);
-    return uv_write(req, (uv_stream_t *)&bot->socket, &buf, 1, NULL);
-}
-
-int send_raw(struct bot_agent *bot, void *data, size_t len)
-{
-    uv_write_t *req = malloc(sizeof(uv_write_t));
-    uv_buf_t buf = uv_buf_init(malloc(len), len);
-    req->data = buf.base;
-    memcpy(buf.base, data, len);
-    uint32_t bytes_written = uv_write(req, (uv_stream_t *)&bot->socket, &buf, 1, on_write);
-    return bytes_written;
-}

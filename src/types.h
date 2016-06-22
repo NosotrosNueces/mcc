@@ -2,6 +2,7 @@
 
 #include <uv.h>
 #include <stdbool.h>
+#include <zlib.h>
 //#include "nbt.h"
 
 typedef enum {HANDSHAKE, LOGIN, STATUS, PLAY, NUM_STATES} state;
@@ -1078,11 +1079,15 @@ struct bot_agent {
     int32_t food;
     float saturation;
 
-    size_t packet_threshold;
     uv_loop_t loop;
     uv_tcp_t socket;
 
     int mcc_status;
+    
+    int compression_enabled;
+    z_stream compression_stream;    
+    z_stream decompression_stream;
+    int32_t compression_threshold;
 
     int32_t packet_capacity;
     int32_t packet_length;

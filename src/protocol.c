@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <uv.h>
+#include <zlib.h>
 #include "protocol.h"
 #include "serial.h"
 #include "nbt.h"
@@ -15,19 +16,111 @@
 
 /* appends length to the buffer as a varint, returns the start of the buffer */
 /* writes the new length of packet in len */
-char *_prepend_len(char *buf, uint32_t *len) {
+char *_prepend_varint(char *buf, int32_t val, size_t *len) {
     char buf_len[5];
-    int offset = varint32_encode(*len, buf_len, sizeof(buf_len));
-    *len += offset;
-    char *start = (char *)buf + 5 - offset;
+    int offset = varint32_encode(val, buf_len, sizeof(buf_len));
+    if (len != NULL) {
+        *len += offset;
+    }
+    //char *start = (char *)buf + 5 - offset;
+    char *start = buf - offset;
     memcpy(start, buf_len, offset);
     return start;
 }
 
+void on_write(uv_write_t *req, int status) {
+    free(req->data);
+    free(req);
+}
+
+int send_string(struct bot_agent *bot, char *str)
+{
+    size_t len = strlen(str) + 1; // to include null character
+    uv_write_t *req = malloc(sizeof(uv_write_t));
+    uv_buf_t buf = uv_buf_init(malloc(len), len);
+    memcpy(buf.base, str, len);
+    return uv_write(req, (uv_stream_t *)&bot->socket, &buf, 1, NULL);
+}
+
+int send_packet(struct bot_agent *bot, char *data, size_t len) {
+    int bytes_written = 0;
+    if (bot->compression_enabled) {
+        bytes_written = send_compressed(bot, data, len);
+    } else {
+        bytes_written = send_uncompressed(bot, data, len);
+    }
+    return bytes_written;
+}
+
+int send_uncompressed(struct bot_agent *bot, char *data, size_t len)
+{
+     
+    data  = _prepend_varint(data, (int32_t)len, &len);
+    
+    uv_write_t *req = malloc(sizeof(uv_write_t));
+    uv_buf_t buf = uv_buf_init(malloc(len), len);
+    req->data = buf.base;
+    memcpy(buf.base, data, len);
+    int bytes_written = uv_write(req, (uv_stream_t *)&bot->socket, &buf, 1, on_write);
+    return bytes_written;
+}
+
+int send_compressed(struct bot_agent *bot, char *data, size_t len) {
+    char *packet;
+    int packet_length;
+    struct packet_write_buffer buffer;
+    if (len >= bot->compression_threshold) {
+        unsigned char out[1024];
+        
+        init_packet_write_buffer(&buffer, len);
+        pad_length(&buffer); 
+        char *data_start = buffer.ptr;
+
+        bot->compression_stream.next_in = (unsigned char *)data;
+        bot->compression_stream.avail_in = len;
+        size_t compressed_length = 0; 
+        do {
+            bot->compression_stream.next_out = out;
+            bot->compression_stream.avail_out = 1024;
+
+            int status = deflate(&bot->compression_stream, Z_FINISH);
+            if (status < 0) {
+                fprintf(stderr, "zlib compression error\n");
+            }
+             
+            uint32_t bytes_written = 1024 - bot->compression_stream.avail_out;
+            _push(&buffer, out, bytes_written);
+            compressed_length += bytes_written;
+        } while (bot->compression_stream.avail_out == 0);
+
+         
+        data_start = _prepend_varint(data_start, len, &compressed_length); 
+        data_start = _prepend_varint(data_start, compressed_length, &compressed_length);
+        packet = data_start;
+        packet_length = compressed_length;
+        deflateReset(&bot->compression_stream);
+    } else {
+        data = _prepend_varint(data, 0, &len);
+        data = _prepend_varint(data, len, &len);
+        packet = data;
+        packet_length = len;
+    }
+    
+    uv_write_t *req = malloc(sizeof(uv_write_t));
+    uv_buf_t buf = uv_buf_init(malloc(len), len);
+    req->data = buf.base;
+    memcpy(buf.base, packet, packet_length);
+    int bytes_written = uv_write(req, (uv_stream_t *)&bot->socket, &buf, 1, on_write);
+
+    if (len >= bot->compression_threshold) {
+        free(buffer.base);
+    }
+    return bytes_written;
+}
+
 /*
  * Handshaking serverbound functions
- */
-
+ */ 
 int32_t send_handshaking_serverbound_handshake(
         struct bot_agent*        bot,
         vint32_t      protocol_version,
@@ -46,9 +139,10 @@ int32_t send_handshaking_serverbound_handshake(
     _push_uint16_t(&buf, server_port);
     _push_vint32(&buf, next_state);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -70,9 +164,9 @@ int32_t send_login_serverbound_login_start(
     _push_vint32(&buf, 0x00);
     _push_string(&buf, username);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -92,9 +186,9 @@ int32_t send_status_serverbound_request(
 
     _push_vint32(&buf, 0x00);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 
@@ -113,9 +207,9 @@ int32_t send_status_serverbound_ping(
     _push_vint32(&buf, 0x01);
     _push_int64_t(&buf, time);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -137,9 +231,9 @@ int32_t send_play_serverbound_teleport_confirm(
     _push_vint32(&buf, 0x00);
     _push_vint32(&buf, teleport_id);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 
@@ -168,9 +262,9 @@ int32_t send_play_serverbound_tab_complete(
         _push_uint64_t(&buf, looked_at_block);
     }
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -188,9 +282,9 @@ int32_t send_play_serverbound_chat_message(
     _push_vint32(&buf, 0x02);
     _push_string(&buf, message);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -208,9 +302,9 @@ int32_t send_play_serverbound_client_status(
     _push_vint32(&buf, 0x03);
     _push_vint32(&buf, action_id);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -239,9 +333,9 @@ int32_t send_play_serverbound_client_settings(
     _push(&buf, &displayed_skin_parts, sizeof(displayed_skin_parts));
     _push_vint32(&buf, main_hand);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -264,9 +358,9 @@ int32_t send_play_serverbound_confirm_transaction(
     int8_t b = accepted ? 1 : 0;
     _push(&buf, &b, sizeof(b));
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -286,9 +380,9 @@ int32_t send_play_serverbound_enchant_item(
     _push(&buf, &window_id, sizeof(window_id));
     _push(&buf, &enchantment, sizeof(enchantment));
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -316,9 +410,9 @@ int32_t send_play_serverbound_click_window(
     _push_vint32(&buf, mode);
     _push_slot(&buf, clicked_item);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -336,9 +430,9 @@ int32_t send_play_serverbound_close_window(
     _push_vint32(&buf, 0x08);
     _push(&buf, &window_id, sizeof(window_id));
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -359,9 +453,9 @@ int32_t send_play_serverbound_plugin_message(
     _push_string(&buf, channel);
     _push(&buf, data, data_length); 
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -393,9 +487,9 @@ int32_t send_play_serverbound_use_entity(
             _push_vint32(&buf, hand);
     }
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -413,9 +507,9 @@ int32_t send_play_serverbound_keep_alive(
     _push_vint32(&buf, 0x0B);
     _push_vint32(&buf, keep_alive_id);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -440,9 +534,9 @@ int32_t send_play_serverbound_player_position(
     int8_t b = on_ground ? 1 : 0;
     _push(&buf, &b, sizeof(b));
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -471,9 +565,9 @@ int32_t send_play_serverbound_player_position_look(
     int8_t b = on_ground ? 1 : 0;
     _push(&buf, &b, sizeof(b));
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -496,9 +590,9 @@ int32_t send_play_serverbound_player_look(
     int8_t b = on_ground ? 1 : 0;
     _push(&buf, &b, sizeof(b));
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -517,9 +611,9 @@ int32_t send_play_serverbound_player(
     int8_t b = on_ground ? 1 : 0;
     _push(&buf, &b, sizeof(b));
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -545,9 +639,9 @@ int32_t send_play_serverbound_vehicle_move(
     _push_float(&buf, yaw);
     _push_float(&buf, pitch);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -569,9 +663,9 @@ int32_t send_play_serverbound_steer_boat(
     b = left_paddle ? 1 : 0;
     _push(&buf, &b, sizeof(b));
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -593,9 +687,9 @@ int32_t send_play_serverbound_player_abilities(
     _push_float(&buf, flying_speed);
     _push_float(&buf, walking_speed);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -617,9 +711,9 @@ int32_t send_play_serverbound_player_digging(
     _push_uint64_t(&buf, location);
     _push(&buf, &face, sizeof(face));
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -641,9 +735,9 @@ int32_t send_play_serverbound_entity_action(
     _push_vint32(&buf, action_id);
     _push_vint32(&buf, jump_boost);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -665,9 +759,9 @@ int32_t send_play_serverbound_steer_vehicle(
     _push_float(&buf, forward);
     _push(&buf, &flags, sizeof(flags));
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -685,9 +779,9 @@ int32_t send_play_serverbound_resource_pack_status(
     _push_vint32(&buf, 0x16);
     _push_vint32(&buf, result);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -705,9 +799,9 @@ int32_t send_play_serverbound_held_item_change(
     _push_vint32(&buf, 0x17);
     _push_int16_t(&buf, slot);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -727,9 +821,9 @@ int32_t send_play_serverbound_creative_inventory_action(
     _push_int16_t(&buf, slot);
     _push_slot(&buf, clicked_item);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -755,9 +849,9 @@ int32_t send_play_serverbound_update_sign(
     _push_string(&buf, line3);
     _push_string(&buf, line4);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -775,9 +869,9 @@ int32_t send_play_serverbound_animation(
     _push_vint32(&buf, 0x1A);
     _push_vint32(&buf, hand);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -795,9 +889,9 @@ int32_t send_play_serverbound_spectate(
     _push_vint32(&buf, 0x1B);
     _push(&buf, uuid, 16);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -825,9 +919,9 @@ int32_t send_play_serverbound_player_block_placement(
     _push(&buf, &y, sizeof(y));
     _push(&buf, &z, sizeof(z));
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -845,9 +939,9 @@ int32_t send_play_serverbound_use_item(
     _push_vint32(&buf, 0x1D);
     _push_vint32(&buf, hand);
 
-    uint32_t length = buf.ptr - data_start;
-    char *packet = _prepend_len(buf.base, &length);
-    send_raw(bot, packet, length);
+    size_t length = buf.ptr - data_start;
+    
+    send_packet(bot, data_start, length);
     free(buf.base);
     return length;
 }
@@ -913,12 +1007,15 @@ void deserialize_clientbound_login_login_success(char *packet_data, struct bot_a
 }
 
 void deserialize_clientbound_login_set_compression(char *packet_data, struct bot_agent *bot) {
+    vint32_t threshold;
+    packet_data = _read_vint32(packet_data, &threshold, bot);
+    
+    printf("Compression threshold: %d\n", threshold);
+
+    bot->compression_threshold = threshold;
+    bot->compression_enabled = threshold != -1;
+
     if (bot->callbacks.clientbound_login_set_compression_cb != NULL) {
-        vint32_t threshold;
-
-        packet_data = _read_vint32(packet_data, &threshold, bot);
-
-        /* this probably shouldn't be a user callback function */
         bot->callbacks.clientbound_login_set_compression_cb(
                 bot,
                 threshold
@@ -3619,9 +3716,37 @@ void read_socket(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
         if (bot->packet_bytes_read - (packet_data - bot->packet_buffer) < packet_length) {
             break;
         }
-        bot->packet_length = packet_length;
-        bot->packet_data = packet_data;
-        dispatch_packet_cb(packet_data, bot);
+        if (!bot->compression_enabled) {
+            bot->packet_length = packet_length;
+            bot->packet_data = packet_data;
+            dispatch_packet_cb(packet_data, bot);
+        } else { /* decompress the packet */
+            int32_t uncompressed_length;
+            char *_packet_data = packet_data;
+            varint_length = varint32(_packet_data, packet_length, &uncompressed_length);
+            _packet_data += varint_length;
+            if (uncompressed_length == 0) {
+                bot->packet_length = packet_length - varint_length;
+                bot->packet_data = _packet_data;
+                dispatch_packet_cb(_packet_data, bot); 
+            } else {
+                char *packet_uncompressed = malloc(uncompressed_length);
+                bot->decompression_stream.avail_in = packet_length - varint_length;
+                bot->decompression_stream.next_in = (unsigned char *)_packet_data;
+                bot->decompression_stream.avail_out = uncompressed_length;
+                bot->decompression_stream.next_out = (unsigned char *)packet_uncompressed;
+
+                int status = inflate(&bot->decompression_stream, Z_NO_FLUSH);
+                //printf("Z_STATUS: %d\n", status);
+                assert(status == Z_STREAM_END);
+
+                bot->packet_length = uncompressed_length;
+                bot->packet_data = packet_uncompressed;
+                dispatch_packet_cb(packet_uncompressed, bot);
+                free(packet_uncompressed);
+                inflateReset(&bot->decompression_stream); 
+            }
+        }
         ptr = packet_length + packet_data;
     }
 

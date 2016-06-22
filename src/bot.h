@@ -138,28 +138,8 @@ void disconnect(struct bot_agent *bot);
  *  Sends a raw string across the network using a bot's socket. This function
  *  should not be used unless you know what you're doing.
  */
-int send_string(struct bot_agent *bot, char *str);
-
-/** \brief Sends bytes across the network using a bot's socket
- *
- *  Sends raw bytes across the network using a bot's socket. This function
- *  should not be used unless you know what you're doing.
- */
-int send_raw(struct bot_agent *bot, void *data, size_t len);
-
 /** \brief Recieve bytes from the network using a bot's socket
  *
  *  Recieve raw bytes from the network using a bot's socket. This function
  *  should not be used unless you know what you're doing.
  */
-int receive_raw(bot_t *your_bot, void *data, size_t len);
-
-/** \brief Parse data from the server in a protocol intelligent manner
- *
- *  The function fills bot->buf with packet data and returns the packet id.
- *  Parse data from the server, taking into account packet id, packet length
- *  and the packet data sent. This function reads `packet length` bytes from
- *  the server. In the case that `packet length` is larger than the maximum
- *  packet size, this function reads the full packet, but discards the data.
- */
-int receive_packet(bot_t *bot);
