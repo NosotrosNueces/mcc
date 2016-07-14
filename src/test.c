@@ -169,31 +169,15 @@ void update_health (
 
 int main() {
     struct bot_agent bot;
-    init_bot(&bot, "foo");
+    init_bot(&bot, "Anthony Weems");
     bot.callbacks.clientbound_play_player_list_item_cb = player_list_item;
-    bot.callbacks.clientbound_play_chunk_data_cb = chunk_data;
+    //bot.callbacks.clientbound_play_chunk_data_cb = chunk_data;
     bot.callbacks.clientbound_play_spawn_player_cb = spawn_player;
     bot.callbacks.clientbound_play_update_health_cb = update_health;    
     list_init(&player_list);
 
-    join_server(&bot, "localhost", 25565);
+    join_server_hostname(&bot, "localhost", "25565");
     uv_run(&bot.loop, UV_RUN_DEFAULT);
     while(1);
     uv_loop_close(&bot.loop);
-    
-
-    //FILE *f = fopen("hello_world.nbt", "rb");
-    //if (f == NULL) {
-    //    return -1;
-    //}
-    //fseek(f, 0, SEEK_END);
-    //long length = ftell(f);
-    //fseek(f, 0, SEEK_SET);
-    //char *nbt = malloc(length);
-    //fread(nbt, length, sizeof(char), f);
-    //uint32_t bytes_read;
-    //struct nbt_tag *root = nbt_parse(nbt, &bytes_read);
-    //nbt_print(root);
-    //printf("Bytes read: %u\n", bytes_read);
-    //printf("length: %ld\n", length);
 }

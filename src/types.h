@@ -1080,14 +1080,25 @@ struct bot_agent {
     float saturation;
 
     uv_loop_t loop;
+
+    char *server_addr;
+    short server_port;
     uv_tcp_t socket;
 
     int mcc_status;
-    
+
+    /* Compression stuff */
     int compression_enabled;
     z_stream compression_stream;    
     z_stream decompression_stream;
     int32_t compression_threshold;
+
+    /* Encryption stuff */
+    int32_t public_key_length;
+    char *public_key;
+    int32_t verify_token_length;
+    char *verify_token;
+    char ss[16];
 
     int32_t packet_capacity;
     int32_t packet_length;

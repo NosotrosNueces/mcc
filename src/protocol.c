@@ -1,5 +1,7 @@
 #include <assert.h>
 #include <arpa/inet.h>
+#include <openssl/rsa.h>
+#include <openssl/x509.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -9,10 +11,8 @@
 #include "serial.h"
 #include "nbt.h"
 
-#define PAD_LENGTH(x)           (x = (char *)x + 5)
 #define DEFAULT_PACKET_LENGTH   (1 << 10)
 #define CHUNK_DIM               16
-
 
 /* appends length to the buffer as a varint, returns the start of the buffer */
 /* writes the new length of packet in len */
@@ -958,6 +958,13 @@ void deserialize_clientbound_login_disconnect(char *packet_data, struct bot_agen
     }
 }
 
+/* Fills a buffer with random bytes */
+void random_bytes(int length, char *buffer) {
+    FILE *f = fopen("/dev/urandom", "rb");
+    fread(buffer, 1, length, f);
+    fclose(f);
+}
+
 void deserialize_clientbound_login_encryption_request(char *packet_data, struct bot_agent *bot) {
     if (bot->callbacks.clientbound_login_encryption_request_cb != NULL) {
         char *server_id;
@@ -973,6 +980,13 @@ void deserialize_clientbound_login_encryption_request(char *packet_data, struct 
         packet_data = _read_vint32(packet_data, &verify_token_length, bot);
         verify_token = malloc(verify_token_length);
         packet_data = _read(packet_data, verify_token, verify_token_length, bot);
+
+        bot->public_key_length = public_key_length;
+        bot->public_key = public_key;
+        bot->verify_token_length = verify_token_length;
+        bot->verify_token = verify_token;
+        /* Generat 16-byte shared secret */
+        random_bytes(sizeof(bot->ss), bot->ss);
 
         bot->callbacks.clientbound_login_encryption_request_cb(
                 bot,
@@ -1009,8 +1023,6 @@ void deserialize_clientbound_login_login_success(char *packet_data, struct bot_a
 void deserialize_clientbound_login_set_compression(char *packet_data, struct bot_agent *bot) {
     vint32_t threshold;
     packet_data = _read_vint32(packet_data, &threshold, bot);
-    
-    printf("Compression threshold: %d\n", threshold);
 
     bot->compression_threshold = threshold;
     bot->compression_enabled = threshold != -1;

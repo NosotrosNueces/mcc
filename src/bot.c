@@ -141,25 +141,63 @@ void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
 }
 
 void on_connect(uv_connect_t *connect, int status) {
+    if (status < 0) {
+        fprintf(stderr, "Could not connect to server.\n");
+        exit(-1);
+    }
+
     struct bot_agent *bot = connect->data;
-    send_handshaking_serverbound_handshake(bot, PROTOCOL_VERSION, "localhost", 25565, 2);
+    send_handshaking_serverbound_handshake(bot, PROTOCOL_VERSION, bot->server_addr, bot->server_port, 2);
     bot->current_state = LOGIN;
     send_login_serverbound_login_start(bot, bot->name);
     free(connect);
-
+    
+    
     /* start reading from the socket */
     uv_read_start((uv_stream_t *)&bot->socket, alloc_buffer, read_socket);
 
 }
 
-void join_server(struct bot_agent *bot, char* server_host, int port_number)
+void join_server_ipaddr(struct bot_agent *bot, char *server_ip, int port_number)
 {
 	uv_connect_t *connect = malloc(sizeof(uv_connect_t));
     connect->data = bot;
+    bot->server_addr = server_ip;
+    bot->server_port = port_number;
+
 	struct sockaddr_in dest;
-	uv_ip4_addr(server_host, port_number, &dest);
+	uv_ip4_addr(server_ip, port_number, &dest);
     
 	uv_tcp_connect(connect, &bot->socket, (const struct sockaddr*)&dest, on_connect);
+}
+
+void getaddrinfo_cb(uv_getaddrinfo_t *req, int status, struct addrinfo *response) {
+    if (status < 0) {
+        fprintf(stderr, "Server not found.\n");
+        exit(-1);
+    }
+
+    struct bot_agent *bot = req->data;
+    struct sockaddr_in *first = (struct sockaddr_in *)response->ai_addr;
+    bot->server_port = ntohs(first->sin_port);
+        
+    join_server_ipaddr(bot, inet_ntoa(first->sin_addr), bot->server_port);
+
+    //uv_ip4_name((struct sockaddr_in*) res->ai_addr, addr, 16);
+    free(req);
+}
+
+void join_server_hostname(struct bot_agent *bot, char *server_hostname, char *service) {
+    struct addrinfo hints;
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+    hints.ai_flags = 0;
+
+    bot->server_addr = server_hostname;
+    uv_getaddrinfo_t *req = malloc(sizeof(uv_getaddrinfo_t));
+    req->data = bot;
+    uv_getaddrinfo(&bot->loop, req, getaddrinfo_cb, server_hostname, service, NULL);
 }
 
 void disconnect(struct bot_agent *bot)
