@@ -16,7 +16,7 @@ MCC is a MineCraft Client API written in C. The goal is to implement the entire 
 * Packet compression (so please enable it on your server)
 
 ## Limitations ##
-* We only support the protocol for the most current stable release (for now) ###
+* We only support the protocol for the most current stable release (for now)
 * No authentication/encryption, so the server must be run in offline mode
 * Note that this is largely just an implementation of the network protocol. This library is not very aware of game logic and rules
 
