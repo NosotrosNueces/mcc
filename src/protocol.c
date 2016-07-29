@@ -33,6 +33,30 @@ void on_write(uv_write_t *req, int status) {
     free(req);
 }
 
+int uv_write_encrypt(struct bot_agent *bot, char *data, size_t len) {
+
+    uv_write_t *req = malloc(sizeof(uv_write_t));
+    uv_buf_t buf;
+    int bytes_written; 
+
+    if (bot->encryption_enabled) {
+        int32_t max_len = len + bot->block_size;
+        buf = uv_buf_init(malloc(max_len), max_len);
+        int32_t outl;
+        if (!EVP_EncryptUpdate(&bot->ctx_encrypt, (unsigned char *)buf.base, &outl, (const unsigned char *)data, len)) {
+            fprintf(stderr, "Encryption error.\n");
+            assert(0);
+        }
+        buf.len = outl;
+    } else {
+        buf = uv_buf_init(malloc(len), len);
+        memcpy(buf.base, data, len);
+    }
+    req->data = buf.base;
+    bytes_written = uv_write(req, (uv_stream_t *)&bot->socket, &buf, 1, on_write);
+    return bytes_written;
+}
+
 int send_string(struct bot_agent *bot, char *str)
 {
     size_t len = strlen(str) + 1; // to include null character
@@ -54,14 +78,10 @@ int send_packet(struct bot_agent *bot, char *data, size_t len) {
 
 int send_uncompressed(struct bot_agent *bot, char *data, size_t len)
 {
-     
+
     data  = _prepend_varint(data, (int32_t)len, &len);
-    
-    uv_write_t *req = malloc(sizeof(uv_write_t));
-    uv_buf_t buf = uv_buf_init(malloc(len), len);
-    req->data = buf.base;
-    memcpy(buf.base, data, len);
-    int bytes_written = uv_write(req, (uv_stream_t *)&bot->socket, &buf, 1, on_write);
+
+    int bytes_written = uv_write_encrypt(bot, data, len);
     return bytes_written;
 }
 
@@ -71,7 +91,7 @@ int send_compressed(struct bot_agent *bot, char *data, size_t len) {
     struct packet_write_buffer buffer;
     if (len >= bot->compression_threshold) {
         unsigned char out[1024];
-        
+
         init_packet_write_buffer(&buffer, len);
         pad_length(&buffer); 
         char *data_start = buffer.ptr;
@@ -87,13 +107,12 @@ int send_compressed(struct bot_agent *bot, char *data, size_t len) {
             if (status < 0) {
                 fprintf(stderr, "zlib compression error\n");
             }
-             
+
             uint32_t bytes_written = 1024 - bot->compression_stream.avail_out;
             _push(&buffer, out, bytes_written);
             compressed_length += bytes_written;
         } while (bot->compression_stream.avail_out == 0);
 
-         
         data_start = _prepend_varint(data_start, len, &compressed_length); 
         data_start = _prepend_varint(data_start, compressed_length, &compressed_length);
         packet = data_start;
@@ -105,13 +124,8 @@ int send_compressed(struct bot_agent *bot, char *data, size_t len) {
         packet = data;
         packet_length = len;
     }
-    
-    uv_write_t *req = malloc(sizeof(uv_write_t));
-    uv_buf_t buf = uv_buf_init(malloc(len), len);
-    req->data = buf.base;
-    memcpy(buf.base, packet, packet_length);
-    int bytes_written = uv_write(req, (uv_stream_t *)&bot->socket, &buf, 1, on_write);
 
+    int bytes_written = uv_write_encrypt(bot, packet, packet_length);
     if (len >= bot->compression_threshold) {
         free(buffer.base);
     }
@@ -141,7 +155,7 @@ int32_t send_handshaking_serverbound_handshake(
 
     size_t length = buf.ptr - data_start;
 
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -160,15 +174,41 @@ int32_t send_login_serverbound_login_start(
     init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
     pad_length(&buf);
     char *data_start = buf.ptr;
-   
+
     _push_vint32(&buf, 0x00);
     _push_string(&buf, username);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
+}
+
+int32_t send_login_serverbound_encryption_response(
+        struct bot_agent *bot,
+        vint32_t ss_length,
+        unsigned char *ss,
+        vint32_t verify_token_length,
+        unsigned char *verify_token
+        ) {
+    struct packet_write_buffer buf;
+    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
+    pad_length(&buf);
+    char *data_start = buf.ptr;
+
+    _push_vint32(&buf, 0x01);
+    _push_vint32(&buf, ss_length);
+    _push(&buf, ss, ss_length);
+    _push_vint32(&buf, verify_token_length);
+    _push(&buf, verify_token, verify_token_length);
+
+    size_t length = buf.ptr - data_start;
+
+    send_packet(bot, data_start, length);
+    free(buf.base);
+    return length;
+
 }
 
 /*
@@ -187,7 +227,7 @@ int32_t send_status_serverbound_request(
     _push_vint32(&buf, 0x00);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -208,7 +248,7 @@ int32_t send_status_serverbound_ping(
     _push_int64_t(&buf, time);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -232,7 +272,7 @@ int32_t send_play_serverbound_teleport_confirm(
     _push_vint32(&buf, teleport_id);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -263,7 +303,7 @@ int32_t send_play_serverbound_tab_complete(
     }
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -283,7 +323,7 @@ int32_t send_play_serverbound_chat_message(
     _push_string(&buf, message);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -303,7 +343,7 @@ int32_t send_play_serverbound_client_status(
     _push_vint32(&buf, action_id);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -334,7 +374,7 @@ int32_t send_play_serverbound_client_settings(
     _push_vint32(&buf, main_hand);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -359,7 +399,7 @@ int32_t send_play_serverbound_confirm_transaction(
     _push(&buf, &b, sizeof(b));
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -381,7 +421,7 @@ int32_t send_play_serverbound_enchant_item(
     _push(&buf, &enchantment, sizeof(enchantment));
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -411,7 +451,7 @@ int32_t send_play_serverbound_click_window(
     _push_slot(&buf, clicked_item);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -431,7 +471,7 @@ int32_t send_play_serverbound_close_window(
     _push(&buf, &window_id, sizeof(window_id));
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -454,7 +494,7 @@ int32_t send_play_serverbound_plugin_message(
     _push(&buf, data, data_length); 
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -488,7 +528,7 @@ int32_t send_play_serverbound_use_entity(
     }
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -508,7 +548,7 @@ int32_t send_play_serverbound_keep_alive(
     _push_vint32(&buf, keep_alive_id);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -535,7 +575,7 @@ int32_t send_play_serverbound_player_position(
     _push(&buf, &b, sizeof(b));
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -566,7 +606,7 @@ int32_t send_play_serverbound_player_position_look(
     _push(&buf, &b, sizeof(b));
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -591,7 +631,7 @@ int32_t send_play_serverbound_player_look(
     _push(&buf, &b, sizeof(b));
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -612,7 +652,7 @@ int32_t send_play_serverbound_player(
     _push(&buf, &b, sizeof(b));
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -640,7 +680,7 @@ int32_t send_play_serverbound_vehicle_move(
     _push_float(&buf, pitch);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -664,7 +704,7 @@ int32_t send_play_serverbound_steer_boat(
     _push(&buf, &b, sizeof(b));
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -688,7 +728,7 @@ int32_t send_play_serverbound_player_abilities(
     _push_float(&buf, walking_speed);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -712,7 +752,7 @@ int32_t send_play_serverbound_player_digging(
     _push(&buf, &face, sizeof(face));
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -736,7 +776,7 @@ int32_t send_play_serverbound_entity_action(
     _push_vint32(&buf, jump_boost);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -760,7 +800,7 @@ int32_t send_play_serverbound_steer_vehicle(
     _push(&buf, &flags, sizeof(flags));
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -780,7 +820,7 @@ int32_t send_play_serverbound_resource_pack_status(
     _push_vint32(&buf, result);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -800,7 +840,7 @@ int32_t send_play_serverbound_held_item_change(
     _push_int16_t(&buf, slot);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -822,7 +862,7 @@ int32_t send_play_serverbound_creative_inventory_action(
     _push_slot(&buf, clicked_item);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -850,7 +890,7 @@ int32_t send_play_serverbound_update_sign(
     _push_string(&buf, line4);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -870,7 +910,7 @@ int32_t send_play_serverbound_animation(
     _push_vint32(&buf, hand);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -890,7 +930,7 @@ int32_t send_play_serverbound_spectate(
     _push(&buf, uuid, 16);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -920,7 +960,7 @@ int32_t send_play_serverbound_player_block_placement(
     _push(&buf, &z, sizeof(z));
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -940,7 +980,7 @@ int32_t send_play_serverbound_use_item(
     _push_vint32(&buf, hand);
 
     size_t length = buf.ptr - data_start;
-    
+
     send_packet(bot, data_start, length);
     free(buf.base);
     return length;
@@ -959,35 +999,29 @@ void deserialize_clientbound_login_disconnect(char *packet_data, struct bot_agen
 }
 
 /* Fills a buffer with random bytes */
-void random_bytes(int length, char *buffer) {
+void random_bytes(int length, unsigned char *buffer) {
     FILE *f = fopen("/dev/urandom", "rb");
     fread(buffer, 1, length, f);
     fclose(f);
 }
 
 void deserialize_clientbound_login_encryption_request(char *packet_data, struct bot_agent *bot) {
+    printf("Encryption Request\n");
+    char *server_id;
+    vint32_t public_key_length;
+    unsigned char *public_key;
+    vint32_t verify_token_length;
+    unsigned char *verify_token;
+
+    packet_data = _read_string(packet_data, &server_id, NULL, bot);
+    packet_data = _read_vint32(packet_data, &public_key_length, bot);
+    public_key = malloc(public_key_length);
+    packet_data = _read(packet_data, public_key, public_key_length, bot);
+    packet_data = _read_vint32(packet_data, &verify_token_length, bot);
+    verify_token = malloc(verify_token_length);
+    packet_data = _read(packet_data, verify_token, verify_token_length, bot);
+
     if (bot->callbacks.clientbound_login_encryption_request_cb != NULL) {
-        char *server_id;
-        vint32_t public_key_length;
-        char *public_key;
-        vint32_t verify_token_length;
-        char *verify_token;
-
-        packet_data = _read_string(packet_data, &server_id, NULL, bot);
-        packet_data = _read_vint32(packet_data, &public_key_length, bot);
-        public_key = malloc(public_key_length);
-        packet_data = _read(packet_data, public_key, public_key_length, bot);
-        packet_data = _read_vint32(packet_data, &verify_token_length, bot);
-        verify_token = malloc(verify_token_length);
-        packet_data = _read(packet_data, verify_token, verify_token_length, bot);
-
-        bot->public_key_length = public_key_length;
-        bot->public_key = public_key;
-        bot->verify_token_length = verify_token_length;
-        bot->verify_token = verify_token;
-        /* Generat 16-byte shared secret */
-        random_bytes(sizeof(bot->ss), bot->ss);
-
         bot->callbacks.clientbound_login_encryption_request_cb(
                 bot,
                 server_id,
@@ -996,10 +1030,41 @@ void deserialize_clientbound_login_encryption_request(char *packet_data, struct 
                 verify_token_length,
                 verify_token
                 );
-        free(server_id);
-        free(public_key);
-        free(verify_token);
     }
+
+    bot->public_key_length = public_key_length;
+    bot->public_key = public_key;
+    bot->verify_token_length = verify_token_length;
+    bot->verify_token = verify_token;
+
+    RSA *r = d2i_RSA_PUBKEY(NULL, (const unsigned char **)&public_key, public_key_length);
+    unsigned char *ss_cipher = malloc(RSA_size(r));
+    unsigned char *token_cipher = malloc(RSA_size(r));
+
+    srand(time(NULL));
+    /* Generat 16-byte shared secret */
+    bot->block_size = EVP_CIPHER_block_size(EVP_aes_128_cfb8());
+    EVP_CIPHER_CTX_init(&bot->ctx_encrypt);
+    EVP_CIPHER_CTX_init(&bot->ctx_decrypt);
+    EVP_EncryptInit_ex(&bot->ctx_encrypt, EVP_aes_128_cfb8(), NULL, bot->ss, bot->ss);
+    EVP_DecryptInit_ex(&bot->ctx_decrypt, EVP_aes_128_cfb8(), NULL, bot->ss, bot->ss);
+    random_bytes(sizeof(bot->ss), bot->ss);
+    int ss_cipher_length = RSA_public_encrypt(sizeof(bot->ss), bot->ss, ss_cipher, r, RSA_PKCS1_PADDING);
+    int token_cipher_length = RSA_public_encrypt(verify_token_length, verify_token, token_cipher, r, RSA_PKCS1_PADDING);
+
+    send_login_serverbound_encryption_response(
+            bot,
+            ss_cipher_length,
+            ss_cipher,
+            token_cipher_length,
+            token_cipher
+            );
+    bot->encryption_enabled = 1;
+
+    RSA_free(r);
+    free(server_id);
+    free(ss_cipher);
+    free(token_cipher);
 }
 
 void deserialize_clientbound_login_login_success(char *packet_data, struct bot_agent *bot) {
@@ -1069,7 +1134,7 @@ void deserialize_clientbound_play_spawn_object(char *packet_data, struct bot_age
         uint8_t pitch, yaw;
         int32_t data;
         int16_t velocity_x, velocity_y, velocity_z;
-        
+
         packet_data = _read_vint32(packet_data, &entity_id, bot);
         packet_data = _read(packet_data, uuid, sizeof(uuid), bot); 
         packet_data = _read(packet_data, &type, sizeof(type), bot);
@@ -1151,7 +1216,7 @@ void deserialize_clientbound_play_spawn_global_entity(char *packet_data,
 void free_slot(struct slot_type *slot) {
     switch(slot->type) {
         case NBT_TREE:
-            
+
             break;
         case NBT_BINARY:
             free(slot->nbt_binary.data);
@@ -1194,12 +1259,12 @@ char *_read_entity_metadata(char *packet_data, struct entity_metadata *metadata,
                 packet_ptr = _read_slot(packet_ptr, &current_entry->entity_slot, bot);
                 break;
             case ENTITY_METADATA_BOOLEAN:
-            {
-                int8_t boolean;
-                packet_ptr = _read(packet_ptr, &boolean, sizeof(boolean), bot);
-                current_entry->entity_boolean = boolean ? true : false;
-                break;
-            }
+                {
+                    int8_t boolean;
+                    packet_ptr = _read(packet_ptr, &boolean, sizeof(boolean), bot);
+                    current_entry->entity_boolean = boolean ? true : false;
+                    break;
+                }
             case ENTITY_METADATA_ROTATION:
                 packet_ptr = _read_float(packet_ptr, &current_entry->entity_rotation.x, bot);
                 packet_ptr = _read_float(packet_ptr, &current_entry->entity_rotation.y, bot);
@@ -1209,24 +1274,24 @@ char *_read_entity_metadata(char *packet_data, struct entity_metadata *metadata,
                 packet_ptr = _read_uint64_t(packet_ptr, &current_entry->entity_position, bot);
                 break;
             case ENTITY_METADATA_OPTPOSITION:
-            {
-                int8_t boolean;
-                packet_ptr = _read(packet_ptr, &boolean, sizeof(boolean), bot);
-                current_entry->entity_opt_position.present = boolean ? true : false;
-                packet_ptr = _read_uint64_t(packet_ptr, &current_entry->entity_opt_position.position, bot);
-                break;
-            }
+                {
+                    int8_t boolean;
+                    packet_ptr = _read(packet_ptr, &boolean, sizeof(boolean), bot);
+                    current_entry->entity_opt_position.present = boolean ? true : false;
+                    packet_ptr = _read_uint64_t(packet_ptr, &current_entry->entity_opt_position.position, bot);
+                    break;
+                }
             case ENTITY_METADATA_DIRECTION:
                 packet_ptr = _read_vint32(packet_ptr, &current_entry->entity_direction, bot);
                 break;
             case ENTITY_METADATA_OPTUUID:
-            {
-                int8_t boolean;
-                packet_ptr = _read(packet_ptr, &boolean, sizeof(boolean), bot);
-                current_entry->entity_opt_uuid.present = boolean ? true : false;
-                packet_ptr = _read(packet_ptr, current_entry->entity_opt_uuid.uuid, sizeof(current_entry->entity_opt_uuid.uuid), bot);
-                break;
-            }
+                {
+                    int8_t boolean;
+                    packet_ptr = _read(packet_ptr, &boolean, sizeof(boolean), bot);
+                    current_entry->entity_opt_uuid.present = boolean ? true : false;
+                    packet_ptr = _read(packet_ptr, current_entry->entity_opt_uuid.uuid, sizeof(current_entry->entity_opt_uuid.uuid), bot);
+                    break;
+                }
             case ENTITY_METADATA_BLOCKID:
                 packet_ptr = _read_vint32(packet_ptr, &current_entry->entity_blockid, bot);
                 break;
@@ -1234,7 +1299,7 @@ char *_read_entity_metadata(char *packet_data, struct entity_metadata *metadata,
     }
 
     current_entry->next = NULL;
-    
+
     metadata->entries = dummy.next;
     return packet_ptr;
 }
@@ -1319,7 +1384,7 @@ void deserialize_clientbound_play_spawn_painting(char *packet_data, struct bot_a
         char *title;
         position_t location;
         int8_t direction;
-        
+
         packet_data = _read_vint32(packet_data, &entity_id, bot);
         packet_data = _read(packet_data, uuid, sizeof(uuid), bot);
         packet_data = _read_string(packet_data, &title, NULL, bot);
@@ -1377,7 +1442,7 @@ void deserialize_clientbound_play_animation(char *packet_data, struct bot_agent 
 
         packet_data = _read_vint32(packet_data, &entity_id, bot);
         packet_data = _read(packet_data, &animation, sizeof(animation), bot);
-        
+
         bot->callbacks.clientbound_play_animation_cb(
                 bot,
                 entity_id,
@@ -1435,7 +1500,7 @@ void deserialize_clientbound_play_update_block_entity(char *packet_data, struct 
         position_t location;
         uint8_t action;
         struct nbt_tag nbt;
-        
+
         packet_data = _read_uint64_t(packet_data, &location, bot);
         packet_data = _read(packet_data, &action, sizeof(action), bot);
         packet_data = nbt_parse(packet_data, &nbt, bot);
@@ -1513,43 +1578,43 @@ char *_read_boss_bar_action(char *packet_data, struct boss_bar_action *action_da
     action_data->action_type = action_type;
     switch (action_data->action_type) {
         case BOSS_BAR_ADD:
-        {
-            struct boss_bar_add *add = &action_data->add;
-            packet_data = _read_string(packet_data, &add->title, NULL, bot);
-            packet_data = _read_float(packet_data, &add->health, bot);
-            packet_data = _read_vint32(packet_data, &add->color, bot);
-            packet_data = _read_vint32(packet_data, &add->division, bot);
-            packet_data = _read(packet_data, &add->flags, sizeof(add->flags), bot);
-            break;
-        }
+            {
+                struct boss_bar_add *add = &action_data->add;
+                packet_data = _read_string(packet_data, &add->title, NULL, bot);
+                packet_data = _read_float(packet_data, &add->health, bot);
+                packet_data = _read_vint32(packet_data, &add->color, bot);
+                packet_data = _read_vint32(packet_data, &add->division, bot);
+                packet_data = _read(packet_data, &add->flags, sizeof(add->flags), bot);
+                break;
+            }
         case BOSS_BAR_REMOVE:
             /* no fields */
             break;
         case BOSS_BAR_UPDATE_HEALTH:
-        {
-            struct boss_bar_update_health *update_health = &action_data->update_health;
-            packet_data = _read_float(packet_data, &update_health->health, bot);
-            break;
-        }
+            {
+                struct boss_bar_update_health *update_health = &action_data->update_health;
+                packet_data = _read_float(packet_data, &update_health->health, bot);
+                break;
+            }
         case BOSS_BAR_UPDATE_TITLE:
-        {
-            struct boss_bar_update_title *update_title = &action_data->update_title;
-            packet_data = _read_string(packet_data, &update_title->title, NULL, bot);
-            break;
-        }
+            {
+                struct boss_bar_update_title *update_title = &action_data->update_title;
+                packet_data = _read_string(packet_data, &update_title->title, NULL, bot);
+                break;
+            }
         case BOSS_BAR_UPDATE_STYLE:
-        {
-            struct boss_bar_update_style *update_style = &action_data->update_style;
-            packet_data = _read_vint32(packet_data, &update_style->color, bot);
-            packet_data = _read_vint32(packet_data, &update_style->dividers, bot);
-            break;
-        }
+            {
+                struct boss_bar_update_style *update_style = &action_data->update_style;
+                packet_data = _read_vint32(packet_data, &update_style->color, bot);
+                packet_data = _read_vint32(packet_data, &update_style->dividers, bot);
+                break;
+            }
         case BOSS_BAR_UPDATE_FLAGS:
-        {
-            struct boss_bar_update_flags *update_flags = &action_data->update_flags;
-            packet_data = _read(packet_data, &update_flags->flags, sizeof(update_flags->flags), bot);
-            break;
-        }
+            {
+                struct boss_bar_update_flags *update_flags = &action_data->update_flags;
+                packet_data = _read(packet_data, &update_flags->flags, sizeof(update_flags->flags), bot);
+                break;
+            }
     }
     return packet_data;
 }
@@ -1558,7 +1623,7 @@ void deserialize_clientbound_play_boss_bar(char *packet_data, struct bot_agent *
     if (bot->callbacks.clientbound_play_boss_bar_cb != NULL) {
         char uuid[16];
         struct boss_bar_action action_data;
-        
+
         packet_data = _read(packet_data, uuid, sizeof(uuid), bot);
         packet_data = _read_boss_bar_action(packet_data, &action_data, bot);   
 
@@ -1724,7 +1789,7 @@ void deserialize_clientbound_play_window_items(char *packet_data, struct bot_age
         uint8_t window_id;
         int16_t count;
         struct slot_type *slot_data;
-        
+
         packet_data = _read(packet_data, &window_id, sizeof(window_id), bot);
         packet_data = _read_int16_t(packet_data, &count, bot);
         slot_data = malloc(count * sizeof(struct slot_type));
@@ -1738,7 +1803,7 @@ void deserialize_clientbound_play_window_items(char *packet_data, struct bot_age
                 count,
                 slot_data
                 );
-        
+
         free(slot_data);
     }
 }
@@ -1998,7 +2063,7 @@ char *_read_chunk_sections(char *packet_data, struct chunk_section *data, int ov
     if (bits_per_block < 4 && bits_per_block > 0) {
         bits_per_block = 4;
     }
-    
+
     vint32_t palette_length;
     packet_data = _read_vint32(packet_data, &palette_length, bot);
 
@@ -2015,7 +2080,7 @@ char *_read_chunk_sections(char *packet_data, struct chunk_section *data, int ov
     for (int j = 0; j < data_array_length; j++) {
         packet_data = _read_uint64_t(packet_data, &data_array[j], bot);
     }
-    
+
     for (int j = 0; j < CHUNK_DIM * CHUNK_DIM * CHUNK_DIM; j++) {
         int block_data = palette_index(data_array, bits_per_block, j); 
         if (!use_palette) {
@@ -2105,7 +2170,7 @@ void deserialize_clientbound_play_chunk_data(char *packet_data, struct bot_agent
         for (int i = 0; i < number_of_block_entities; i++) {
             packet_data = nbt_parse(packet_data, &block_entities[i], bot);
         }
-        
+
         bot->callbacks.clientbound_play_chunk_data_cb(
                 bot,
                 chunk_x,
@@ -2119,7 +2184,7 @@ void deserialize_clientbound_play_chunk_data(char *packet_data, struct bot_agent
                 block_entities
                 );
 
-        
+
         free(data);
         free(block_entities);
         for (int i = 0; i < number_of_block_entities; i++) {
@@ -2222,7 +2287,7 @@ void deserialize_clientbound_play_join_game(char *packet_data, struct bot_agent 
     int8_t b;
     packet_data = _read(packet_data, &b, sizeof(b), bot);
     reduced_debug_info = b ? true : false;
-   
+
     bot->eid = entity_id;
     bot->gamemode = gamemode;
     bot->dimension = dimension;
@@ -2499,22 +2564,22 @@ void deserialize_clientbound_play_combat_event(char *packet_data, struct bot_age
 void free_player_list_action(struct player_list_action *player_action, enum PLAYER_LIST_ACTION_TYPE type) {
     switch (type) {
         case PLAYER_LIST_ADD_PLAYER:
-        {
-            struct player_list_action_add_player *add_player = &player_action->add_player;
-            free(add_player->name);
-            for (int i = 0; i < add_player->number_of_properties; i++) {
-                struct player_property *property = &add_player->properties[i];
-                free(property->name);
-                free(property->value);
-                if (property->signature != NULL) {
-                    free(property->signature);
+            {
+                struct player_list_action_add_player *add_player = &player_action->add_player;
+                free(add_player->name);
+                for (int i = 0; i < add_player->number_of_properties; i++) {
+                    struct player_property *property = &add_player->properties[i];
+                    free(property->name);
+                    free(property->value);
+                    if (property->signature != NULL) {
+                        free(property->signature);
+                    }
                 }
+                if (add_player->display_name != NULL) {
+                    free(add_player->display_name);
+                }
+                break;
             }
-            if (add_player->display_name != NULL) {
-                free(add_player->display_name);
-            }
-            break;
-        }
         case PLAYER_LIST_UPDATE_GAMEMODE:
             break;
         case PLAYER_LIST_UPDATE_LATENCY:
@@ -2534,36 +2599,36 @@ char *_read_player_list_actions(char *packet_data, enum PLAYER_LIST_ACTION_TYPE 
     packet_data = _read(packet_data, player_actions->uuid, sizeof(player_actions->uuid), bot);
     switch(type) {
         case PLAYER_LIST_ADD_PLAYER:
-        {
-            struct player_list_action_add_player *add_player = &player_actions->add_player;
-            packet_data = _read_string(packet_data, &add_player->name, NULL, bot);
-            packet_data = _read_vint32(packet_data, &add_player->number_of_properties, bot);
-            add_player->properties = malloc(add_player->number_of_properties * sizeof(struct player_property));
-            for (int j = 0; j < add_player->number_of_properties; j++) {
-                struct player_property *property = &add_player->properties[j];
-                packet_data = _read_string(packet_data, &property->name, NULL, bot);
-                packet_data = _read_string(packet_data, &property->value, NULL, bot);
+            {
+                struct player_list_action_add_player *add_player = &player_actions->add_player;
+                packet_data = _read_string(packet_data, &add_player->name, NULL, bot);
+                packet_data = _read_vint32(packet_data, &add_player->number_of_properties, bot);
+                add_player->properties = malloc(add_player->number_of_properties * sizeof(struct player_property));
+                for (int j = 0; j < add_player->number_of_properties; j++) {
+                    struct player_property *property = &add_player->properties[j];
+                    packet_data = _read_string(packet_data, &property->name, NULL, bot);
+                    packet_data = _read_string(packet_data, &property->value, NULL, bot);
+                    int8_t b;
+                    packet_data = _read(packet_data, &b, sizeof(b), bot);
+                    property->is_signed = b ? true : false;
+                    if (property->is_signed) {
+                        packet_data = _read_string(packet_data, &property->signature, NULL, bot);
+                    } else {
+                        property->signature = NULL;
+                    }
+                }
+                packet_data = _read_vint32(packet_data, &add_player->gamemode, bot);
+                packet_data = _read_vint32(packet_data, &add_player->ping, bot);
                 int8_t b;
                 packet_data = _read(packet_data, &b, sizeof(b), bot);
-                property->is_signed = b ? true : false;
-                if (property->is_signed) {
-                    packet_data = _read_string(packet_data, &property->signature, NULL, bot);
+                add_player->has_display_name = b ? true : false;
+                if (add_player->has_display_name) {
+                    packet_data = _read_string(packet_data, &add_player->display_name, NULL, bot);
                 } else {
-                    property->signature = NULL;
+                    add_player->display_name = NULL;
                 }
+                break;
             }
-            packet_data = _read_vint32(packet_data, &add_player->gamemode, bot);
-            packet_data = _read_vint32(packet_data, &add_player->ping, bot);
-            int8_t b;
-            packet_data = _read(packet_data, &b, sizeof(b), bot);
-            add_player->has_display_name = b ? true : false;
-            if (add_player->has_display_name) {
-                packet_data = _read_string(packet_data, &add_player->display_name, NULL, bot);
-            } else {
-                add_player->display_name = NULL;
-            }
-            break;
-        }
         case PLAYER_LIST_UPDATE_GAMEMODE:
             packet_data = _read_vint32(packet_data, &player_actions->update_gamemode.gamemode, bot);
             break;
@@ -2571,17 +2636,17 @@ char *_read_player_list_actions(char *packet_data, enum PLAYER_LIST_ACTION_TYPE 
             packet_data = _read_vint32(packet_data, &player_actions->update_latency.ping, bot);
             break;
         case PLAYER_LIST_UPDATE_DISPLAY_NAME:
-        {
-            int8_t b;
-            packet_data = _read(packet_data, &b, sizeof(b), bot);
-            player_actions->update_display_name.has_display_name = b ? true : false;
-            if (player_actions->update_display_name.has_display_name) {
-                packet_data = _read_string(packet_data, &player_actions->update_display_name.display_name, NULL, bot);
-            } else {
-                player_actions->update_display_name.display_name = NULL;
+            {
+                int8_t b;
+                packet_data = _read(packet_data, &b, sizeof(b), bot);
+                player_actions->update_display_name.has_display_name = b ? true : false;
+                if (player_actions->update_display_name.has_display_name) {
+                    packet_data = _read_string(packet_data, &player_actions->update_display_name.display_name, NULL, bot);
+                } else {
+                    player_actions->update_display_name.display_name = NULL;
+                }
+                break;
             }
-            break;
-        }
         case PLAYER_LIST_REMOVE_PLAYER:
             /* no fields */
             break;
@@ -2601,7 +2666,7 @@ void deserialize_clientbound_play_player_list_item(char *packet_data, struct bot
         for (int i = 0; i < number_of_players; i++) {
             packet_data = _read_player_list_actions(packet_data, action_type, &player_actions[i], bot);
         }
-        
+
         bot->callbacks.clientbound_play_player_list_item_cb(
                 bot,
                 action_type,
@@ -2853,10 +2918,10 @@ void deserialize_clientbound_play_entity_metadata(char *packet_data, struct bot_
     if (bot->callbacks.clientbound_play_entity_metadata_cb != NULL) {
         vint32_t entity_id;
         struct entity_metadata metadata;
-        
+
         packet_data = _read_vint32(packet_data, &entity_id, bot);
         packet_data = _read_entity_metadata(packet_data, &metadata, bot);
-        
+
         bot->callbacks.clientbound_play_entity_metadata_cb(
                 bot,
                 entity_id,
@@ -2961,14 +3026,14 @@ void deserialize_clientbound_play_scoreboard_objective(char *packet_data, struct
         int8_t mode;
         char *objective_value = NULL;
         char *type = NULL;
-        
+
         packet_data = _read_string(packet_data, &objective_name, NULL, bot);
         packet_data = _read(packet_data, &mode, sizeof(mode), bot);
         if (mode == 0 || mode == 2) {
             packet_data = _read_string(packet_data, &objective_value, NULL, bot);
             packet_data = _read_string(packet_data, &type, NULL, bot);
         }
-        
+
         bot->callbacks.clientbound_play_scoreboard_objective_cb(
                 bot,
                 objective_name,
@@ -3011,49 +3076,49 @@ void deserialize_clientbound_play_set_passengers(char *packet_data, struct bot_a
 void free_team_action(struct team_action *action) {
     switch(action->type) {
         case TEAM_ACTION_CREATE_TEAM:
-        {
-            struct team_action_create_team *create_team = &action->create_team;
-            free(create_team->team_display_name);
-            free(create_team->team_prefix);
-            free(create_team->team_suffix);
-            free(create_team->name_tag_visibility);
-            free(create_team->collision_rule);
-            for (int i = 0; i < create_team->player_count; i++) {
-                free(create_team->players[i]);
+            {
+                struct team_action_create_team *create_team = &action->create_team;
+                free(create_team->team_display_name);
+                free(create_team->team_prefix);
+                free(create_team->team_suffix);
+                free(create_team->name_tag_visibility);
+                free(create_team->collision_rule);
+                for (int i = 0; i < create_team->player_count; i++) {
+                    free(create_team->players[i]);
+                }
+                free(create_team->players);
+                break;
             }
-            free(create_team->players);
-            break;
-        }
         case TEAM_ACTION_REMOVE_TEAM:
             break;
         case TEAM_ACTION_UPDATE_TEAM_INFO:
-        {
-            struct team_action_update_team_info *update_team_info = &action->update_team_info;
-            free(update_team_info->team_display_name);
-            free(update_team_info->team_prefix);
-            free(update_team_info->team_suffix);
-            free(update_team_info->name_tag_visibility);
-            free(update_team_info->collision_rule);
-            break;
-        }
+            {
+                struct team_action_update_team_info *update_team_info = &action->update_team_info;
+                free(update_team_info->team_display_name);
+                free(update_team_info->team_prefix);
+                free(update_team_info->team_suffix);
+                free(update_team_info->name_tag_visibility);
+                free(update_team_info->collision_rule);
+                break;
+            }
         case TEAM_ACTION_ADD_PLAYERS_TO_TEAM:
-        {
-            struct team_action_add_players_to_team *add_players_to_team = &action->add_players_to_team;
-            for (int i = 0; i < add_players_to_team->player_count; i++) {
-                free(add_players_to_team->players[i]);
+            {
+                struct team_action_add_players_to_team *add_players_to_team = &action->add_players_to_team;
+                for (int i = 0; i < add_players_to_team->player_count; i++) {
+                    free(add_players_to_team->players[i]);
+                }
+                free(add_players_to_team->players);
+                break;
             }
-            free(add_players_to_team->players);
-            break;
-        }
         case TEAM_ACTION_REMOVE_PLAYERS_FROM_TEAM:
-        {
-            struct team_action_remove_players_from_team *remove_players_from_team = &action->remove_players_from_team;
-            for (int i = 0; i < remove_players_from_team->player_count; i++) {
-                free(remove_players_from_team->players[i]);
+            {
+                struct team_action_remove_players_from_team *remove_players_from_team = &action->remove_players_from_team;
+                for (int i = 0; i < remove_players_from_team->player_count; i++) {
+                    free(remove_players_from_team->players[i]);
+                }
+                free(remove_players_from_team->players);
+                break;
             }
-            free(remove_players_from_team->players);
-            break;
-        }
     }
 }
 
@@ -3061,58 +3126,58 @@ char *_read_team_action(char *packet_data, enum TEAM_ACTION_TYPE type, struct te
     action->type = type;
     switch(type) {
         case TEAM_ACTION_CREATE_TEAM:
-        {
-            struct team_action_create_team *create_team = &action->create_team;
-            packet_data = _read_string(packet_data, &create_team->team_display_name, NULL, bot);
-            packet_data = _read_string(packet_data, &create_team->team_prefix, NULL, bot);
-            packet_data = _read_string(packet_data, &create_team->team_suffix, NULL, bot);
-            packet_data = _read(packet_data, &create_team->friendly_flags, sizeof(create_team->friendly_flags), bot);
-            packet_data = _read_string(packet_data, &create_team->name_tag_visibility, NULL, bot);
-            packet_data = _read_string(packet_data, &create_team->collision_rule, NULL, bot);
-            packet_data = _read(packet_data, &create_team->color, sizeof(create_team->color), bot);
-            packet_data = _read_vint32(packet_data, &create_team->player_count, bot);
-            create_team->players = malloc(create_team->player_count * sizeof(char *));
-            for (int i = 0; i < create_team->player_count; i++) {
-                packet_data = _read_string(packet_data, &create_team->players[i], NULL, bot);
+            {
+                struct team_action_create_team *create_team = &action->create_team;
+                packet_data = _read_string(packet_data, &create_team->team_display_name, NULL, bot);
+                packet_data = _read_string(packet_data, &create_team->team_prefix, NULL, bot);
+                packet_data = _read_string(packet_data, &create_team->team_suffix, NULL, bot);
+                packet_data = _read(packet_data, &create_team->friendly_flags, sizeof(create_team->friendly_flags), bot);
+                packet_data = _read_string(packet_data, &create_team->name_tag_visibility, NULL, bot);
+                packet_data = _read_string(packet_data, &create_team->collision_rule, NULL, bot);
+                packet_data = _read(packet_data, &create_team->color, sizeof(create_team->color), bot);
+                packet_data = _read_vint32(packet_data, &create_team->player_count, bot);
+                create_team->players = malloc(create_team->player_count * sizeof(char *));
+                for (int i = 0; i < create_team->player_count; i++) {
+                    packet_data = _read_string(packet_data, &create_team->players[i], NULL, bot);
+                }
+                break;
             }
-            break;
-        }
         case TEAM_ACTION_REMOVE_TEAM:
             /* no fields */
             break;
         case TEAM_ACTION_UPDATE_TEAM_INFO:
-        {
-            struct team_action_update_team_info *update_team_info = &action->update_team_info;
-            packet_data = _read_string(packet_data, &update_team_info->team_display_name, NULL, bot);
-            packet_data = _read_string(packet_data, &update_team_info->team_prefix, NULL, bot);
-            packet_data = _read_string(packet_data, &update_team_info->team_suffix, NULL, bot);
-            packet_data = _read(packet_data, &update_team_info->friendly_flags, sizeof(update_team_info->friendly_flags), bot);
-            packet_data = _read_string(packet_data, &update_team_info->name_tag_visibility, NULL, bot);
-            packet_data = _read_string(packet_data, &update_team_info->collision_rule, NULL, bot);
-            packet_data = _read(packet_data, &update_team_info->color, sizeof(update_team_info->color), bot);
-            break;
-        }
+            {
+                struct team_action_update_team_info *update_team_info = &action->update_team_info;
+                packet_data = _read_string(packet_data, &update_team_info->team_display_name, NULL, bot);
+                packet_data = _read_string(packet_data, &update_team_info->team_prefix, NULL, bot);
+                packet_data = _read_string(packet_data, &update_team_info->team_suffix, NULL, bot);
+                packet_data = _read(packet_data, &update_team_info->friendly_flags, sizeof(update_team_info->friendly_flags), bot);
+                packet_data = _read_string(packet_data, &update_team_info->name_tag_visibility, NULL, bot);
+                packet_data = _read_string(packet_data, &update_team_info->collision_rule, NULL, bot);
+                packet_data = _read(packet_data, &update_team_info->color, sizeof(update_team_info->color), bot);
+                break;
+            }
         case TEAM_ACTION_ADD_PLAYERS_TO_TEAM:
-        {
-            struct team_action_add_players_to_team *add_players_to_team = &action->add_players_to_team;
-            packet_data = _read_vint32(packet_data, &add_players_to_team->player_count, bot);
-            add_players_to_team->players = malloc(add_players_to_team->player_count * sizeof(char *));
-            for (int i = 0; i < add_players_to_team->player_count; i++) {
-                packet_data = _read_string(packet_data, &add_players_to_team->players[i], NULL, bot);
+            {
+                struct team_action_add_players_to_team *add_players_to_team = &action->add_players_to_team;
+                packet_data = _read_vint32(packet_data, &add_players_to_team->player_count, bot);
+                add_players_to_team->players = malloc(add_players_to_team->player_count * sizeof(char *));
+                for (int i = 0; i < add_players_to_team->player_count; i++) {
+                    packet_data = _read_string(packet_data, &add_players_to_team->players[i], NULL, bot);
+                }
+                break;
             }
-            break;
-        }
         case TEAM_ACTION_REMOVE_PLAYERS_FROM_TEAM:
-        {
-            struct team_action_remove_players_from_team *remove_players_from_team = &action->remove_players_from_team;
-            packet_data = _read_vint32(packet_data, &remove_players_from_team->player_count, bot);
-            remove_players_from_team->players = malloc(remove_players_from_team->player_count * sizeof(char *));
-            for (int i = 0; i < remove_players_from_team->player_count; i++) {
-                packet_data = _read_string(packet_data, &remove_players_from_team->players[i], NULL, bot);
-            }
+            {
+                struct team_action_remove_players_from_team *remove_players_from_team = &action->remove_players_from_team;
+                packet_data = _read_vint32(packet_data, &remove_players_from_team->player_count, bot);
+                remove_players_from_team->players = malloc(remove_players_from_team->player_count * sizeof(char *));
+                for (int i = 0; i < remove_players_from_team->player_count; i++) {
+                    packet_data = _read_string(packet_data, &remove_players_from_team->players[i], NULL, bot);
+                }
 
-            break;
-        }
+                break;
+            }
     }
     return packet_data;
 }
@@ -3132,7 +3197,7 @@ void deserialize_clientbound_play_teams(char *packet_data, struct bot_agent *bot
                 team_name,
                 &action
                 );
-        
+
         free(team_name);
         free_team_action(&action);
     }
@@ -3373,7 +3438,7 @@ void deserialize_clientbound_play_entity_properties(char *packet_data, struct bo
         for (int i = 0; i < number_of_properties; i++) {
             packet_data = _read_entity_property(packet_data, &properties[i], bot);
         }
-        
+
         bot->callbacks.clientbound_play_entity_properties_cb(
                 bot,
                 entity_id,
@@ -3417,8 +3482,10 @@ void deserialize_clientbound_play_entity_effect(char *packet_data, struct bot_ag
 void dispatch_packet_cb(char *packet_data, struct bot_agent *bot) {
     vint32_t packet_id;
     packet_data = _read_vint32(packet_data, &packet_id, bot);
+    printf("Packet id: %d, ", packet_id);
     switch (bot->current_state) {
         case LOGIN:
+            printf("LOGIN\n");
             switch (packet_id) {
                 case 0x00: /* clientbound login disconnect */
                     deserialize_clientbound_login_disconnect(packet_data, bot);
@@ -3438,6 +3505,7 @@ void dispatch_packet_cb(char *packet_data, struct bot_agent *bot) {
             }
             break;
         case STATUS:
+            printf("STATUS\n");
             switch (packet_id) {
                 case 0x00: /* clientbound status response */
                     deserialize_clientbound_status_response(packet_data, bot);
@@ -3451,6 +3519,7 @@ void dispatch_packet_cb(char *packet_data, struct bot_agent *bot) {
             }
             break;
         case PLAY:
+            printf("PLAY\n");
             switch (packet_id) {
                 case 0x00:
                     deserialize_clientbound_play_spawn_object(packet_data, bot);
@@ -3709,19 +3778,42 @@ void dispatch_packet_cb(char *packet_data, struct bot_agent *bot) {
  *
  **/
 void read_socket(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
+    if (nread < 0) {
+        fprintf(stderr, "Socket read error.\n");
+        assert(0);
+    }
+
     struct bot_agent *bot = stream->data;
+    char *stream_data_raw;
+    int32_t data_length;
+
+    /* decrypt packet if needed */
+    if (bot->encryption_enabled) {
+        stream_data_raw = malloc(nread + bot->block_size);
+        if(!EVP_DecryptUpdate(&bot->ctx_decrypt, (unsigned char *)stream_data_raw, &data_length, (const unsigned char *)buf->base, nread)) {
+            fprintf(stderr, "Decryption error.\n");
+            assert(0);
+        }
+
+    } else {
+        stream_data_raw = buf->base;
+        data_length = nread;
+    }
 
     /* Make sure buffer is long enough */
-    while (nread + bot->packet_bytes_read > bot->packet_capacity) {
+    while (data_length + bot->packet_bytes_read > bot->packet_capacity) {
         bot->packet_capacity *= 2;;
         bot->packet_buffer = realloc(bot->packet_buffer, bot->packet_capacity);
-
     }
 
     /* append new data to the buffer */
-    memcpy(bot->packet_buffer + bot->packet_bytes_read, buf->base, nread);
-    bot->packet_bytes_read += nread;
+    memcpy(bot->packet_buffer + bot->packet_bytes_read, stream_data_raw, data_length);
+    bot->packet_bytes_read += data_length;
     
+    if (bot->encryption_enabled) {
+        free(stream_data_raw);
+    }
+
     /* start processing packets */
     char *ptr = bot->packet_buffer, *packet_data;
     int32_t packet_length;
@@ -3774,7 +3866,7 @@ void read_socket(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
     /* move all leftover bytes to beginning of the buffer */
     bot->packet_bytes_read -= ptr - bot->packet_buffer;
     memmove(bot->packet_buffer, ptr, bot->packet_bytes_read); 
-    
+
     if (buf->base != NULL) {
         free(buf->base);
     }

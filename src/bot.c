@@ -48,6 +48,8 @@ void init_bot(struct bot_agent *bot, char *name) {
     bot->decompression_stream.next_in = Z_NULL;
     inflateInit(&bot->decompression_stream);
 
+    bot->encryption_enabled = 0;
+
     init_callbacks(&bot->callbacks);
 }
 
@@ -143,7 +145,7 @@ void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
 void on_connect(uv_connect_t *connect, int status) {
     if (status < 0) {
         fprintf(stderr, "Could not connect to server.\n");
-        exit(-1);
+        assert(0);
     }
 
     struct bot_agent *bot = connect->data;
@@ -174,7 +176,7 @@ void join_server_ipaddr(struct bot_agent *bot, char *server_ip, int port_number)
 void getaddrinfo_cb(uv_getaddrinfo_t *req, int status, struct addrinfo *response) {
     if (status < 0) {
         fprintf(stderr, "Server not found.\n");
-        exit(-1);
+        assert(0);
     }
 
     struct bot_agent *bot = req->data;

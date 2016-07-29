@@ -5,8 +5,8 @@ SA      = scan-build
 
 DIR 	:= $(pwd)
 
-CFLAGS  = -c -fpic -Wall -Isrc --std=gnu99 -g
-LDFLAGS = -lpthread -lm -luv -lz
+CFLAGS  = -Wall -Isrc --std=c11 -D_GNU_SOURCE -g
+LDFLAGS = -lpthread -lm -luv -lz -lssl -lcrypto
 
 SRC		= src
 LIB		= lib
@@ -14,15 +14,13 @@ SHAREDLIB	= $(LIB)/libmcc.so.$(VERSION)
 OBJ		= obj
 BIN		= bin
 TARGET  = $(BIN)/mcc
-TEST    := $(patsubst %.c,%.o,$(wildcard test/*.c))
 SRCFILES	:= $(wildcard $(SRC)/*.c)
 OBJECTS 	:= $(patsubst $(SRC)/%.c,$(OBJ)/%.o, $(SRCFILES))
-SAMPLE		:= $(patsubst %.c,%.o,$(wildcard sample/*.c))
 
 all: $(TARGET)
 
-$(TARGET): $(SHAREDLIB) $(SAMPLE) | $(BIN)
-	$(CC) $(LDFLAGS) $(OBJECTS) $(SAMPLE) -o $@
+$(TARGET): $(SHAREDLIB) | $(BIN)
+	$(CC) $(OBJECTS) -o $@ $(LDFLAGS)
 
 debug: CFLAGS += -g
 debug: clean
@@ -31,22 +29,20 @@ debug: all
 
 # Rule for making all object files
 $(OBJ)/%.o: $(SRC)/%.c | $(OBJ)
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) -c -fpic $(CFLAGS) $< -o $@
 
 # Rule for making shared object file
 $(SHAREDLIB): $(OBJECTS) | $(LIB)
 	$(CC) -shared -o $@ $(OBJECTS) $(LDFLAGS)
 
-.PHONY: test
-test: CFLAGS += -g
-test: bin $(OBJECTS) $(TEST)
-test: $(SHAREDLIB) $(TEST) | $(BIN)
-	$(CC) $(LDFLAGS) $(OBJECTS) $(TEST) -o bin/$@
-	bin/$@
 
 .PHONY: clean
 clean:
-	$(RM) $(OBJECTS) $(TEST) $(SAMPLE) $(BIN)/* $(SHAREDLIB)
+	$(RM) $(OBJECTS) $(BIN)/* $(SHAREDLIB)
+
+.PHONY: %.lint
+%.lint: %
+	$(CC) -fsyntax-only $(CFLAGS) $^
 
 $(OBJ):
 	mkdir -p $@

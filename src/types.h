@@ -3,7 +3,10 @@
 #include <uv.h>
 #include <stdbool.h>
 #include <zlib.h>
-//#include "nbt.h"
+#include <openssl/evp.h>
+
+
+#define SECRET_KEY_LENGTH 16
 
 typedef enum {HANDSHAKE, LOGIN, STATUS, PLAY, NUM_STATES} state;
 
@@ -500,9 +503,9 @@ struct _callbacks {
             struct bot_agent *bot,
             char *server_id,
             vint32_t public_key_length,
-            char *public_key,
+            unsigned char *public_key,
             vint32_t verify_token_length,
-            char *verify_token
+            unsigned char *verify_token
             );
     void (*clientbound_login_login_success_cb)(
             struct bot_agent *bot,
@@ -1094,11 +1097,15 @@ struct bot_agent {
     int32_t compression_threshold;
 
     /* Encryption stuff */
+    int encryption_enabled;
     int32_t public_key_length;
-    char *public_key;
+    unsigned char *public_key;
     int32_t verify_token_length;
-    char *verify_token;
-    char ss[16];
+    unsigned char *verify_token;
+    unsigned char ss[SECRET_KEY_LENGTH];
+    uint32_t block_size;
+    EVP_CIPHER_CTX ctx_encrypt;
+    EVP_CIPHER_CTX ctx_decrypt;
 
     int32_t packet_capacity;
     int32_t packet_length;

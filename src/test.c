@@ -169,7 +169,7 @@ void update_health (
 
 int main() {
     struct bot_agent bot;
-    init_bot(&bot, "Anthony Weems");
+    init_bot(&bot, "Sintralin");
     bot.callbacks.clientbound_play_player_list_item_cb = player_list_item;
     //bot.callbacks.clientbound_play_chunk_data_cb = chunk_data;
     bot.callbacks.clientbound_play_spawn_player_cb = spawn_player;
