@@ -5,7 +5,7 @@ SA      = scan-build
 
 DIR 	:= $(pwd)
 
-CFLAGS  = -Wall -Isrc --std=c11 -D_GNU_SOURCE -g
+CFLAGS  = -Wall -Werror -Wswitch -Wswitch-enum -Isrc -std=c11 -D_GNU_SOURCE -g
 LDFLAGS = -lpthread -lm -luv -lz -lssl -lcrypto
 
 SRC		= src

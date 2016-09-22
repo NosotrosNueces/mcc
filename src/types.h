@@ -8,7 +8,7 @@
 
 #define SECRET_KEY_LENGTH 16
 
-typedef enum {HANDSHAKE, LOGIN, STATUS, PLAY, NUM_STATES} state;
+enum state {HANDSHAKE, LOGIN, STATUS, PLAY};
 
 typedef uint64_t position_t;
 typedef int32_t vint32_t;
@@ -1066,7 +1066,7 @@ struct bot_agent {
     char * level_type;
     bool reduced_debug_info;
 
-    state current_state;
+    enum state current_state;
 
     char *name;
     double x;

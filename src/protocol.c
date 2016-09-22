@@ -3754,6 +3754,7 @@ void dispatch_packet_cb(char *packet_data, struct bot_agent *bot) {
                     assert(0);
             }
             break;
+        case HANDSHAKE:
         default:
             fprintf(stderr, "Impossible state: %d\n", bot->current_state);
             assert(0);
