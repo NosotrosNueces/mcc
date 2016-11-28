@@ -1,11 +1,11 @@
 MCC
 ==========
 
-MCC is a Minecraft Client API written in C. The goal is to implement the entire network protocol from the client point of view. The intended use case was botting, but the possibilities are endless. Bonus points if you can implement
+MCC is a Minecraft Client API written in C. The goal is to implement the entire network protocol from the client point of view. The intended use case was botting, but the possibilities are endless.
 
 ## Documentation and Resources ##
 
-### Protocol Version: 210 ###
+### Protocol Version: 315 ###
 
 [wiki.vg](http://wiki.vg)
 
