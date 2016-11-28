@@ -15,8 +15,6 @@
 #include "protocol.h"
 #include "types.h"
 
-#define PROTOCOL_VERSION 210
-
 void init_callbacks(struct _callbacks *callbacks);
 
 /* Populates the bot struct with default values */
@@ -169,7 +167,7 @@ void join_server_ipaddr(struct bot_agent *bot, char *server_ip, int port_number)
 
 	struct sockaddr_in dest;
 	uv_ip4_addr(server_ip, port_number, &dest);
-    
+    //printf("%s:%d\n", server_ip, port_number); 
 	uv_tcp_connect(connect, &bot->socket, (const struct sockaddr*)&dest, on_connect);
 }
 

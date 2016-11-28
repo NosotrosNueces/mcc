@@ -243,9 +243,9 @@ int32_t send_play_serverbound_player_block_placement(
         position_t location,
         vint32_t face,
         vint32_t hand,
-        uint8_t x,
-        uint8_t y,
-        uint8_t z
+        float x,
+        float y,
+        float z
         );
 
 int32_t send_play_serverbound_use_item(

@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <zlib.h>
 #include <openssl/evp.h>
+#include <pcap.h>
+#include <stdio.h>
 
 
 #define SECRET_KEY_LENGTH 16
@@ -442,6 +444,7 @@ struct team_action {
 enum TITLE_ACTION_TYPE {
     TITLE_ACTION_SET_TITLE,
     TITLE_ACTION_SET_SUBTITLE,
+    TITLE_ACTION_SET_ACTION_BAR,
     TITLE_ACTION_SET_TIMES_AND_DISPLAY,
     TITLE_ACTION_HIDE,
     TITLE_ACTION_RESET
@@ -453,6 +456,10 @@ struct title_action_set_title {
 
 struct title_action_set_subtitle {
     char *subtitle_text;
+};
+
+struct title_action_set_action_bar {
+    char *action_bar_text;
 };
 
 struct title_action_set_times_and_display {
@@ -474,6 +481,7 @@ struct title_action {
     union {
         struct title_action_set_title set_title;
         struct title_action_set_subtitle set_subtitle;
+        struct title_action_set_action_bar set_action_bar;
         struct title_action_set_times_and_display set_times_and_display;
         struct title_action_hide hide;
         struct title_action_reset reset;
@@ -561,7 +569,7 @@ struct _callbacks {
             struct bot_agent *bot,
             vint32_t entity_id,
             char *uuid,
-            uint8_t type,
+            vint32_t type,
             double x,
             double y,
             double z,
@@ -1009,7 +1017,8 @@ struct _callbacks {
     void (*clientbound_play_collect_item_cb)(
             struct bot_agent *bot,
             vint32_t collected_entity_id,
-            vint32_t collector_entity_id
+            vint32_t collector_entity_id,
+            vint32_t item_count
             );
     void (*clientbound_play_entity_teleport_cb)(
             struct bot_agent *bot,
@@ -1067,6 +1076,7 @@ struct bot_agent {
     bool reduced_debug_info;
 
     enum state current_state;
+    int packet_id;
 
     char *name;
     double x;
@@ -1087,6 +1097,12 @@ struct bot_agent {
     char *server_addr;
     short server_port;
     uv_tcp_t socket;
+    
+    int capture_enabled;
+    FILE *capture;
+    /* TODO: Use pcap to record traffic instead of custom binary format? */
+    pcap_dumper_t *pdumper;
+    char pcap_errorbuf[PCAP_ERRBUF_SIZE];
 
     int mcc_status;
 

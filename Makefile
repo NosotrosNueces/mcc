@@ -1,11 +1,13 @@
 VERSION = 0.0.1
+PROTOCOL_VERSION = 315
 
 CC      = clang
 SA      = scan-build
 
 DIR 	:= $(pwd)
 
-CFLAGS  = -Wall -Werror -Wswitch -Wswitch-enum -Isrc -std=c11 -D_GNU_SOURCE -g
+
+CFLAGS  = -Wall -Werror -Wswitch -Wswitch-enum -Iinclude -std=c11 -D_GNU_SOURCE -g -DPROTOCOL_VERSION=$(PROTOCOL_VERSION)
 LDFLAGS = -lpthread -lm -luv -lz -lssl -lcrypto
 
 SRC		= src
@@ -20,7 +22,7 @@ OBJECTS 	:= $(patsubst $(SRC)/%.c,$(OBJ)/%.o, $(SRCFILES))
 all: $(TARGET)
 
 $(TARGET): $(SHAREDLIB) | $(BIN)
-	$(CC) $(OBJECTS) -o $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) test.c $(OBJECTS) -o $@ $(LDFLAGS)
 
 debug: CFLAGS += -g
 debug: clean

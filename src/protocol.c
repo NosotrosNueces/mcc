@@ -10,6 +10,7 @@
 #include "protocol.h"
 #include "serial.h"
 #include "nbt.h"
+#include "capture.h"
 
 #define DEFAULT_PACKET_LENGTH   (1 << 10)
 #define CHUNK_DIM               16
@@ -52,6 +53,10 @@ int uv_write_encrypt(struct bot_agent *bot, char *data, size_t len) {
         buf = uv_buf_init(malloc(len), len);
         memcpy(buf.base, data, len);
     }
+
+    /* capture */
+    capture_packet(bot, PACKET_DIRECTION_SERVERBOUND, buf.base, len);
+
     req->data = buf.base;
     bytes_written = uv_write(req, (uv_stream_t *)&bot->socket, &buf, 1, on_write);
     return bytes_written;
@@ -941,9 +946,9 @@ int32_t send_play_serverbound_player_block_placement(
         position_t location,
         vint32_t face,
         vint32_t hand,
-        uint8_t x,
-        uint8_t y,
-        uint8_t z
+        float x,
+        float y,
+        float z
         )
 {
     struct packet_write_buffer buf;
@@ -955,9 +960,9 @@ int32_t send_play_serverbound_player_block_placement(
     _push_uint64_t(&buf, location);
     _push_vint32(&buf, face);
     _push_vint32(&buf, hand);
-    _push(&buf, &x, sizeof(x));
-    _push(&buf, &y, sizeof(y));
-    _push(&buf, &z, sizeof(z));
+    _push_float(&buf, x);
+    _push_float(&buf, y);
+    _push_float(&buf, z);
 
     size_t length = buf.ptr - data_start;
 
@@ -987,10 +992,11 @@ int32_t send_play_serverbound_use_item(
 }
 
 void deserialize_clientbound_login_disconnect(char *packet_data, struct bot_agent *bot) {
+    char *reason;
+    packet_data = _read_string(packet_data, &reason, NULL, bot);
+    printf("Disconnect Reason: %s\n", reason);
     if (bot->callbacks.clientbound_login_disconnect_cb != NULL) {
-        char *reason;
-        packet_data = _read_string(packet_data, &reason, NULL, bot);
-        bot->callbacks.clientbound_login_disconnect_cb(
+                bot->callbacks.clientbound_login_disconnect_cb(
                 bot,
                 reason
                 );
@@ -1006,7 +1012,6 @@ void random_bytes(int length, unsigned char *buffer) {
 }
 
 void deserialize_clientbound_login_encryption_request(char *packet_data, struct bot_agent *bot) {
-    printf("Encryption Request\n");
     char *server_id;
     vint32_t public_key_length;
     unsigned char *public_key;
@@ -1101,10 +1106,12 @@ void deserialize_clientbound_login_set_compression(char *packet_data, struct bot
 }
 
 void deserialize_clientbound_status_response(char *packet_data, struct bot_agent *bot) {
+    char *json;
+    packet_data = _read_string(packet_data, &json, NULL, bot);
+    printf("Server Response: %s\n", json);
     if (bot->callbacks.clientbound_status_response_cb != NULL) {
         char *json;
         packet_data = _read_string(packet_data, &json, NULL, bot);
-
         bot->callbacks.clientbound_status_response_cb(
                 bot,
                 json
@@ -1336,7 +1343,7 @@ void deserialize_clientbound_play_spawn_mob(char *packet_data, struct bot_agent 
     if (bot->callbacks.clientbound_play_spawn_mob_cb != NULL) {
         vint32_t entity_id;
         char uuid[16];
-        uint8_t type;
+        vint32_t type;
         double x, y, z;
         uint8_t yaw, pitch, head_pitch;
         int16_t v_x, v_y, v_z;
@@ -1344,7 +1351,7 @@ void deserialize_clientbound_play_spawn_mob(char *packet_data, struct bot_agent 
 
         packet_data = _read_vint32(packet_data, &entity_id, bot);
         packet_data = _read(packet_data, uuid, sizeof(uuid), bot);
-        packet_data = _read(packet_data, &type, sizeof(type), bot);
+        packet_data = _read_vint32(packet_data, &type, bot);
         packet_data = _read_double(packet_data, &x, bot);
         packet_data = _read_double(packet_data, &y, bot);
         packet_data = _read_double(packet_data, &z, bot);
@@ -3266,6 +3273,9 @@ void free_title_action(struct title_action *action) {
         case TITLE_ACTION_SET_SUBTITLE:
             free(action->set_subtitle.subtitle_text);
             break;
+        case TITLE_ACTION_SET_ACTION_BAR:
+            free(action->set_action_bar.action_bar_text);
+            break;
         case TITLE_ACTION_SET_TIMES_AND_DISPLAY:
             break;
         case TITLE_ACTION_HIDE:
@@ -3283,6 +3293,9 @@ char *_read_title_action(char *packet_data, enum TITLE_ACTION_TYPE type, struct 
             break;
         case TITLE_ACTION_SET_SUBTITLE:
             packet_data = _read_string(packet_data, &action->set_subtitle.subtitle_text, NULL, bot);
+            break;
+        case TITLE_ACTION_SET_ACTION_BAR:
+            packet_data = _read_string(packet_data, &action->set_action_bar.action_bar_text, NULL, bot);
             break;
         case TITLE_ACTION_SET_TIMES_AND_DISPLAY:
             packet_data = _read_int32_t(packet_data, &action->set_times_and_display.fade_in, bot);
@@ -3366,14 +3379,18 @@ void deserialize_clientbound_play_collect_item(char *packet_data, struct bot_age
     if (bot->callbacks.clientbound_play_collect_item_cb != NULL) {
         vint32_t collected_entity_id;
         vint32_t collector_entity_id;
+        vint32_t item_count;
+
 
         packet_data = _read_vint32(packet_data, &collected_entity_id, bot);
         packet_data = _read_vint32(packet_data, &collector_entity_id, bot);
+        packet_data = _read_vint32(packet_data, &item_count, bot);
 
         bot->callbacks.clientbound_play_collect_item_cb(
                 bot,
                 collected_entity_id,
-                collector_entity_id
+                collector_entity_id,
+                item_count
                 );
     }
 }
@@ -3482,10 +3499,9 @@ void deserialize_clientbound_play_entity_effect(char *packet_data, struct bot_ag
 void dispatch_packet_cb(char *packet_data, struct bot_agent *bot) {
     vint32_t packet_id;
     packet_data = _read_vint32(packet_data, &packet_id, bot);
-    printf("Packet id: %d, ", packet_id);
+    bot->packet_id = packet_id;
     switch (bot->current_state) {
         case LOGIN:
-            printf("LOGIN\n");
             switch (packet_id) {
                 case 0x00: /* clientbound login disconnect */
                     deserialize_clientbound_login_disconnect(packet_data, bot);
@@ -3505,7 +3521,6 @@ void dispatch_packet_cb(char *packet_data, struct bot_agent *bot) {
             }
             break;
         case STATUS:
-            printf("STATUS\n");
             switch (packet_id) {
                 case 0x00: /* clientbound status response */
                     deserialize_clientbound_status_response(packet_data, bot);
@@ -3519,7 +3534,6 @@ void dispatch_packet_cb(char *packet_data, struct bot_agent *bot) {
             }
             break;
         case PLAY:
-            printf("PLAY\n");
             switch (packet_id) {
                 case 0x00:
                     deserialize_clientbound_play_spawn_object(packet_data, bot);
@@ -3787,6 +3801,8 @@ void read_socket(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
     struct bot_agent *bot = stream->data;
     char *stream_data_raw;
     int32_t data_length;
+
+    capture_packet(bot, PACKET_DIRECTION_CLIENTBOUND, buf->base, nread);
 
     /* decrypt packet if needed */
     if (bot->encryption_enabled) {
