@@ -1,5 +1,8 @@
 {
     "0": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": Infinity,
         "break_time_gold": Infinity,
         "break_time_hand": Infinity,
@@ -12,7 +15,9 @@
         "name": "MINECRAFT_BLOCK_AIR"
     },
     "1": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.3,
         "break_time_gold": 0.2,
         "break_time_hand": 7.5,
@@ -25,7 +30,9 @@
         "name": "MINECRAFT_BLOCK_STONE"
     },
     "2": {
-        "best_tool": "MINECRAFT_TOOL_SHOVEL",
+        "best_tool": [
+            "MINECRAFT_TOOL_SHOVEL"
+        ],
         "break_time_diamond": 0.15,
         "break_time_gold": 0.1,
         "break_time_hand": 0.9,
@@ -38,7 +45,9 @@
         "name": "MINECRAFT_BLOCK_GRASS"
     },
     "3": {
-        "best_tool": "MINECRAFT_TOOL_SHOVEL",
+        "best_tool": [
+            "MINECRAFT_TOOL_SHOVEL"
+        ],
         "break_time_diamond": 0.1,
         "break_time_gold": 0.1,
         "break_time_hand": 0.75,
@@ -51,7 +60,9 @@
         "name": "MINECRAFT_BLOCK_DIRT"
     },
     "4": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -64,7 +75,9 @@
         "name": "MINECRAFT_BLOCK_COBBLESTONE"
     },
     "5": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -77,6 +90,9 @@
         "name": "MINECRAFT_BLOCK_PLANKS"
     },
     "6": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -89,6 +105,9 @@
         "name": "MINECRAFT_BLOCK_SAPLING"
     },
     "7": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": Infinity,
         "break_time_gold": Infinity,
         "break_time_hand": Infinity,
@@ -101,6 +120,9 @@
         "name": "MINECRAFT_BLOCK_BEDROCK"
     },
     "8": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": Infinity,
         "break_time_gold": Infinity,
         "break_time_hand": Infinity,
@@ -113,6 +135,9 @@
         "name": "MINECRAFT_BLOCK_FLOWING_WATER"
     },
     "9": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": Infinity,
         "break_time_gold": Infinity,
         "break_time_hand": Infinity,
@@ -125,6 +150,9 @@
         "name": "MINECRAFT_BLOCK_WATER"
     },
     "10": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": Infinity,
         "break_time_gold": Infinity,
         "break_time_hand": Infinity,
@@ -137,6 +165,9 @@
         "name": "MINECRAFT_BLOCK_FLOWING_LAVA"
     },
     "11": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": Infinity,
         "break_time_gold": Infinity,
         "break_time_hand": Infinity,
@@ -149,7 +180,9 @@
         "name": "MINECRAFT_BLOCK_LAVA"
     },
     "12": {
-        "best_tool": "MINECRAFT_TOOL_SHOVEL",
+        "best_tool": [
+            "MINECRAFT_TOOL_SHOVEL"
+        ],
         "break_time_diamond": 0.1,
         "break_time_gold": 0.1,
         "break_time_hand": 0.75,
@@ -162,7 +195,9 @@
         "name": "MINECRAFT_BLOCK_SAND"
     },
     "13": {
-        "best_tool": "MINECRAFT_TOOL_SHOVEL",
+        "best_tool": [
+            "MINECRAFT_TOOL_SHOVEL"
+        ],
         "break_time_diamond": 0.15,
         "break_time_gold": 0.1,
         "break_time_hand": 0.9,
@@ -175,7 +210,9 @@
         "name": "MINECRAFT_BLOCK_GRAVEL"
     },
     "14": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 1.25,
         "break_time_hand": 15.0,
@@ -188,7 +225,9 @@
         "name": "MINECRAFT_BLOCK_GOLD_ORE"
     },
     "15": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 1.25,
         "break_time_hand": 15.0,
@@ -201,7 +240,9 @@
         "name": "MINECRAFT_BLOCK_IRON_ORE"
     },
     "16": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 0.4,
         "break_time_hand": 15.0,
@@ -214,7 +255,9 @@
         "name": "MINECRAFT_BLOCK_COAL_ORE"
     },
     "17": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -227,7 +270,10 @@
         "name": "MINECRAFT_BLOCK_LOG"
     },
     "18": {
-        "best_tool": ["MINECRAFT_TOOL_SHEARS", "MINECRAFT_TOOL_SWORD"],
+        "best_tool": [
+            "MINECRAFT_TOOL_SHEARS",
+            "MINECRAFT_TOOL_SWORD"
+        ],
         "break_time_diamond": 0.35,
         "break_time_gold": 0.35,
         "break_time_hand": 0.35,
@@ -240,6 +286,9 @@
         "name": "MINECRAFT_BLOCK_LEAVES"
     },
     "19": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.9,
         "break_time_gold": 0.9,
         "break_time_hand": 0.9,
@@ -252,6 +301,9 @@
         "name": "MINECRAFT_BLOCK_SPONGE"
     },
     "20": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.45,
         "break_time_gold": 0.45,
         "break_time_hand": 0.45,
@@ -264,7 +316,9 @@
         "name": "MINECRAFT_BLOCK_GLASS"
     },
     "21": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 1.25,
         "break_time_hand": 15.0,
@@ -277,7 +331,9 @@
         "name": "MINECRAFT_BLOCK_LAPIS_ORE"
     },
     "22": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 1.25,
         "break_time_hand": 15.0,
@@ -290,7 +346,9 @@
         "name": "MINECRAFT_BLOCK_LAPIS_BLOCK"
     },
     "23": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.7,
         "break_time_gold": 0.45,
         "break_time_hand": 17.5,
@@ -303,7 +361,9 @@
         "name": "MINECRAFT_BLOCK_DISPENSER"
     },
     "24": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.2,
         "break_time_gold": 0.1,
         "break_time_hand": 4.0,
@@ -316,7 +376,9 @@
         "name": "MINECRAFT_BLOCK_SANDSTONE"
     },
     "25": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.2,
         "break_time_gold": 0.1,
         "break_time_hand": 1.25,
@@ -329,6 +391,9 @@
         "name": "MINECRAFT_BLOCK_NOTE_BLOCK"
     },
     "26": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.35,
         "break_time_gold": 0.35,
         "break_time_hand": 0.35,
@@ -341,7 +406,9 @@
         "name": "MINECRAFT_BLOCK_BED"
     },
     "27": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.15,
         "break_time_gold": 0.1,
         "break_time_hand": 1.05,
@@ -354,7 +421,9 @@
         "name": "MINECRAFT_BLOCK_GOLDEN_RAIL"
     },
     "28": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.15,
         "break_time_gold": 0.1,
         "break_time_hand": 1.05,
@@ -367,6 +436,9 @@
         "name": "MINECRAFT_BLOCK_DETECTOR_RAIL"
     },
     "29": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.75,
         "break_time_gold": 0.75,
         "break_time_hand": 0.75,
@@ -379,7 +451,10 @@
         "name": "MINECRAFT_BLOCK_STICKY_PISTON"
     },
     "30": {
-        "best_tool": ["MINECRAFT_TOOL_SHEARS", "MINECRAFT_TOOL_SWORD"],
+        "best_tool": [
+            "MINECRAFT_TOOL_SHEARS",
+            "MINECRAFT_TOOL_SWORD"
+        ],
         "break_time_diamond": 20.0,
         "break_time_gold": 20.0,
         "break_time_hand": 20.0,
@@ -392,6 +467,9 @@
         "name": "MINECRAFT_BLOCK_WEB"
     },
     "31": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -404,6 +482,9 @@
         "name": "MINECRAFT_BLOCK_TALLGRASS"
     },
     "32": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -416,6 +497,9 @@
         "name": "MINECRAFT_BLOCK_DEADBUSH"
     },
     "33": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.75,
         "break_time_gold": 0.75,
         "break_time_hand": 0.75,
@@ -428,6 +512,9 @@
         "name": "MINECRAFT_BLOCK_PISTON"
     },
     "34": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.75,
         "break_time_gold": 0.75,
         "break_time_hand": 0.75,
@@ -440,7 +527,9 @@
         "name": "MINECRAFT_BLOCK_PISTON_BLOCK"
     },
     "35": {
-        "best_tool": "MINECRAFT_TOOL_SHEARS",
+        "best_tool": [
+            "MINECRAFT_TOOL_SHEARS"
+        ],
         "break_time_diamond": 1.25,
         "break_time_gold": 1.25,
         "break_time_hand": 1.25,
@@ -453,6 +542,9 @@
         "name": "MINECRAFT_BLOCK_WOOL"
     },
     "36": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": Infinity,
         "break_time_gold": Infinity,
         "break_time_hand": Infinity,
@@ -465,6 +557,9 @@
         "name": "MINECRAFT_BLOCK_PISTON_EXTENSION"
     },
     "37": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -477,6 +572,9 @@
         "name": "MINECRAFT_BLOCK_YELLOW_FLOWER"
     },
     "38": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -489,6 +587,9 @@
         "name": "MINECRAFT_BLOCK_RED_FLOWER"
     },
     "39": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -501,6 +602,9 @@
         "name": "MINECRAFT_BLOCK_BROWN_MUSHROOMS"
     },
     "40": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -513,7 +617,9 @@
         "name": "MINECRAFT_BLOCK_RED_MUSHROOMS"
     },
     "41": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 1.25,
         "break_time_hand": 15.0,
@@ -526,7 +632,9 @@
         "name": "MINECRAFT_BLOCK_GOLD_BLOCK"
     },
     "42": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.95,
         "break_time_gold": 2.1,
         "break_time_hand": 25.0,
@@ -539,7 +647,9 @@
         "name": "MINECRAFT_BLOCK_IRON_BLOCK"
     },
     "43": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -552,7 +662,9 @@
         "name": "MINECRAFT_BLOCK_DOUBLE_STONE_SLAB"
     },
     "44": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -565,7 +677,9 @@
         "name": "MINECRAFT_BLOCK_STONE_SLAB"
     },
     "45": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -578,6 +692,9 @@
         "name": "MINECRAFT_BLOCK_BRICK_BLOCK"
     },
     "46": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -590,7 +707,9 @@
         "name": "MINECRAFT_BLOCK_TNT"
     },
     "47": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.3,
         "break_time_gold": 0.2,
         "break_time_hand": 2.25,
@@ -603,7 +722,9 @@
         "name": "MINECRAFT_BLOCK_BOOKSHELF"
     },
     "48": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -616,7 +737,9 @@
         "name": "MINECRAFT_BLOCK_MOSSY_COBBLESTONE"
     },
     "49": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 9.4,
         "break_time_gold": 20.85,
         "break_time_hand": 250.0,
@@ -629,6 +752,9 @@
         "name": "MINECRAFT_BLOCK_OBSIDIAN"
     },
     "50": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -641,6 +767,9 @@
         "name": "MINECRAFT_BLOCK_TORCH"
     },
     "51": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -653,7 +782,9 @@
         "name": "MINECRAFT_BLOCK_FIRE"
     },
     "52": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.95,
         "break_time_gold": 0.65,
         "break_time_hand": 25.0,
@@ -666,7 +797,9 @@
         "name": "MINECRAFT_BLOCK_MOB_SPAWNER"
     },
     "53": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -679,7 +812,9 @@
         "name": "MINECRAFT_BLOCK_OAK_STAIRS"
     },
     "54": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.5,
         "break_time_gold": 0.35,
         "break_time_hand": 3.75,
@@ -692,6 +827,9 @@
         "name": "MINECRAFT_BLOCK_CHEST"
     },
     "55": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -704,7 +842,9 @@
         "name": "MINECRAFT_BLOCK_REDSTONE_WIRE"
     },
     "56": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 1.25,
         "break_time_hand": 15.0,
@@ -717,7 +857,9 @@
         "name": "MINECRAFT_BLOCK_DIAMOND_ORE"
     },
     "57": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.95,
         "break_time_gold": 2.1,
         "break_time_hand": 25.0,
@@ -730,7 +872,9 @@
         "name": "MINECRAFT_BLOCK_DIAMOND_BLOCK"
     },
     "58": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.5,
         "break_time_gold": 0.35,
         "break_time_hand": 3.75,
@@ -743,6 +887,9 @@
         "name": "MINECRAFT_BLOCK_CRAFTING_TABLE"
     },
     "59": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -755,7 +902,9 @@
         "name": "MINECRAFT_BLOCK_WHEAT"
     },
     "60": {
-        "best_tool": "MINECRAFT_TOOL_SHOVEL",
+        "best_tool": [
+            "MINECRAFT_TOOL_SHOVEL"
+        ],
         "break_time_diamond": 0.15,
         "break_time_gold": 0.1,
         "break_time_hand": 0.9,
@@ -768,7 +917,9 @@
         "name": "MINECRAFT_BLOCK_FARMLAND"
     },
     "61": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.7,
         "break_time_gold": 0.45,
         "break_time_hand": 17.5,
@@ -781,7 +932,9 @@
         "name": "MINECRAFT_BLOCK_FURNACE"
     },
     "62": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.7,
         "break_time_gold": 0.45,
         "break_time_hand": 17.5,
@@ -794,7 +947,9 @@
         "name": "MINECRAFT_BLOCK_LIT_FURNACE"
     },
     "63": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.2,
         "break_time_gold": 0.15,
         "break_time_hand": 1.5,
@@ -807,7 +962,9 @@
         "name": "MINECRAFT_BLOCK_STANDING_SIGN"
     },
     "64": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 0.4,
         "break_time_hand": 4.5,
@@ -820,7 +977,9 @@
         "name": "MINECRAFT_BLOCK_WOODEN_DOOR"
     },
     "65": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.1,
         "break_time_gold": 0.05,
         "break_time_hand": 0.65,
@@ -833,7 +992,9 @@
         "name": "MINECRAFT_BLOCK_LADDER"
     },
     "66": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.15,
         "break_time_gold": 0.1,
         "break_time_hand": 1.05,
@@ -846,7 +1007,9 @@
         "name": "MINECRAFT_BLOCK_RAIL"
     },
     "67": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -859,7 +1022,9 @@
         "name": "MINECRAFT_BLOCK_STONE_STAIRS"
     },
     "68": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.2,
         "break_time_gold": 0.15,
         "break_time_hand": 1.5,
@@ -872,6 +1037,9 @@
         "name": "MINECRAFT_BLOCK_WALL_SIGN"
     },
     "69": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.75,
         "break_time_gold": 0.75,
         "break_time_hand": 0.75,
@@ -884,7 +1052,9 @@
         "name": "MINECRAFT_BLOCK_LEVER"
     },
     "70": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.1,
         "break_time_gold": 0.1,
         "break_time_hand": 2.5,
@@ -897,7 +1067,9 @@
         "name": "MINECRAFT_BLOCK_STONE_PRESSURE_PLATE"
     },
     "71": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.95,
         "break_time_gold": 0.65,
         "break_time_hand": 25.0,
@@ -910,7 +1082,9 @@
         "name": "MINECRAFT_BLOCK_IRON_DOOR"
     },
     "72": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.1,
         "break_time_gold": 0.1,
         "break_time_hand": 0.75,
@@ -923,7 +1097,9 @@
         "name": "MINECRAFT_BLOCK_WOODEN_PRESSURE_PLATE"
     },
     "73": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 1.25,
         "break_time_hand": 15.0,
@@ -936,7 +1112,9 @@
         "name": "MINECRAFT_BLOCK_REDSTONE_ORE"
     },
     "74": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 1.25,
         "break_time_hand": 15.0,
@@ -949,6 +1127,9 @@
         "name": "MINECRAFT_BLOCK_LIT_REDSTONE_ORE"
     },
     "75": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -961,6 +1142,9 @@
         "name": "MINECRAFT_BLOCK_UNLIT_REDSTONE_TORCH"
     },
     "76": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -973,7 +1157,9 @@
         "name": "MINECRAFT_BLOCK_REDSTONE_TORCH"
     },
     "77": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.75,
         "break_time_gold": 0.75,
         "break_time_hand": 0.75,
@@ -986,7 +1172,9 @@
         "name": "MINECRAFT_BLOCK_STONE_BUTTON"
     },
     "78": {
-        "best_tool": "MINECRAFT_TOOL_SHOVEL",
+        "best_tool": [
+            "MINECRAFT_TOOL_SHOVEL"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.5,
@@ -999,7 +1187,9 @@
         "name": "MINECRAFT_BLOCK_SNOW_LAYER"
     },
     "79": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.1,
         "break_time_gold": 0.1,
         "break_time_hand": 0.75,
@@ -1012,7 +1202,9 @@
         "name": "MINECRAFT_BLOCK_ICE"
     },
     "80": {
-        "best_tool": "MINECRAFT_TOOL_SHOVEL",
+        "best_tool": [
+            "MINECRAFT_TOOL_SHOVEL"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 1.0,
@@ -1025,6 +1217,9 @@
         "name": "MINECRAFT_BLOCK_SNOW"
     },
     "81": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.65,
         "break_time_gold": 0.65,
         "break_time_hand": 0.65,
@@ -1037,7 +1232,9 @@
         "name": "MINECRAFT_BLOCK_CACTUS"
     },
     "82": {
-        "best_tool": "MINECRAFT_TOOL_SHOVEL",
+        "best_tool": [
+            "MINECRAFT_TOOL_SHOVEL"
+        ],
         "break_time_diamond": 0.15,
         "break_time_gold": 0.1,
         "break_time_hand": 0.9,
@@ -1050,6 +1247,9 @@
         "name": "MINECRAFT_BLOCK_CLAY"
     },
     "83": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -1062,7 +1262,9 @@
         "name": "MINECRAFT_BLOCK_REEDS"
     },
     "84": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -1075,7 +1277,9 @@
         "name": "MINECRAFT_BLOCK_JUKEBOX"
     },
     "85": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -1088,7 +1292,10 @@
         "name": "MINECRAFT_BLOCK_FENCE"
     },
     "86": {
-        "best_tool": ["MINECRAFT_TOOL_AXE", "MINECRAFT_TOOL_SWORD"],
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE",
+            "MINECRAFT_TOOL_SWORD"
+        ],
         "break_time_diamond": 0.2,
         "break_time_gold": 0.15,
         "break_time_hand": 1.5,
@@ -1101,7 +1308,9 @@
         "name": "MINECRAFT_BLOCK_PUMPKIN"
     },
     "87": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.1,
         "break_time_gold": 0.05,
         "break_time_hand": 2.0,
@@ -1114,7 +1323,9 @@
         "name": "MINECRAFT_BLOCK_NETHERRACK"
     },
     "88": {
-        "best_tool": "MINECRAFT_TOOL_SHOVEL",
+        "best_tool": [
+            "MINECRAFT_TOOL_SHOVEL"
+        ],
         "break_time_diamond": 0.1,
         "break_time_gold": 0.1,
         "break_time_hand": 0.75,
@@ -1127,6 +1338,9 @@
         "name": "MINECRAFT_BLOCK_SOUL_SAND"
     },
     "89": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.45,
         "break_time_gold": 0.45,
         "break_time_hand": 0.45,
@@ -1139,6 +1353,9 @@
         "name": "MINECRAFT_BLOCK_GLOWSTONE"
     },
     "90": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": Infinity,
         "break_time_gold": Infinity,
         "break_time_hand": Infinity,
@@ -1151,7 +1368,10 @@
         "name": "MINECRAFT_BLOCK_PORTAL"
     },
     "91": {
-        "best_tool": ["MINECRAFT_TOOL_AXE", "MINECRAFT_TOOL_SWORD"],
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE",
+            "MINECRAFT_TOOL_SWORD"
+        ],
         "break_time_diamond": 0.2,
         "break_time_gold": 0.15,
         "break_time_hand": 1.5,
@@ -1164,6 +1384,9 @@
         "name": "MINECRAFT_BLOCK_LIT_PUMPKIN"
     },
     "92": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.75,
         "break_time_gold": 0.75,
         "break_time_hand": 0.75,
@@ -1176,6 +1399,9 @@
         "name": "MINECRAFT_BLOCK_CAKE"
     },
     "93": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -1188,6 +1414,9 @@
         "name": "MINECRAFT_BLOCK_UNPOWERED_REPEATER"
     },
     "94": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -1200,6 +1429,9 @@
         "name": "MINECRAFT_BLOCK_POWERED_REPEATER"
     },
     "95": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.45,
         "break_time_gold": 0.45,
         "break_time_hand": 0.45,
@@ -1212,7 +1444,9 @@
         "name": "MINECRAFT_BLOCK_STAINED_GLASS"
     },
     "96": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 0.4,
         "break_time_hand": 4.5,
@@ -1225,6 +1459,9 @@
         "name": "MINECRAFT_BLOCK_TRAPDOOR"
     },
     "97": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 1.15,
         "break_time_gold": 1.15,
         "break_time_hand": 1.15,
@@ -1237,7 +1474,9 @@
         "name": "MINECRAFT_BLOCK_MONSTER_EGG"
     },
     "98": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.3,
         "break_time_gold": 0.2,
         "break_time_hand": 7.5,
@@ -1250,7 +1489,9 @@
         "name": "MINECRAFT_BLOCK_STONE_BRICK"
     },
     "99": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.35,
@@ -1263,7 +1504,9 @@
         "name": "MINECRAFT_BLOCK_BROWN_MUSHROOM_BLOCK"
     },
     "100": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.35,
@@ -1276,7 +1519,9 @@
         "name": "MINECRAFT_BLOCK_RED_MUSHROOM_BLOCK"
     },
     "101": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.95,
         "break_time_gold": 0.65,
         "break_time_hand": 25.0,
@@ -1289,6 +1534,9 @@
         "name": "MINECRAFT_BLOCK_IRON_BARS"
     },
     "102": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.45,
         "break_time_gold": 0.45,
         "break_time_hand": 0.45,
@@ -1301,7 +1549,10 @@
         "name": "MINECRAFT_BLOCK_GLASS_PANE"
     },
     "103": {
-        "best_tool": ["MINECRAFT_TOOL_AXE", "MINECRAFT_TOOL_SWORD"],
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE",
+            "MINECRAFT_TOOL_SWORD"
+        ],
         "break_time_diamond": 0.2,
         "break_time_gold": 0.15,
         "break_time_hand": 1.5,
@@ -1314,6 +1565,9 @@
         "name": "MINECRAFT_BLOCK_MELON"
     },
     "104": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -1326,6 +1580,9 @@
         "name": "MINECRAFT_BLOCK_PUMPKIN_STEM"
     },
     "105": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -1338,7 +1595,10 @@
         "name": "MINECRAFT_BLOCK_MELON_STEM"
     },
     "106": {
-        "best_tool": ["MINECRAFT_TOOL_AXE", "MINECRAFT_TOOL_SWORD"],
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE",
+            "MINECRAFT_TOOL_SWORD"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.35,
@@ -1351,7 +1611,9 @@
         "name": "MINECRAFT_BLOCK_VINE"
     },
     "107": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -1364,7 +1626,9 @@
         "name": "MINECRAFT_BLOCK_FENCE_GATE"
     },
     "108": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -1377,7 +1641,9 @@
         "name": "MINECRAFT_BLOCK_BRICK_STAIRS"
     },
     "109": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.3,
         "break_time_gold": 0.2,
         "break_time_hand": 7.5,
@@ -1390,7 +1656,9 @@
         "name": "MINECRAFT_BLOCK_STONE_BRICK_STAIRS"
     },
     "110": {
-        "best_tool": "MINECRAFT_TOOL_SHOVEL",
+        "best_tool": [
+            "MINECRAFT_TOOL_SHOVEL"
+        ],
         "break_time_diamond": 0.15,
         "break_time_gold": 0.1,
         "break_time_hand": 0.9,
@@ -1403,6 +1671,9 @@
         "name": "MINECRAFT_BLOCK_MYCELIUM"
     },
     "111": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -1415,7 +1686,9 @@
         "name": "MINECRAFT_BLOCK_WATERLILY"
     },
     "112": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -1428,7 +1701,9 @@
         "name": "MINECRAFT_BLOCK_NETHER_BRICK"
     },
     "113": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -1441,7 +1716,9 @@
         "name": "MINECRAFT_BLOCK_NETHER_BRICK_FENCE"
     },
     "114": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -1454,6 +1731,9 @@
         "name": "MINECRAFT_BLOCK_NETHER_BRICK_STAIRS"
     },
     "115": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -1466,7 +1746,9 @@
         "name": "MINECRAFT_BLOCK_NETHER_WART"
     },
     "116": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.95,
         "break_time_gold": 0.65,
         "break_time_hand": 25.0,
@@ -1479,7 +1761,9 @@
         "name": "MINECRAFT_BLOCK_ENCHANTING_TABLE"
     },
     "117": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.1,
         "break_time_gold": 0.1,
         "break_time_hand": 2.5,
@@ -1492,7 +1776,9 @@
         "name": "MINECRAFT_BLOCK_BREWING_STAND"
     },
     "118": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -1505,6 +1791,9 @@
         "name": "MINECRAFT_BLOCK_CAULDRON"
     },
     "119": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": Infinity,
         "break_time_gold": Infinity,
         "break_time_hand": Infinity,
@@ -1517,6 +1806,9 @@
         "name": "MINECRAFT_BLOCK_END_PORTAL"
     },
     "120": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": Infinity,
         "break_time_gold": Infinity,
         "break_time_hand": Infinity,
@@ -1529,7 +1821,9 @@
         "name": "MINECRAFT_BLOCK_END_PORTAL_FRAME"
     },
     "121": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 0.4,
         "break_time_hand": 15.0,
@@ -1542,6 +1836,9 @@
         "name": "MINECRAFT_BLOCK_END_STONE"
     },
     "122": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 4.5,
         "break_time_gold": 4.5,
         "break_time_hand": 4.5,
@@ -1554,6 +1851,9 @@
         "name": "MINECRAFT_BLOCK_DRAGON_EGG"
     },
     "123": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.45,
         "break_time_gold": 0.45,
         "break_time_hand": 0.45,
@@ -1566,6 +1866,9 @@
         "name": "MINECRAFT_BLOCK_REDSTONE_LAMP"
     },
     "124": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.45,
         "break_time_gold": 0.45,
         "break_time_hand": 0.45,
@@ -1578,7 +1881,9 @@
         "name": "MINECRAFT_BLOCK_LIT_REDSTONE_LAMP"
     },
     "125": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -1591,7 +1896,9 @@
         "name": "MINECRAFT_BLOCK_DOUBLE_WOODEN_SLAB"
     },
     "126": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -1604,7 +1911,10 @@
         "name": "MINECRAFT_BLOCK_WOODEN_SLAB"
     },
     "127": {
-        "best_tool": ["MINECRAFT_TOOL_AXE", "MINECRAFT_TOOL_SWORD"],
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE",
+            "MINECRAFT_TOOL_SWORD"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.35,
@@ -1617,7 +1927,9 @@
         "name": "MINECRAFT_BLOCK_COCOA"
     },
     "128": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.2,
         "break_time_gold": 0.1,
         "break_time_hand": 4.0,
@@ -1630,7 +1942,9 @@
         "name": "MINECRAFT_BLOCK_SANDSTONE_STAIRS"
     },
     "129": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 1.25,
         "break_time_hand": 15.0,
@@ -1643,7 +1957,9 @@
         "name": "MIENCRAFT_BLOCK_EMERALD_ORE"
     },
     "130": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 4.25,
         "break_time_gold": 2.85,
         "break_time_hand": 112.5,
@@ -1656,6 +1972,9 @@
         "name": "MINECRAFT_BLOCK_ENDER_CHEST"
     },
     "131": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -1668,6 +1987,9 @@
         "name": "MINECRAFT_BLOCK_TRIPWIRE_HOOK"
     },
     "132": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -1680,7 +2002,9 @@
         "name": "MINECRAFT_BLOCK_TRIPWIRE"
     },
     "133": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.95,
         "break_time_gold": 2.1,
         "break_time_hand": 25.0,
@@ -1693,7 +2017,9 @@
         "name": "MINECRAFT_BLOCK_EMERALD_BLOCK"
     },
     "134": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -1706,7 +2032,9 @@
         "name": "MINECRAFT_BLOCK_SPRUCE_STAIRS"
     },
     "135": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -1719,7 +2047,9 @@
         "name": "MINECRAFT_BLOCK_BIRCH_STAIRS"
     },
     "136": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -1732,6 +2062,9 @@
         "name": "MINECRAFT_BLOCK_JUNGLE_STAIRS"
     },
     "137": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": Infinity,
         "break_time_gold": Infinity,
         "break_time_hand": Infinity,
@@ -1744,6 +2077,9 @@
         "name": "MINECRAFT_BLOCK_COMMAND_BLOCK"
     },
     "138": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 4.5,
         "break_time_gold": 4.5,
         "break_time_hand": 4.5,
@@ -1756,7 +2092,9 @@
         "name": "MINECRAFT_BLOCK_BEACON"
     },
     "139": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -1769,6 +2107,9 @@
         "name": "MINECRAFT_BLOCK_COBBLESTONE_WALL"
     },
     "140": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -1781,6 +2122,9 @@
         "name": "MINECRAFT_BLOCK_FLOWER_POT"
     },
     "141": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -1793,6 +2137,9 @@
         "name": "MINECRAFT_BLOCK_CARROTS"
     },
     "142": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -1805,6 +2152,9 @@
         "name": "MINECRAFT_BLOCK_POTATOES"
     },
     "143": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.75,
         "break_time_gold": 0.75,
         "break_time_hand": 0.75,
@@ -1817,6 +2167,9 @@
         "name": "MINECRAFT_BLOCK_WOODEN_BUTTON"
     },
     "144": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 1.5,
         "break_time_gold": 1.5,
         "break_time_hand": 1.5,
@@ -1829,7 +2182,9 @@
         "name": "MINECRAFT_BLOCK_SKULL"
     },
     "145": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.95,
         "break_time_gold": 0.65,
         "break_time_hand": 25.0,
@@ -1842,7 +2197,9 @@
         "name": "MINECRAFT_BLOCK_ANVIL"
     },
     "146": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.5,
         "break_time_gold": 0.35,
         "break_time_hand": 3.75,
@@ -1855,7 +2212,9 @@
         "name": "MINECRAFT_BLOCK_TRAPPED_CHEST"
     },
     "147": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.1,
         "break_time_gold": 0.1,
         "break_time_hand": 2.5,
@@ -1868,7 +2227,9 @@
         "name": "MINECRAFT_BLOCK_LIGHT_WEIGHTED_PRESSURE_PLATE"
     },
     "148": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.1,
         "break_time_gold": 0.1,
         "break_time_hand": 2.5,
@@ -1881,6 +2242,9 @@
         "name": "MINECRAFT_BLOCK_HEAVY_WEIGHTED_PRESSURE_PLATE"
     },
     "149": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -1893,6 +2257,9 @@
         "name": "MINECRAFT_BLOCK_UNPOWERED_COMPARATOR"
     },
     "150": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -1905,7 +2272,9 @@
         "name": "MINECRAFT_BLOCK_POWERED_COMPARATOR"
     },
     "151": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.35,
@@ -1918,7 +2287,9 @@
         "name": "MINECRAFT_BLOCK_DAYLIGHT_DETECTOR"
     },
     "152": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.95,
         "break_time_gold": 0.65,
         "break_time_hand": 25.0,
@@ -1931,7 +2302,9 @@
         "name": "MINECRAFT_BLOCK_REDSTONE_BLOCK"
     },
     "153": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 0.4,
         "break_time_hand": 15.0,
@@ -1944,7 +2317,9 @@
         "name": "MINECRAFT_BLOCK_QUARTZ_ORE"
     },
     "154": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 0.4,
         "break_time_hand": 15.0,
@@ -1957,7 +2332,9 @@
         "name": "MINECRAFT_BLOCK_HOPPER"
     },
     "155": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.2,
         "break_time_gold": 0.1,
         "break_time_hand": 4.0,
@@ -1970,7 +2347,9 @@
         "name": "MINECRAFT_BLOCK_QUARTZ_BLOCK"
     },
     "156": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.2,
         "break_time_gold": 0.1,
         "break_time_hand": 4.0,
@@ -1983,7 +2362,9 @@
         "name": "MINECRAFT_BLOCK_QUARTZ_STAIRS"
     },
     "157": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.15,
         "break_time_gold": 0.1,
         "break_time_hand": 1.05,
@@ -1996,7 +2377,9 @@
         "name": "MINECRAFT_BLOCK_ACTIVATOR_RAIL"
     },
     "158": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.7,
         "break_time_gold": 0.45,
         "break_time_hand": 17.5,
@@ -2009,6 +2392,9 @@
         "name": "MINECRAFT_BLOCK_DROPPER"
     },
     "160": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.45,
         "break_time_gold": 0.45,
         "break_time_hand": 0.45,
@@ -2021,7 +2407,10 @@
         "name": "MINECRAFT_BLOCK_STAINED_GLASS_PANE"
     },
     "161": {
-        "best_tool": ["MINECRAFT_TOOL_SHEARS", "MINECRAFT_TOOL_SWORD"],
+        "best_tool": [
+            "MINECRAFT_TOOL_SHEARS",
+            "MINECRAFT_TOOL_SWORD"
+        ],
         "break_time_diamond": 0.35,
         "break_time_gold": 0.35,
         "break_time_hand": 0.35,
@@ -2034,7 +2423,9 @@
         "name": "MINECRAFT_BLOCK_LEAVES2"
     },
     "162": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -2047,7 +2438,9 @@
         "name": "MINECRAFT_BLOCK_LOG2"
     },
     "163": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -2060,7 +2453,9 @@
         "name": "MINECRAFT_BLOCK_ACACIA_STAIRS"
     },
     "164": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -2073,6 +2468,9 @@
         "name": "MINECRAFT_BLOCK_DARK_OAK_STAIRS"
     },
     "165": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -2085,6 +2483,9 @@
         "name": "MINECRAFT_BLOCK_SLIME"
     },
     "166": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": Infinity,
         "break_time_gold": Infinity,
         "break_time_hand": Infinity,
@@ -2097,7 +2498,9 @@
         "name": "MINECRAFT_BLOCK_BARRIER"
     },
     "167": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.95,
         "break_time_gold": 0.65,
         "break_time_hand": 25.0,
@@ -2110,7 +2513,9 @@
         "name": "MINECRAFT_BLOCK_IRON_TRAPDOOR"
     },
     "168": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.3,
         "break_time_gold": 0.2,
         "break_time_hand": 7.5,
@@ -2123,6 +2528,9 @@
         "name": "MINECRAFT_BLOCK_PRISMARINE"
     },
     "169": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.45,
         "break_time_gold": 0.45,
         "break_time_hand": 0.45,
@@ -2135,6 +2543,9 @@
         "name": "MINECRAFT_BLOCK_SEA_LANTERN"
     },
     "170": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.75,
         "break_time_gold": 0.75,
         "break_time_hand": 0.75,
@@ -2147,6 +2558,9 @@
         "name": "MINECRAFT_BLOCK_HAY_BLOCK"
     },
     "171": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.2,
         "break_time_gold": 0.2,
         "break_time_hand": 0.2,
@@ -2159,7 +2573,9 @@
         "name": "MINECRAFT_BLOCK_CARPET"
     },
     "172": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.25,
         "break_time_gold": 0.2,
         "break_time_hand": 6.25,
@@ -2172,7 +2588,9 @@
         "name": "MINECRAFT_BLOCK_STAINED_HARDENED_CLAY"
     },
     "173": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.95,
         "break_time_gold": 0.65,
         "break_time_hand": 25.0,
@@ -2185,7 +2603,9 @@
         "name": "MINECRAFT_BLOCK_COAL_BLOCK"
     },
     "174": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.1,
         "break_time_gold": 0.1,
         "break_time_hand": 0.75,
@@ -2198,6 +2618,9 @@
         "name": "MINECRAFT_BLOCK_PACKED_ICE"
     },
     "175": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -2210,7 +2633,9 @@
         "name": "MINECRAFT_BLOCK_DOUBLE_PLANT"
     },
     "176": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.2,
         "break_time_gold": 0.15,
         "break_time_hand": 1.5,
@@ -2223,7 +2648,9 @@
         "name": "MINECRAFT_BLOCK_STANDING_BANNER"
     },
     "177": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.2,
         "break_time_gold": 0.15,
         "break_time_hand": 1.5,
@@ -2236,7 +2663,9 @@
         "name": "MINECRAFT_BLOCK_WALL_BANNER"
     },
     "178": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.35,
@@ -2249,7 +2678,9 @@
         "name": "MINECRAFT_BLOCK_DAYLIGHT_DETECTOR_INVERTED"
     },
     "179": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.2,
         "break_time_gold": 0.1,
         "break_time_hand": 4.0,
@@ -2262,7 +2693,9 @@
         "name": "MINECRAFT_BLOCK_RED_SANDSTONE"
     },
     "180": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.2,
         "break_time_gold": 0.1,
         "break_time_hand": 4.0,
@@ -2275,7 +2708,9 @@
         "name": "MINECRAFT_BLOCK_RED_SANDSTONE_STAIRS"
     },
     "181": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -2288,7 +2723,9 @@
         "name": "MINECRAFT_BLOCK_DOUBLE_STONE_SLAB2"
     },
     "182": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -2301,7 +2738,9 @@
         "name": "MINECRAFT_BLOCK_STONE_SLAB2"
     },
     "183": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -2314,7 +2753,9 @@
         "name": "MINECRAFT_BLOCK_SPRUCE_FENCE_GATE"
     },
     "184": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -2327,7 +2768,9 @@
         "name": "MINECRAFT_BLOCK_BIRCH_FENCE_GATE"
     },
     "185": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -2340,7 +2783,9 @@
         "name": "MINECRAFT_BLOCK_JUNGLE_FENCE_GATE"
     },
     "186": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -2353,7 +2798,9 @@
         "name": "MINECRAFT_BLOCK_DARK_OAK_FENCE_GATE"
     },
     "187": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -2366,7 +2813,9 @@
         "name": "MINECRAFT_BLOCK_ACACIA_FENCE_GATE"
     },
     "188": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -2379,7 +2828,9 @@
         "name": "MINECRAFT_BLOCK_SPRUCE_FENCE"
     },
     "189": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -2392,7 +2843,9 @@
         "name": "MINECRAFT_BLOCK_BIRCH_FENCE"
     },
     "190": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -2405,7 +2858,9 @@
         "name": "MINECRAFT_BLOCK_JUNGLE_FENCE"
     },
     "191": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -2418,7 +2873,9 @@
         "name": "MINECRAFT_BLOCK_DARK_OAK_FENCE"
     },
     "192": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 3.0,
@@ -2431,7 +2888,9 @@
         "name": "MINECRAFT_BLOCK_ACACIA_FENCE"
     },
     "193": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 0.4,
         "break_time_hand": 4.5,
@@ -2444,7 +2903,9 @@
         "name": "MINECRAFT_BLOCK_SPRUCE_DOOR"
     },
     "194": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 0.4,
         "break_time_hand": 4.5,
@@ -2457,7 +2918,9 @@
         "name": "MINECRAFT_BLOCK_BIRCH_DOOR"
     },
     "195": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 0.4,
         "break_time_hand": 4.5,
@@ -2470,7 +2933,9 @@
         "name": "MINECRAFT_BLOCK_JUNGLE_DOOR"
     },
     "196": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 0.4,
         "break_time_hand": 4.5,
@@ -2483,7 +2948,9 @@
         "name": "MINECRAFT_BLOCK_ACACIA_DOOR"
     },
     "197": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.6,
         "break_time_gold": 0.4,
         "break_time_hand": 4.5,
@@ -2496,6 +2963,9 @@
         "name": "MINECRAFT_BLOCK_DARK_OAK_DOOR"
     },
     "198": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -2508,7 +2978,9 @@
         "name": "MINECRAFT_BLOCK_END_ROD"
     },
     "199": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.1,
         "break_time_gold": 0.05,
         "break_time_hand": 0.65,
@@ -2521,7 +2993,9 @@
         "name": "MINECRAFT_BLOCK_CHORUS_PLANT"
     },
     "200": {
-        "best_tool": "MINECRAFT_TOOL_AXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_AXE"
+        ],
         "break_time_diamond": 0.1,
         "break_time_gold": 0.05,
         "break_time_hand": 0.65,
@@ -2534,7 +3008,9 @@
         "name": "MINECRAFT_BLOCK_CHORUS_FLOWER"
     },
     "201": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.3,
         "break_time_gold": 0.2,
         "break_time_hand": 7.5,
@@ -2547,7 +3023,9 @@
         "name": "MINECRAFT_BLOCK_PURPUR_BLOCK"
     },
     "202": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.3,
         "break_time_gold": 0.2,
         "break_time_hand": 7.5,
@@ -2560,7 +3038,9 @@
         "name": "MINECRAFT_BLOCK_PURPUR_PILLAR"
     },
     "203": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -2573,7 +3053,9 @@
         "name": "MINECRAFT_BLOCK_PURPUR_STAIRS"
     },
     "204": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -2586,7 +3068,9 @@
         "name": "MINECRAFT_BLOCK_PURPUR_DOUBLE_SLAB"
     },
     "205": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -2599,7 +3083,9 @@
         "name": "MINECRAFT_BLOCK_PURPUR_SLAB"
     },
     "206": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.2,
         "break_time_gold": 0.1,
         "break_time_hand": 4.0,
@@ -2612,6 +3098,9 @@
         "name": "MINECRAFT_BLOCK_END_BRICKS"
     },
     "207": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -2624,7 +3113,9 @@
         "name": "MINECRAFT_BLOCK_BEETROOTS"
     },
     "208": {
-        "best_tool": "MINECRAFT_TOOL_SHOVEL",
+        "best_tool": [
+            "MINECRAFT_TOOL_SHOVEL"
+        ],
         "break_time_diamond": 0.15,
         "break_time_gold": 0.1,
         "break_time_hand": 0.9,
@@ -2637,6 +3128,9 @@
         "name": "MINECRAFT_BLOCK_GRASS_PATH"
     },
     "209": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": Infinity,
         "break_time_gold": Infinity,
         "break_time_hand": Infinity,
@@ -2649,6 +3143,9 @@
         "name": "MINECRAFT_BLOCK_END_GATEWAY"
     },
     "210": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": Infinity,
         "break_time_gold": Infinity,
         "break_time_hand": Infinity,
@@ -2661,6 +3158,9 @@
         "name": "MINECRAFT_BLOCK_REPEATING_COMMAND_BLOCK"
     },
     "211": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": Infinity,
         "break_time_gold": Infinity,
         "break_time_hand": Infinity,
@@ -2673,6 +3173,9 @@
         "name": "MINECRAFT_BLOCK_CHAIN_COMMAND_BLOCK"
     },
     "212": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 2.5,
         "break_time_gold": 2.5,
         "break_time_hand": 2.5,
@@ -2685,6 +3188,9 @@
         "name": "MINECRAFT_FROSTED_ICE"
     },
     "213": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.1,
         "break_time_gold": 0.1,
         "break_time_hand": 2.5,
@@ -2697,6 +3203,9 @@
         "name": "MINECRAFT_BLOCK_MAGMA"
     },
     "214": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 1.5,
         "break_time_gold": 1.5,
         "break_time_hand": 1.5,
@@ -2709,7 +3218,9 @@
         "name": "MINECRAFT_BLOCK_NETHER_WART_BLOCK"
     },
     "215": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -2722,7 +3233,9 @@
         "name": "MINECRAFT_BLOCK_RED_NETHER_BRICK"
     },
     "216": {
-        "best_tool": "MINECRAFT_TOOL_PICKAXE",
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
         "break_time_diamond": 0.4,
         "break_time_gold": 0.25,
         "break_time_hand": 10.0,
@@ -2735,6 +3248,9 @@
         "name": "MINECRAFT_BLOCK_BONE_BLOCK"
     },
     "217": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": 0.05,
         "break_time_gold": 0.05,
         "break_time_hand": 0.05,
@@ -2747,6 +3263,9 @@
         "name": "MINECRAFT_BLOCK_STRUCTURE_VOID"
     },
     "255": {
+        "best_tool": [
+            "MINECRAFT_TOOL_OTHER"
+        ],
         "break_time_diamond": Infinity,
         "break_time_gold": Infinity,
         "break_time_hand": Infinity,

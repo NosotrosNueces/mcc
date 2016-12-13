@@ -62,7 +62,7 @@ int32_t send_play_serverbound_tab_complete(
 
 int32_t send_play_serverbound_chat_message(
 		struct bot_agent *bot,
-		char *message
+		const char *message
 		);
 
 int32_t send_play_serverbound_client_status(

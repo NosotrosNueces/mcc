@@ -182,7 +182,7 @@ void init_packet_write_buffer(struct packet_write_buffer *buffer, uint32_t capac
     buffer->ptr = buffer->base;
 }
 
-void _push(struct packet_write_buffer *buffer, void *data, size_t size)
+void _push(struct packet_write_buffer *buffer, const void *data, size_t size)
 {
     while (buffer->capacity < buffer->ptr + size - buffer->base) {
         _resize_packet_write_buffer(buffer);
@@ -286,7 +286,7 @@ char *_read_string(char *buf, char **strptr, int32_t *str_len_opt, struct bot_ag
     return buf;
 }
 
-void _push_string(struct packet_write_buffer *buf, char *str) {
+void _push_string(struct packet_write_buffer *buf, const char *str) {
     uint32_t bytes_pushed;
     size_t s_len = strlen(str);
     char str_len[5];

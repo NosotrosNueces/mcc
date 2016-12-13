@@ -316,7 +316,7 @@ int32_t send_play_serverbound_tab_complete(
 
 int32_t send_play_serverbound_chat_message(
         struct bot_agent *bot,
-        char *message
+        const char *message
         )
 {
     struct packet_write_buffer buf;
@@ -996,12 +996,12 @@ void deserialize_clientbound_login_disconnect(char *packet_data, struct bot_agen
     packet_data = _read_string(packet_data, &reason, NULL, bot);
     printf("Disconnect Reason: %s\n", reason);
     if (bot->callbacks.clientbound_login_disconnect_cb != NULL) {
-                bot->callbacks.clientbound_login_disconnect_cb(
+        bot->callbacks.clientbound_login_disconnect_cb(
                 bot,
                 reason
                 );
-        free(reason);
     }
+    free(reason);
 }
 
 /* Fills a buffer with random bytes */
@@ -1921,18 +1921,16 @@ void deserialize_clientbound_play_named_sound_effect(char *packet_data, struct b
 }
 
 void deserialize_clientbound_play_disconnect(char *packet_data, struct bot_agent *bot) {
+    char *reason;
+    packet_data = _read_string(packet_data, &reason, NULL, bot);
+    printf("Disconnect Reason: %s\n", reason);
     if (bot->callbacks.clientbound_play_disconnect_cb != NULL) {
-        char *reason;
-
-        packet_data = _read_string(packet_data, &reason, NULL, bot);
-
         bot->callbacks.clientbound_play_disconnect_cb(
                 bot,
                 reason
                 );
-
-        free(reason);
     }
+    free(reason);
 }
 
 void deserialize_clientbound_play_entity_status(char *packet_data, struct bot_agent *bot) {
@@ -3826,7 +3824,7 @@ void read_socket(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
     /* append new data to the buffer */
     memcpy(bot->packet_buffer + bot->packet_bytes_read, stream_data_raw, data_length);
     bot->packet_bytes_read += data_length;
-    
+
     if (bot->encryption_enabled) {
         free(stream_data_raw);
     }
