@@ -1,12 +1,14 @@
 VERSION = 0.0.1
+PROTOCOL_VERSION = 315
 
 CC      = clang
 SA      = scan-build
 
 DIR 	:= $(pwd)
 
-CFLAGS  = -c -fpic -Wall -Isrc --std=gnu99
-LDFLAGS = -lpthread -lm
+
+CFLAGS  = -Wall -Werror -Wswitch -Wswitch-enum -Iinclude -std=c11 -D_GNU_SOURCE -DPROTOCOL_VERSION=$(PROTOCOL_VERSION)
+LDFLAGS = -lpthread -lm -luv -lz -lssl -lcrypto
 
 SRC		= src
 LIB		= lib
@@ -14,39 +16,53 @@ SHAREDLIB	= $(LIB)/libmcc.so.$(VERSION)
 OBJ		= obj
 BIN		= bin
 TARGET  = $(BIN)/mcc
-TEST    := $(patsubst %.c,%.o,$(wildcard test/*.c))
-SRCFILES	:= $(wildcard $(SRC)/*.c)
-OBJECTS 	:= $(patsubst $(SRC)/%.c,$(OBJ)/%.o, $(SRCFILES))
-SAMPLE		:= $(patsubst %.c,%.o,$(wildcard sample/*.c))
+SRCFILES	= 	src/protocol.c \
+				src/hex.c \
+				src/logger.c \
+				src/bot.c \
+				src/nbt.c \
+				src/nbt_print.c \
+				src/base64.c \
+				src/serial.c \
+				src/capture.c \
+				src/break.c
 
+OBJECTS 	= $(patsubst $(SRC)/%.c,$(OBJ)/%.o, $(SRCFILES))
+
+all: CFLAGS += -O3
 all: $(TARGET)
 
-$(TARGET): $(SHAREDLIB) $(SAMPLE) | $(BIN)
-	$(CC) $(LDFLAGS) $(OBJECTS) $(SAMPLE) -o $@
+$(TARGET): $(SHAREDLIB) | $(BIN)
+	$(CC) $(CFLAGS) test.c $(OBJECTS) -o $@ $(LDFLAGS)
 
 debug: CFLAGS += -g
-debug: clean
-debug: all
+debug: $(TARGET)
 
 
 # Rule for making all object files
-$(OBJ)/%.o: $(SRC)/%.c | $(OBJ)
-	$(CC) $(CFLAGS) $< -o $@
+$(OBJ)/%.o: $(SRC)/%.c break | $(OBJ)
+	$(CC) -c -fpic $(CFLAGS) $< -o $@
 
 # Rule for making shared object file
 $(SHAREDLIB): $(OBJECTS) | $(LIB)
-	$(CC) -shared -o $@ $(OBJECTS)
-
-.PHONY: test
-test: CFLAGS += -g
-test: bin $(OBJECTS) $(TEST)
-test: $(SHAREDLIB) $(TEST) | $(BIN)
-	$(CC) $(LDFLAGS) $(OBJECTS) $(TEST) -o bin/$@
-	bin/$@
+	$(CC) -shared -o $@ $(OBJECTS) $(LDFLAGS)
 
 .PHONY: clean
-clean:
-	$(RM) $(OBJECTS) $(TEST) $(SAMPLE) $(BIN)/* $(SHAREDLIB)
+clean: clean-gen
+	$(RM) $(OBJECTS) $(BIN)/* $(SHAREDLIB)
+
+.PHONY: %.lint
+%.lint: %
+	$(CC) -fsyntax-only $(CFLAGS) $^
+
+# Generate source files
+.PHONY: break
+break: break.py break.json
+	./break.py break.json
+
+.PHONY: clean_gen
+clean-gen:
+	rm src/break.c include/break.h
 
 $(OBJ):
 	mkdir -p $@

@@ -9,220 +9,197 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#include <uv.h>
+#include <zlib.h>
 #include "bot.h"
 #include "protocol.h"
-#include "marshal.h"
+#include "types.h"
 
-void free_list(function *);
+void init_callbacks(struct _callbacks *callbacks);
 
-// Initializes the bot with defaults given a name and a main function.
-bot_t *init_bot(char *name, void (*bot_main)(void *))
-{
-    // Set the bot name
-    bot_t *bot = calloc(1, sizeof(bot_t));
-    bot->eid = -1;
-    size_t len = strlen(name);
-    bot->name = calloc(len + 1, sizeof(char));
-    strncpy(bot->name, name, len + 1);
-    bot->_data = calloc(1, sizeof(bot_internal));
-    bot->_data->packet_threshold = DEFAULT_THRESHOLD;
-    bot->_data->buf = calloc(1, DEFAULT_THRESHOLD);
-    bot->_data->current_state = LOGIN;
-    bot->_data->bot_main = bot_main;
-    // Initialize the callback data structure
-    bot->_data->callbacks = calloc(NUM_STATES, sizeof(function *));
-    bot->_data->callbacks[HANDSHAKE] = calloc(HANDSHAKE_PACKETS, sizeof(function));
-    bot->_data->callbacks[LOGIN] = calloc(LOGIN_PACKETS, sizeof(function));
-    bot->_data->callbacks[PLAY] = calloc(PLAY_PACKETS, sizeof(function));
-    bot->_data->timers = calloc(1, sizeof(timed_function *));
-    // Dummy tail for the timer list.
-    *(bot->_data->timers) = calloc(1, sizeof(timed_function));
+/* Populates the bot struct with default values */
+void init_bot(struct bot_agent *bot, char *name) {
+    bot->name = name;
+    bot->current_state = LOGIN;
+    uv_loop_init(&bot->loop);
+	uv_tcp_init(&bot->loop, &bot->socket);
+    bot->socket.data = bot;
+    bot->current_state = HANDSHAKE;
+    bot->mcc_status = MCC_OK;
 
-    // initialize pthread_mutex
-    pthread_mutex_init(&bot->bot_mutex, NULL);
-    return bot;
+    bot->packet_capacity = 512;
+    bot->packet_length = 0;
+    bot->packet_bytes_read = 0;
+    bot->packet_buffer = malloc(bot->packet_capacity);
+
+    bot->compression_enabled = 0;
+    bot->compression_threshold = -1;
+    bot->compression_stream.zalloc = Z_NULL;
+    bot->compression_stream.zfree = Z_NULL;
+    bot->compression_stream.opaque = Z_NULL;
+    deflateInit(&bot->compression_stream, Z_DEFAULT_COMPRESSION);
+
+    bot->decompression_stream.zalloc = Z_NULL;
+    bot->decompression_stream.zfree = Z_NULL;
+    bot->decompression_stream.opaque = Z_NULL;
+    bot->decompression_stream.avail_in = 0;
+    bot->decompression_stream.next_in = Z_NULL;
+    inflateInit(&bot->decompression_stream);
+
+    bot->encryption_enabled = 0;
+
+    init_callbacks(&bot->callbacks);
+    bot->block_break_timer.data = bot;
+    bot->is_breaking = 0;
 }
 
-void free_bot(bot_t *bot)
-{
-    free(bot->name);
-
-    free(bot->_data->buf);
-
-    // Free all handshake callback structs.
-    for(int i = 0; i < HANDSHAKE_PACKETS; i++)
-        free_list(bot->_data->callbacks[HANDSHAKE][i].next);
-    for(int i = 0; i < LOGIN_PACKETS; i++)
-        free_list(bot->_data->callbacks[LOGIN][i].next);
-    for(int i = 0; i < PLAY_PACKETS; i++)
-        free_list(bot->_data->callbacks[PLAY][i].next);
-    free(bot->_data->callbacks[HANDSHAKE]);
-    free(bot->_data->callbacks[LOGIN]);
-    free(bot->_data->callbacks[PLAY]);
-    free(bot->_data->callbacks);
-
-    // Free all timers in the linked list.
-    timed_function *node = *bot->_data->timers;
-    timed_function *prev_node = NULL;
-    // Use free_list?
-    while(node) {
-        prev_node = node;
-        node = node->next;
-        free(prev_node->last_time_called);
-        free(prev_node->interval);
-        free(prev_node);
-    }
-    free(bot->_data->timers);
-
-    free(bot->_data);
-
-    pthread_mutex_destroy(&bot->bot_mutex);
-
-    free(bot);
+/* memset? */
+void init_callbacks(struct _callbacks *callbacks) {
+    callbacks->clientbound_login_disconnect_cb = NULL;
+    callbacks->clientbound_login_encryption_request_cb = NULL;
+    callbacks->clientbound_login_login_success_cb = NULL;
+    callbacks->clientbound_login_set_compression_cb = NULL;
+    callbacks->clientbound_status_response_cb = NULL;
+    callbacks->clientbound_status_pong_cb = NULL;
+    callbacks->clientbound_play_spawn_object_cb = NULL;
+    callbacks->clientbound_play_spawn_experience_orb_cb = NULL;
+    callbacks->clientbound_play_spawn_global_entity_cb = NULL;
+    callbacks->clientbound_play_spawn_mob_cb = NULL;
+    callbacks->clientbound_play_spawn_painting_cb = NULL;
+    callbacks->clientbound_play_spawn_player_cb = NULL;
+    callbacks->clientbound_play_animation_cb = NULL;
+    callbacks->clientbound_play_statistics_cb = NULL;
+    callbacks->clientbound_play_block_break_animation_cb = NULL;
+    callbacks->clientbound_play_update_block_entity_cb = NULL;
+    callbacks->clientbound_play_block_action_cb = NULL;
+    callbacks->clientbound_play_block_change_cb = NULL;
+    callbacks->clientbound_play_boss_bar_cb = NULL;
+    callbacks->clientbound_play_server_difficulty_cb = NULL;
+    callbacks->clientbound_play_tab_complete_cb = NULL;
+    callbacks->clientbound_play_chat_message_cb = NULL;
+    callbacks->clientbound_play_multi_block_change_cb = NULL;
+    callbacks->clientbound_play_confirm_transaction_cb = NULL;
+    callbacks->clientbound_play_close_window_cb = NULL;
+    callbacks->clientbound_play_open_window_cb = NULL;
+    callbacks->clientbound_play_window_items_cb = NULL;
+    callbacks->clientbound_play_window_property_cb = NULL;
+    callbacks->clientbound_play_set_slot_cb = NULL;
+    callbacks->clientbound_play_set_cooldown_cb = NULL;
+    callbacks->clientbound_play_plugin_message_cb = NULL;
+    callbacks->clientbound_play_named_sound_effect_cb = NULL;
+    callbacks->clientbound_play_disconnect_cb = NULL;
+    callbacks->clientbound_play_entity_status_cb = NULL;
+    callbacks->clientbound_play_explosion_cb = NULL;
+    callbacks->clientbound_play_unload_chunk_cb = NULL;
+    callbacks->clientbound_play_change_game_state_cb = NULL;
+    callbacks->clientbound_play_keep_alive_cb = NULL;
+    callbacks->clientbound_play_chunk_data_cb = NULL;
+    callbacks->clientbound_play_effect_cb = NULL;
+    callbacks->clientbound_play_particle_cb = NULL;
+    callbacks->clientbound_play_join_game_cb = NULL;
+    callbacks->clientbound_play_map_cb = NULL;
+    callbacks->clientbound_play_entity_relative_move_cb = NULL;
+    callbacks->clientbound_play_entity_look_and_relative_move_cb = NULL;
+    callbacks->clientbound_play_entity_look_cb = NULL;
+    callbacks->clientbound_play_entity_cb = NULL;
+    callbacks->clientbound_play_vehicle_move_cb = NULL;
+    callbacks->clientbound_play_open_sign_editor_cb = NULL;
+    callbacks->clientbound_play_player_abilities_cb = NULL;
+    callbacks->clientbound_play_combat_event_cb = NULL;
+    callbacks->clientbound_play_player_list_item_cb = NULL;
+    callbacks->clientbound_play_player_position_and_look_cb = NULL;
+    callbacks->clientbound_play_use_bed_cb = NULL;
+    callbacks->clientbound_play_destroy_entities_cb = NULL;
+    callbacks->clientbound_play_remove_entity_effect_cb = NULL;
+    callbacks->clientbound_play_resource_pack_send_cb = NULL;
+    callbacks->clientbound_play_respawn_cb = NULL;
+    callbacks->clientbound_play_entity_head_look_cb = NULL;
+    callbacks->clientbound_play_world_border_cb = NULL;
+    callbacks->clientbound_play_camera_cb = NULL;
+    callbacks->clientbound_play_held_item_change_cb = NULL;
+    callbacks->clientbound_play_display_scoreboard_cb = NULL;
+    callbacks->clientbound_play_entity_metadata_cb = NULL;
+    callbacks->clientbound_play_attach_entity_cb = NULL;
+    callbacks->clientbound_play_entity_velocity_cb = NULL;
+    callbacks->clientbound_play_entity_equipment_cb = NULL;
+    callbacks->clientbound_play_set_experience_cb = NULL;
+    callbacks->clientbound_play_update_health_cb = NULL;
+    callbacks->clientbound_play_scoreboard_objective_cb = NULL;
+    callbacks->clientbound_play_set_passengers_cb = NULL;
+    callbacks->clientbound_play_teams_cb = NULL;
+    callbacks->clientbound_play_update_score_cb = NULL;
+    callbacks->clientbound_play_spawn_position_cb = NULL;
+    callbacks->clientbound_play_time_update_cb = NULL;
+    callbacks->clientbound_play_title_cb = NULL;
+    callbacks->clientbound_play_sound_effect_cb = NULL;
+    callbacks->clientbound_play_player_list_header_and_footer_cb = NULL;
+    callbacks->clientbound_play_collect_item_cb = NULL;
+    callbacks->clientbound_play_entity_teleport_cb = NULL;
+    callbacks->clientbound_play_entity_properties_cb = NULL;
+    callbacks->clientbound_play_entity_effect_cb = NULL;
 }
 
-void free_list(function *list)
-{
-    if (list) {
-        free_list(list->next);
-        free(list);
-    }
+void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
+    *buf = uv_buf_init(malloc(suggested_size), suggested_size);
 }
 
-timed_function *register_timer(bot_t *bot, struct timeval delay,
-                               int count, void (*f)(bot_t *, void *))
-{
-    timed_function **old_head = bot->_data->timers;
-
-    timed_function *new_node = calloc(1, sizeof(timed_function));
-    new_node->f = f;
-    new_node->next = *old_head;
-    new_node->prev = NULL;
-    new_node->last_time_called = calloc(1, sizeof(struct timeval));
-    gettimeofday(new_node->last_time_called, NULL);
-    new_node->interval = calloc(1, sizeof(struct timeval));
-    memcpy(new_node->interval, &delay, sizeof(struct timeval));
-    new_node->repeat_count = count;
-
-    // Always insert to the head.
-    (*old_head)->prev = new_node;
-    *(bot->_data->timers) = new_node;
-
-    return new_node;
-}
-
-void unregister_timer(bot_t *bot, timed_function *timer)
-{
-    if (timer->prev) {
-        timer->next->prev = timer->prev;
-        timer->prev->next = timer->next;
-    } else { // First element is a special case.
-        timer->next->prev = NULL;
-        *(bot->_data->timers) = timer->next;
-    }
-    free(timer->last_time_called);
-    free(timer->interval);
-    free(timer);
-}
-
-// Initializes a bot structure with a socket. The socket is bound to the
-// local address on some port and is connected to the server specified by the
-// server_host and server_port the socket descriptor is returned by the
-// function. If -1 is returned, then an error occured, and a message will
-// have been printed out.
-
-int join_server(bot_t *bot, char* server_host, int port_number)
-{
-    struct addrinfo hints, *res;
-    int sockfd;
-    char server_port[8];
-    // first, load up address structs with getaddrinfo():
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    sprintf(server_port, "%d", port_number);
-    getaddrinfo(server_host, server_port, &hints, &res);
-
-    // make a socket and connect
-    sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-    connect(sockfd, res->ai_addr, res->ai_addrlen);
-
-    bot->_data->socketfd = sockfd;
-    return sockfd;
-}
-
-int disconnect(bot_t *bot)
-{
-    return close(bot->_data->socketfd);
-}
-
-int send_str(bot_t *bot, char *str)
-{
-    //TODO: send is not guaranteed to send all the data. Need to make loop
-    size_t len = strlen(str) + 1; // to include null character
-    return send(bot->_data->socketfd, str, len, 0);
-}
-
-int send_raw(bot_t *bot, void *data, size_t len)
-{
-    return send(bot->_data->socketfd, data, len, 0);
-}
-
-int receive_raw(bot_t *bot, void *data, size_t len)
-{
-    return recv(bot->_data->socketfd, data, len, 0);
-}
-
-int receive_packet(bot_t *bot)
-{
-    vint32_t packet_size;
-    uint32_t received;
-    uint32_t ret;
-    uint32_t len;
-    uint32_t i;
-
-    memset(bot->_data->buf, 0, bot->_data->packet_threshold);
-    for (i = 0; i < 5; i++) {
-        ret = receive_raw(bot, bot->_data->buf + i, 1);
-        if (ret <= 0)
-            return -1;
-        if (!expect_more(bot->_data->buf[i]))
-            break;
+void on_connect(uv_connect_t *connect, int status) {
+    if (status < 0) {
+        fprintf(stderr, "Could not connect to server.\n");
+        assert(0);
     }
 
-    len = varint32(bot->_data->buf, &packet_size);
-    if (packet_size == 0)
-        return -2;
+    struct bot_agent *bot = connect->data;
+    send_handshaking_serverbound_handshake(bot, PROTOCOL_VERSION, bot->server_addr, bot->server_port, 2);
+    bot->current_state = LOGIN;
+    send_login_serverbound_login_start(bot, bot->name);
+    free(connect);
+    
+    
+    /* start reading from the socket */
+    uv_read_start((uv_stream_t *)&bot->socket, alloc_buffer, read_socket);
 
-    assert(i != len);
-
-    packet_size += len;
-    received = i + 1;
-    if (packet_size <= bot->_data->packet_threshold) {
-        while (received < packet_size) {
-            ret = receive_raw(bot, bot->_data->buf + received, packet_size - received);
-            if (ret <= 0)
-                return -1;
-            received += ret;
-        }
-
-        ret = peek_packet(bot, bot->_data->buf);
-        return ret;
-    } else {
-        // read in a huge buffer, packet_threshold at a time
-        while (received < packet_size - bot->_data->packet_threshold) {
-            ret = receive_raw(bot, bot->_data->buf, bot->_data->packet_threshold);
-            if (ret <= 0)
-                return -1;
-            received += ret;
-        }
-        // read the last portion of the packet
-        while (received < packet_size) {
-            ret = receive_raw(bot, bot->_data->buf, packet_size - received);
-            if (ret <= 0)
-                return -1;
-            received += ret;
-        }
-        return -2;
-    }
 }
+
+void join_server_ipaddr(struct bot_agent *bot, char *server_ip, int port_number)
+{
+	uv_connect_t *connect = malloc(sizeof(uv_connect_t));
+    connect->data = bot;
+    bot->server_addr = server_ip;
+    bot->server_port = port_number;
+
+	struct sockaddr_in dest;
+	uv_ip4_addr(server_ip, port_number, &dest);
+    //printf("%s:%d\n", server_ip, port_number); 
+	uv_tcp_connect(connect, &bot->socket, (const struct sockaddr*)&dest, on_connect);
+}
+
+void getaddrinfo_cb(uv_getaddrinfo_t *req, int status, struct addrinfo *response) {
+    if (status < 0) {
+        fprintf(stderr, "Server not found.\n");
+        assert(0);
+    }
+
+    struct bot_agent *bot = req->data;
+    struct sockaddr_in *first = (struct sockaddr_in *)response->ai_addr;
+    bot->server_port = ntohs(first->sin_port);
+        
+    join_server_ipaddr(bot, inet_ntoa(first->sin_addr), bot->server_port);
+
+    //uv_ip4_name((struct sockaddr_in*) res->ai_addr, addr, 16);
+    free(req);
+    uv_freeaddrinfo(response);
+}
+
+void join_server_hostname(struct bot_agent *bot, char *server_hostname, char *service) {
+    bot->server_addr = server_hostname;
+    uv_getaddrinfo_t *req = malloc(sizeof(uv_getaddrinfo_t));
+    req->data = bot;
+    uv_getaddrinfo(&bot->loop, req, getaddrinfo_cb, server_hostname, service, NULL);
+}
+
+void disconnect(struct bot_agent *bot)
+{
+    uv_close((uv_handle_t *)&bot->socket, NULL);
+}
+
