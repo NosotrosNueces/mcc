@@ -32,7 +32,7 @@ void init_bot(struct bot_agent *bot, char *name) {
     bot->packet_bytes_read = 0;
     bot->packet_buffer = malloc(bot->packet_capacity);
 
-    bot->compression_enabled = false;
+    bot->compression_enabled = 0;
     bot->compression_threshold = -1;
     bot->compression_stream.zalloc = Z_NULL;
     bot->compression_stream.zfree = Z_NULL;
@@ -49,8 +49,11 @@ void init_bot(struct bot_agent *bot, char *name) {
     bot->encryption_enabled = 0;
 
     init_callbacks(&bot->callbacks);
+    bot->block_break_timer.data = bot;
+    bot->is_breaking = 0;
 }
 
+/* memset? */
 void init_callbacks(struct _callbacks *callbacks) {
     callbacks->clientbound_login_disconnect_cb = NULL;
     callbacks->clientbound_login_encryption_request_cb = NULL;
@@ -185,15 +188,10 @@ void getaddrinfo_cb(uv_getaddrinfo_t *req, int status, struct addrinfo *response
 
     //uv_ip4_name((struct sockaddr_in*) res->ai_addr, addr, 16);
     free(req);
+    uv_freeaddrinfo(response);
 }
 
 void join_server_hostname(struct bot_agent *bot, char *server_hostname, char *service) {
-    struct addrinfo hints;
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-    hints.ai_flags = 0;
-
     bot->server_addr = server_hostname;
     uv_getaddrinfo_t *req = malloc(sizeof(uv_getaddrinfo_t));
     req->data = bot;

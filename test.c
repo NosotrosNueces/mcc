@@ -76,6 +76,7 @@ void spawn_player(
     char *message = malloc(strlen(p->name) + strlen("Hello !") + 1);
     snprintf(message, strlen(p->name) + strlen("Hello !") + 1, "Hello %s!", p->name);
     send_play_serverbound_chat_message(bot, message);
+    free(message);
 }
 
 void player_list_item (
@@ -99,6 +100,7 @@ void player_list_item (
                 list_append(&player_list, new_player);
                 break;
             case PLAYER_LIST_UPDATE_GAMEMODE:
+
                 break;
             case PLAYER_LIST_UPDATE_LATENCY:
                 break;
@@ -172,10 +174,10 @@ void update_health (
 
 double player_x, player_y, player_z;
 
-static inline double distance(double x1, double y1, double z1, double x2, double y2, double z2) {
-    double dx = x1 - x2;
-    double dy = y1 - y2;
-    double dz = z1 - z2;
+static inline double distance(struct mc_position p1, struct mc_position p2) {
+    double dx = p1.x - p2.x;
+    double dy = p1.y - p2.y;
+    double dz = p1.z - p2.z;
     return sqrt(dx * dx + dy * dy + dz * dz);
 }
 
@@ -183,47 +185,66 @@ static inline double distance(double x1, double y1, double z1, double x2, double
 #define POSITION_Y(p)   (((int64_t)(p) >> 26) & 0xFF)
 #define POSITION_Z(p)   ((int64_t)(p) << 38 >> 38)
 
-struct break_data {
-    struct bot_agent *bot;
-    position_t location;
-};
-
 void break_stop_cb (uv_timer_t* handle) {
      /* start break timer */
     printf("Break Stop\n");
-    struct break_data *data = handle->data;
+    struct bot_agent *bot = handle->data;
     send_play_serverbound_player_digging(
-        data->bot,
+        bot,
         2,
-        data->location,
+        bot->block_break_location,
         0
         );
-    uv_stop(&data->bot->loop);
     uv_timer_stop(handle);
-    uv_run(&data->bot->loop, UV_RUN_DEFAULT);
-    free(data);
-    free(handle);
+    bot->is_breaking = 0;
+}
+
+void start_block_break(struct bot_agent *bot, int32_t block_id, struct mc_position location) {
+    /* start break timer */
+    if (bot->is_breaking) {
+        return;
+    }
+    double break_time = block_break_time_hand(block_id);
+    if (break_time == INFINITY) {
+        return;
+    }
+    uint64_t break_time_milli = (uint64_t)(break_time * 1000);
+
+    bot->block_break_location = location;
+    
+    send_play_serverbound_player_digging(
+        bot,
+        0,
+        location,
+        1
+        );
+
+    uv_timer_init(&bot->loop, &bot->block_break_timer);
+    printf("Timer for %ld milliseconds\n", break_time_milli);
+    uv_timer_start(&bot->block_break_timer, break_stop_cb, break_time_milli, 0);
+    bot->is_breaking = 1;
+}
+
+void stop_block_break(struct bot_agent *bot) {
+    uv_timer_stop(&bot->block_break_timer);
+    bot->is_breaking = 0;
 }
 
 void block_change_cb(
             struct bot_agent *bot,
-            position_t location,
+            struct mc_position location,
             vint32_t block_id
             ) {
-    double x = (double)POSITION_X(location);
-    double y = (double)POSITION_Y(location);
-    double z = (double)POSITION_Z(location);
-
-    if (distance(x, y, z, player_x, player_y, player_z) < 10) {
+    if (distance(location, bot->position) < 10) {
         const char *block_name_str = block_name(block_id);
         char message[512];
         snprintf(message,
                 sizeof(message),
-                "%s: (%ld, %ld, %ld)\n",
+                "%s: (%d, %d, %d)\n",
                 block_name_str,
-                POSITION_X(location),
-                POSITION_Y(location),
-                POSITION_Z(location)
+                (int)location.x,
+                (int)location.y,
+                (int)location.z
                 );
         printf("%s", message);
         //send_play_serverbound_chat_message(bot, message);
@@ -244,32 +265,8 @@ void block_change_cb(
         printf("%s", message);
         //send_play_serverbound_chat_message(bot, message);
         printf("    metadata: 0x%02x\n", block_id & 15);
-        /* start break timer */
-        double break_time = block_break_time_hand(block_id);
-        if (break_time == INFINITY) {
-            return;
-        }
-        uint64_t break_time_milli = (uint64_t)(break_time * 1000);
-
-        uv_timer_t *timer_req = malloc(sizeof(*timer_req));
-         
-        struct break_data *data = malloc(sizeof(*data));
-        data->bot = bot;
-        data->location = location;
-        timer_req->data = data; 
         
-        send_play_serverbound_player_digging(
-            bot,
-            0,
-            location,
-            1
-            );
-
-        uv_stop(&bot->loop);
-        uv_timer_init(&bot->loop, timer_req);
-        printf("Timer for %ld milliseconds\n", break_time_milli);
-        uv_timer_start(timer_req, break_stop_cb, break_time_milli, 0);
-        uv_run(&bot->loop, UV_RUN_DEFAULT);
+        start_block_break(bot, block_id, location);
     }
 }
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-BREAKING_TIME_MULTIPLIER = 5
-
 import sys, json
 from collections import defaultdict
+
+BREAKING_TIME_MULTIPLIER = 5
 
 def c_float_to_string(f):
     if f == float('inf'):
@@ -94,7 +94,7 @@ def main(argv):
         break_json = json.load(f)
     generate_break_h(break_json)
     generate_break_c(break_json)
-
+    return 0
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

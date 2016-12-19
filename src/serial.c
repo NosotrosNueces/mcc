@@ -93,6 +93,25 @@ uint64_t ntohll(uint64_t number)
 }
 #endif
 
+/* Position int64_t format: xxxxxxxxxxxxxxxxxxxxxxxxxxyyyyyyyyyyyyzzzzzzzzzzzzzzzzzzzzzzzzzz 
+ *                          |-----------26-----------||----12----||-----------26-----------|
+ */
+static inline struct mc_position int64_to_mc_position(int64_t n) {
+    struct mc_position position = {
+        .x = n >> 38,
+        .y = (n >> 26) & 0xfff,
+        .z = n << 38 >> 38
+    };
+    return position;
+}
+
+static inline int64_t mc_position_to_int64(struct mc_position position) {
+    int64_t pos_int = (((int64_t)position.x & 0x3FFFFFF) << 38) |
+        (((int64_t)position.y & 0xFFF) << 26) |
+        ((int64_t)position.z & 0x3FFFFFF);
+    return pos_int;
+}
+
 /* When reading from an incoming packet, we already know the length. Therefore
  * we do not have to do any length checking except in the very beginning.
  *
@@ -159,6 +178,13 @@ char *_read_double(char *buffer, double *val, struct bot_agent *bot) {
     buffer = _read(buffer, val, sizeof(*val), bot);
     uint64_t *x = (uint64_t *)val;
     *x = ntohll(*x);
+    return buffer;
+}
+
+char *_read_mc_position(char *buffer, struct mc_position *position, struct bot_agent *bot) {
+    int64_t pos_int;
+    buffer = _read_int64_t(buffer, &pos_int, bot);
+    *position = int64_to_mc_position(pos_int);
     return buffer;
 }
 
@@ -231,6 +257,11 @@ void _push_double(struct packet_write_buffer *buffer, double val) {
     uint64_t *x = (uint64_t *)&val;
     *x = htonll(*x);
     _push(buffer, &val, sizeof(val));
+}
+
+void _push_mc_position(struct packet_write_buffer *buffer, struct mc_position position) {
+    int64_t pos_int = mc_position_to_int64(position);
+    _push_int64_t(buffer, pos_int);
 }
 
 char *_read_vint32(char *buf, vint32_t *val, struct bot_agent *bot) {

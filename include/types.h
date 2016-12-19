@@ -12,7 +12,6 @@
 
 enum state {HANDSHAKE, LOGIN, STATUS, PLAY};
 
-typedef uint64_t position_t;
 typedef int32_t vint32_t;
 typedef int64_t vint64_t;
 typedef char* chat_t;
@@ -23,6 +22,10 @@ typedef void* record_t;
 typedef void* slot_t;
 
 struct bot_agent;
+
+struct mc_position {
+    double x, y, z;
+};
 
 /* nbt types */
 
@@ -129,7 +132,7 @@ struct entity_rotation_type {
 
 struct opt_position_type {
     bool present;
-    position_t position;
+    struct mc_position position;
 };
 
 struct opt_uuid_type {
@@ -149,7 +152,7 @@ struct entity_metadata_entry {
         struct slot_type entity_slot;
         bool entity_boolean;
         struct entity_rotation_type entity_rotation;
-        position_t entity_position;
+        struct mc_position entity_position;
         struct opt_position_type entity_opt_position;
         vint32_t entity_direction;
         struct opt_uuid_type entity_opt_uuid;
@@ -586,7 +589,7 @@ struct _callbacks {
             vint32_t entity_id,
             char *uuid,
             char *title,
-            position_t location,
+            struct mc_position location,
             int8_t direction
             );
     void (*clientbound_play_spawn_player_cb)(
@@ -613,25 +616,25 @@ struct _callbacks {
     void (*clientbound_play_block_break_animation_cb)(
             struct bot_agent *bot,
             vint32_t entity_id,
-            position_t location,
+            struct mc_position location,
             int8_t destroy_stage
             );
     void (*clientbound_play_update_block_entity_cb)(
             struct bot_agent *bot,
-            position_t location,
+            struct mc_position location,
             uint8_t action,
             struct nbt_tag *nbt
             );
     void (*clientbound_play_block_action_cb)(
             struct bot_agent *bot,
-            position_t location,
+            struct mc_position location,
             uint8_t byte1,
             uint8_t byte2,
             vint32_t block_type
             );
     void (*clientbound_play_block_change_cb)(
             struct bot_agent *bot,
-            position_t location,
+            struct mc_position location,
             vint32_t block_id
             );
     void (*clientbound_play_boss_bar_cb)(
@@ -767,7 +770,7 @@ struct _callbacks {
     void (*clientbound_play_effect_cb)(
             struct bot_agent *bot,
             int32_t effect_id,
-            position_t location,
+            struct mc_position location,
             int32_t data,
             bool disable_relative_volume
             );
@@ -849,7 +852,7 @@ struct _callbacks {
             );
     void (*clientbound_play_open_sign_editor_cb)(
             struct bot_agent *bot,
-            position_t location
+            struct mc_position location
             );
     void (*clientbound_play_player_abilities_cb)(
             struct bot_agent *bot,
@@ -880,7 +883,7 @@ struct _callbacks {
     void (*clientbound_play_use_bed_cb)(
             struct bot_agent *bot,
             vint32_t entity_id,
-            position_t location
+            struct mc_position location
             );
     void (*clientbound_play_destroy_entities_cb)(
             struct bot_agent *bot,
@@ -988,7 +991,7 @@ struct _callbacks {
             );
     void (*clientbound_play_spawn_position_cb)(
             struct bot_agent *bot,
-            position_t location
+            struct mc_position location
             );
     void (*clientbound_play_time_update_cb)(
             struct bot_agent *bot,
@@ -1062,6 +1065,15 @@ enum MCC_ERR {
     MCC_PARSE_ERROR
 };
 
+struct mc_orientation {
+    float yaw, pitch;
+};
+
+struct break_data {
+    struct bot_agent *bot;
+    struct mc_position location;
+};
+
 struct bot_agent {
     int32_t eid;
     // 0: survival, 1: creative, 2: adventure. Bit 3 (0x8) is the hardcore flag
@@ -1079,11 +1091,8 @@ struct bot_agent {
     int packet_id;
 
     char *name;
-    double x;
-    double y;
-    double z;
-    float yaw;
-    float pitch;
+    struct mc_position position;
+    struct mc_orientation orientation;
     int8_t flags;
 
     uint8_t animation;
@@ -1130,4 +1139,9 @@ struct bot_agent {
     char *packet_data; /* pointer to the start of a packet within packet_buffer */
     /* callbacks */ 
     struct _callbacks callbacks;
+
+    /* Block Break timer */
+    uv_timer_t block_break_timer;
+    struct mc_position block_break_location;
+    int is_breaking;
 };

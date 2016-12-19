@@ -83,7 +83,7 @@ void logger_clientbound_play_spawn_painting_cb(
         vint32_t entity_id,
         char *uuid,
         char *title,
-        position_t location,
+        struct mc_position location,
         int8_t direction
         );
 void logger_clientbound_play_spawn_player_cb(
@@ -110,25 +110,25 @@ void logger_clientbound_play_statistics_cb(
 void logger_clientbound_play_block_break_animation_cb(
         struct bot_agent *bot,
         vint32_t entity_id,
-        position_t location,
+        struct mc_position location,
         int8_t destroy_stage
         );
 void logger_clientbound_play_update_block_entity_cb(
         struct bot_agent *bot,
-        position_t location,
+        struct mc_position location,
         uint8_t action,
         struct nbt_tag *nbt
         );
 void logger_clientbound_play_block_action_cb(
         struct bot_agent *bot,
-        position_t location,
+        struct mc_position location,
         uint8_t byte1,
         uint8_t byte2,
         vint32_t block_type
         );
 void logger_clientbound_play_block_change_cb(
         struct bot_agent *bot,
-        position_t location,
+        struct mc_position location,
         vint32_t block_id
         );
 void logger_clientbound_play_boss_bar_cb(
@@ -264,7 +264,7 @@ void logger_clientbound_play_chunk_data_cb(
 void logger_clientbound_play_effect_cb(
         struct bot_agent *bot,
         int32_t effect_id,
-        position_t location,
+        struct mc_position location,
         int32_t data,
         bool disable_relative_volume
         );
@@ -346,7 +346,7 @@ void logger_clientbound_play_vehicle_move_cb(
         );
 void logger_clientbound_play_open_sign_editor_cb(
         struct bot_agent *bot,
-        position_t location
+        struct mc_position location
         );
 void logger_clientbound_play_player_abilities_cb(
         struct bot_agent *bot,
@@ -377,7 +377,7 @@ void logger_clientbound_play_player_position_and_look_cb(
 void logger_clientbound_play_use_bed_cb(
         struct bot_agent *bot,
         vint32_t entity_id,
-        position_t location
+        struct mc_position location
         );
 void logger_clientbound_play_destroy_entities_cb(
         struct bot_agent *bot,
@@ -485,7 +485,7 @@ void logger_clientbound_play_update_score_cb(
         );
 void logger_clientbound_play_spawn_position_cb(
         struct bot_agent *bot,
-        position_t location
+        struct mc_position location
         );
 void logger_clientbound_play_time_update_cb(
         struct bot_agent *bot,

@@ -57,7 +57,7 @@ int32_t send_play_serverbound_tab_complete(
 		char *text,
 		bool assume_command,
 		bool has_position,
-		position_t looked_at_block
+		struct mc_position looked_at_block
 		);
 
 int32_t send_play_serverbound_chat_message(
@@ -185,7 +185,7 @@ int32_t send_play_serverbound_player_abilities(
 int32_t send_play_serverbound_player_digging(
         struct bot_agent *bot,
         vint32_t status,
-        position_t location,
+        struct mc_position location,
         int8_t face
 );
 
@@ -221,7 +221,7 @@ int32_t send_play_serverbound_creative_inventory_action(
 
 int32_t send_play_serverbound_update_sign(
         struct bot_agent *bot,
-        position_t location,
+        struct mc_position location,
         char *line1,
         char *line2,
         char *line3,
@@ -240,7 +240,7 @@ int32_t send_play_serverbound_spectate(
 
 int32_t send_play_serverbound_player_block_placement(
         struct bot_agent *bot,
-        position_t location,
+        struct mc_position location,
         vint32_t face,
         vint32_t hand,
         float x,

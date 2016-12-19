@@ -524,7 +524,7 @@
         "break_time_sword": 0.75,
         "break_time_wood": 0.75,
         "hardness": 0.5,
-        "name": "MINECRAFT_BLOCK_PISTON_BLOCK"
+        "name": "MINECRAFT_BLOCK_PISTON_HEAD"
     },
     "35": {
         "best_tool": [
@@ -599,7 +599,7 @@
         "break_time_sword": 0.05,
         "break_time_wood": 0.05,
         "hardness": 0.0,
-        "name": "MINECRAFT_BLOCK_BROWN_MUSHROOMS"
+        "name": "MINECRAFT_BLOCK_BROWN_MUSHROOM"
     },
     "40": {
         "best_tool": [
@@ -614,7 +614,7 @@
         "break_time_sword": 0.05,
         "break_time_wood": 0.05,
         "hardness": 0.0,
-        "name": "MINECRAFT_BLOCK_RED_MUSHROOMS"
+        "name": "MINECRAFT_BLOCK_RED_MUSHROOM"
     },
     "41": {
         "best_tool": [
@@ -1562,7 +1562,7 @@
         "break_time_sword": 1.0,
         "break_time_wood": 0.75,
         "hardness": 1.0,
-        "name": "MINECRAFT_BLOCK_MELON"
+        "name": "MINECRAFT_BLOCK_MELON_BLOCK"
     },
     "104": {
         "best_tool": [
@@ -1954,7 +1954,7 @@
         "break_time_sword": 15.0,
         "break_time_wood": 7.5,
         "hardness": 3.0,
-        "name": "MIENCRAFT_BLOCK_EMERALD_ORE"
+        "name": "MINECRAFT_BLOCK_EMERALD_ORE"
     },
     "130": {
         "best_tool": [
@@ -2391,6 +2391,21 @@
         "hardness": 3.5,
         "name": "MINECRAFT_BLOCK_DROPPER"
     },
+    "159": {
+        "best_tool": [
+            "MINECRAFT_TOOL_PICKAXE"
+        ],
+        "break_time_diamond": 0.25,
+        "break_time_gold": 0.2,
+        "break_time_hand": 6.25,
+        "break_time_iron": 0.35,
+        "break_time_shears": 6.25,
+        "break_time_stone": 0.5,
+        "break_time_sword": 6.25,
+        "break_time_wood": 0.95,
+        "hardness": 1.25,
+        "name": "MINECRAFT_BLOCK_STAINED_HARDENED_CLAY"
+    },
     "160": {
         "best_tool": [
             "MINECRAFT_TOOL_OTHER"
@@ -2585,7 +2600,7 @@
         "break_time_sword": 6.25,
         "break_time_wood": 0.95,
         "hardness": 1.25,
-        "name": "MINECRAFT_BLOCK_STAINED_HARDENED_CLAY"
+        "name": "MINECRAFT_BLOCK_HARDENED_CLAY"
     },
     "173": {
         "best_tool": [
@@ -3185,7 +3200,7 @@
         "break_time_sword": 2.5,
         "break_time_wood": 2.5,
         "hardness": 0.5,
-        "name": "MINECRAFT_FROSTED_ICE"
+        "name": "MINECRAFT_BLOCK_FROSTED_ICE"
     },
     "213": {
         "best_tool": [

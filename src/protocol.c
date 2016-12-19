@@ -15,6 +15,7 @@
 #define DEFAULT_PACKET_LENGTH   (1 << 10)
 #define CHUNK_DIM               16
 
+
 /* appends length to the buffer as a varint, returns the start of the buffer */
 /* writes the new length of packet in len */
 char *_prepend_varint(char *buf, int32_t val, size_t *len) {
@@ -289,7 +290,7 @@ int32_t send_play_serverbound_tab_complete(
         char *text,
         bool assume_command,
         bool has_position,
-        position_t looked_at_block
+        struct mc_position looked_at_block
         )
 {
     struct packet_write_buffer buf;
@@ -304,7 +305,7 @@ int32_t send_play_serverbound_tab_complete(
     b = has_position ? 1 : 0;
     _push(&buf, &b, sizeof(b));
     if (has_position) {
-        _push_uint64_t(&buf, looked_at_block);
+        _push_mc_position(&buf, looked_at_block);
     }
 
     size_t length = buf.ptr - data_start;
@@ -742,7 +743,7 @@ int32_t send_play_serverbound_player_abilities(
 int32_t send_play_serverbound_player_digging(
         struct bot_agent *bot,
         vint32_t status,
-        position_t location,
+        struct mc_position location,
         int8_t face
         )
 {
@@ -753,7 +754,7 @@ int32_t send_play_serverbound_player_digging(
 
     _push_vint32(&buf, 0x13);
     _push_vint32(&buf, status);
-    _push_uint64_t(&buf, location);
+    _push_mc_position(&buf, location);
     _push(&buf, &face, sizeof(face));
 
     size_t length = buf.ptr - data_start;
@@ -875,7 +876,7 @@ int32_t send_play_serverbound_creative_inventory_action(
 
 int32_t send_play_serverbound_update_sign(
         struct bot_agent *bot,
-        position_t location,
+        struct mc_position location,
         char *line1,
         char *line2,
         char *line3,
@@ -888,7 +889,7 @@ int32_t send_play_serverbound_update_sign(
     char *data_start = buf.ptr;
 
     _push_vint32(&buf, 0x19);
-    _push_uint64_t(&buf, location);
+    _push_mc_position(&buf, location);
     _push_string(&buf, line1);
     _push_string(&buf, line2);
     _push_string(&buf, line3);
@@ -943,7 +944,7 @@ int32_t send_play_serverbound_spectate(
 
 int32_t send_play_serverbound_player_block_placement(
         struct bot_agent *bot,
-        position_t location,
+        struct mc_position location,
         vint32_t face,
         vint32_t hand,
         float x,
@@ -957,7 +958,7 @@ int32_t send_play_serverbound_player_block_placement(
     char *data_start = buf.ptr;
 
     _push_vint32(&buf, 0x1C);
-    _push_uint64_t(&buf, location);
+    _push_mc_position(&buf, location);
     _push_vint32(&buf, face);
     _push_vint32(&buf, hand);
     _push_float(&buf, x);
@@ -1278,14 +1279,14 @@ char *_read_entity_metadata(char *packet_data, struct entity_metadata *metadata,
                 packet_ptr = _read_float(packet_ptr, &current_entry->entity_rotation.z, bot);
                 break;
             case ENTITY_METADATA_POSITION:
-                packet_ptr = _read_uint64_t(packet_ptr, &current_entry->entity_position, bot);
+                packet_ptr = _read_mc_position(packet_ptr, &current_entry->entity_position, bot);
                 break;
             case ENTITY_METADATA_OPTPOSITION:
                 {
                     int8_t boolean;
                     packet_ptr = _read(packet_ptr, &boolean, sizeof(boolean), bot);
                     current_entry->entity_opt_position.present = boolean ? true : false;
-                    packet_ptr = _read_uint64_t(packet_ptr, &current_entry->entity_opt_position.position, bot);
+                    packet_ptr = _read_mc_position(packet_ptr, &current_entry->entity_opt_position.position, bot);
                     break;
                 }
             case ENTITY_METADATA_DIRECTION:
@@ -1389,13 +1390,13 @@ void deserialize_clientbound_play_spawn_painting(char *packet_data, struct bot_a
         vint32_t entity_id;
         char uuid[16];
         char *title;
-        position_t location;
+        struct mc_position location;
         int8_t direction;
 
         packet_data = _read_vint32(packet_data, &entity_id, bot);
         packet_data = _read(packet_data, uuid, sizeof(uuid), bot);
         packet_data = _read_string(packet_data, &title, NULL, bot);
-        packet_data = _read_uint64_t(packet_data, &location, bot);
+        packet_data = _read_mc_position(packet_data, &location, bot);
         packet_data = _read(packet_data, &direction, sizeof(direction), bot);
 
         bot->callbacks.clientbound_play_spawn_painting_cb(
@@ -1486,11 +1487,11 @@ void deserialize_clientbound_play_statistics(char *packet_data, struct bot_agent
 void deserialize_clientbound_play_block_break_animation(char *packet_data, struct bot_agent *bot) {
     if (bot->callbacks.clientbound_play_block_break_animation_cb != NULL) {
         vint32_t entity_id;
-        position_t location;
+        struct mc_position location;
         int8_t destroy_stage;
 
         packet_data = _read_vint32(packet_data, &entity_id, bot);
-        packet_data = _read_uint64_t(packet_data, &location, bot);
+        packet_data = _read_mc_position(packet_data, &location, bot);
         packet_data = _read(packet_data, &destroy_stage, sizeof(destroy_stage), bot);
 
         bot->callbacks.clientbound_play_block_break_animation_cb(
@@ -1504,11 +1505,11 @@ void deserialize_clientbound_play_block_break_animation(char *packet_data, struc
 
 void deserialize_clientbound_play_update_block_entity(char *packet_data, struct bot_agent *bot) {
     if (bot->callbacks.clientbound_play_update_block_entity_cb != NULL) {
-        position_t location;
+        struct mc_position location;
         uint8_t action;
         struct nbt_tag nbt;
 
-        packet_data = _read_uint64_t(packet_data, &location, bot);
+        packet_data = _read_mc_position(packet_data, &location, bot);
         packet_data = _read(packet_data, &action, sizeof(action), bot);
         packet_data = nbt_parse(packet_data, &nbt, bot);
 
@@ -1525,11 +1526,11 @@ void deserialize_clientbound_play_update_block_entity(char *packet_data, struct 
 
 void deserialize_clientbound_play_block_action(char *packet_data, struct bot_agent *bot) {
     if (bot->callbacks.clientbound_play_block_action_cb != NULL) {
-        position_t location;
+        struct mc_position location;
         uint8_t byte1, byte2;
         vint32_t block_type;
 
-        packet_data = _read_uint64_t(packet_data, &location, bot);
+        packet_data = _read_mc_position(packet_data, &location, bot);
         packet_data = _read(packet_data, &byte1, sizeof(byte1), bot);
         packet_data = _read(packet_data, &byte2, sizeof(byte2), bot);
         packet_data = _read_vint32(packet_data, &block_type, bot);
@@ -1546,10 +1547,10 @@ void deserialize_clientbound_play_block_action(char *packet_data, struct bot_age
 
 void deserialize_clientbound_play_block_change(char *packet_data, struct bot_agent *bot) {
     if (bot->callbacks.clientbound_play_block_change_cb != NULL) {
-        position_t location;
+        struct mc_position location;
         vint32_t block_id;
 
-        packet_data = _read_uint64_t(packet_data, &location, bot);
+        packet_data = _read_mc_position(packet_data, &location, bot);
         packet_data = _read_vint32(packet_data, &block_id, bot);
 
         bot->callbacks.clientbound_play_block_change_cb(
@@ -1810,7 +1811,9 @@ void deserialize_clientbound_play_window_items(char *packet_data, struct bot_age
                 count,
                 slot_data
                 );
-
+        for (int i = 0; i < count; i++) {
+            free_slot(&slot_data[i]);
+        }
         free(slot_data);
     }
 }
@@ -1850,6 +1853,7 @@ void deserialize_clientbound_play_set_slot(char *packet_data, struct bot_agent *
                 slot,
                 &slot_data
                 );
+        free_slot(&slot_data);
     }
 }
 
@@ -2201,12 +2205,12 @@ void deserialize_clientbound_play_chunk_data(char *packet_data, struct bot_agent
 void deserialize_clientbound_play_effect(char *packet_data, struct bot_agent *bot) {
     if (bot->callbacks.clientbound_play_effect_cb != NULL) {
         int32_t effect_id;
-        position_t location;
+        struct mc_position location;
         int32_t data;
         bool disable_relative_volume;
 
         packet_data = _read_int32_t(packet_data, &effect_id, bot);
-        packet_data = _read_uint64_t(packet_data, &location, bot);
+        packet_data = _read_mc_position(packet_data, &location, bot);
         packet_data = _read_int32_t(packet_data, &data, bot);
         int8_t b;
         packet_data = _read(packet_data, &b, sizeof(b), bot);
@@ -2314,8 +2318,8 @@ void deserialize_clientbound_play_join_game(char *packet_data, struct bot_agent 
                 reduced_debug_info
                 );
 
-        free(level_type);
     }
+    free(level_type);
 }
 
 void deserialize_clientbound_play_map(char *packet_data, struct bot_agent *bot) {
@@ -2489,9 +2493,9 @@ void deserialize_clientbound_play_vehicle_move(char *packet_data, struct bot_age
 
 void deserialize_clientbound_play_open_sign_editor(char *packet_data, struct bot_agent *bot) {
     if (bot->callbacks.clientbound_play_open_sign_editor_cb != NULL) {
-        position_t location;
+        struct mc_position location;
 
-        packet_data = _read_uint64_t(packet_data, &location, bot);
+        packet_data = _read_mc_position(packet_data, &location, bot);
 
         bot->callbacks.clientbound_play_open_sign_editor_cb(
                 bot,
@@ -2583,6 +2587,7 @@ void free_player_list_action(struct player_list_action *player_action, enum PLAY
                 if (add_player->display_name != NULL) {
                     free(add_player->display_name);
                 }
+                free(add_player->properties);
                 break;
             }
         case PLAYER_LIST_UPDATE_GAMEMODE:
@@ -2687,20 +2692,26 @@ void deserialize_clientbound_play_player_list_item(char *packet_data, struct bot
 }
 
 void deserialize_clientbound_play_player_position_and_look(char *packet_data, struct bot_agent *bot) {
+    double x, y, z;
+    float yaw, pitch;
+    int8_t flags;
+    vint32_t teleport_id;
+
+    packet_data = _read_double(packet_data, &x, bot);
+    packet_data = _read_double(packet_data, &y, bot);
+    packet_data = _read_double(packet_data, &z, bot);
+    packet_data = _read_float(packet_data, &yaw, bot);
+    packet_data = _read_float(packet_data, &pitch, bot);
+    packet_data = _read(packet_data, &flags, sizeof(flags), bot);
+    packet_data = _read_vint32(packet_data, &teleport_id, bot);
+
+    bot->position.x = x;
+    bot->position.y = y;
+    bot->position.z = z;
+    bot->orientation.yaw = yaw;
+    bot->orientation.pitch = pitch;
+
     if (bot->callbacks.clientbound_play_player_position_and_look_cb != NULL) {
-        double x, y, z;
-        float yaw, pitch;
-        int8_t flags;
-        vint32_t teleport_id;
-
-        packet_data = _read_double(packet_data, &x, bot);
-        packet_data = _read_double(packet_data, &y, bot);
-        packet_data = _read_double(packet_data, &z, bot);
-        packet_data = _read_float(packet_data, &yaw, bot);
-        packet_data = _read_float(packet_data, &pitch, bot);
-        packet_data = _read(packet_data, &flags, sizeof(flags), bot);
-        packet_data = _read_vint32(packet_data, &teleport_id, bot);
-
         bot->callbacks.clientbound_play_player_position_and_look_cb(
                 bot,
                 x,
@@ -2717,10 +2728,10 @@ void deserialize_clientbound_play_player_position_and_look(char *packet_data, st
 void deserialize_clientbound_play_use_bed(char *packet_data, struct bot_agent *bot) {
     if (bot->callbacks.clientbound_play_use_bed_cb != NULL) {
         vint32_t entity_id;
-        position_t location;
+        struct mc_position location;
 
         packet_data = _read_vint32(packet_data, &entity_id, bot);
-        packet_data = _read_uint64_t(packet_data, &location, bot);
+        packet_data = _read_mc_position(packet_data, &location, bot);
 
         bot->callbacks.clientbound_play_use_bed_cb(
                 bot,
@@ -2985,6 +2996,7 @@ void deserialize_clientbound_play_entity_equipment(char *packet_data, struct bot
                 slot,
                 &item
                 );
+        free_slot(&item);
     }
 }
 
@@ -3237,9 +3249,9 @@ void deserialize_clientbound_play_update_score(char *packet_data, struct bot_age
 
 void deserialize_clientbound_play_spawn_position(char *packet_data, struct bot_agent *bot) {
     if (bot->callbacks.clientbound_play_spawn_position_cb != NULL) {
-        position_t location;
+        struct mc_position location;
 
-        packet_data = _read_uint64_t(packet_data, &location, bot);
+        packet_data = _read_mc_position(packet_data, &location, bot);
 
         bot->callbacks.clientbound_play_spawn_position_cb(
                 bot,
