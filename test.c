@@ -8,6 +8,9 @@
 #include "capture.h"
 #include "break.h"
 
+#define DEFAULT_SERVER_NAME "localhost"
+#define DEFAULT_SERVER_PORT "25565"
+
 void *_read(void *buffer, void *storage, size_t size);
 void *_read_vint32(void *buffer, int32_t *val);
 void *_read_string(void *buffer, char **strptr, int32_t *len);
@@ -286,8 +289,26 @@ void player_position_and_look_cb (
     player_z = z;
 }
 
-int main() {
+int main(int argc, char *argv[], char **envp)
+{
     struct bot_agent bot;
+    char *server_name = DEFAULT_SERVER_NAME;
+    char *server_port = DEFAULT_SERVER_PORT;
+
+    if (argc == 3) {
+        server_name = argv[1];
+        server_port = argv[2];
+        if (!server_port) {
+            printf("Expected arguments: ./mcc [<SERVER> [<PORT>]]\n");
+            return 0;
+        }
+    } else if (argc == 2) {
+        server_name = argv[1];
+    } else if (argc > 3) {
+        printf("Expected arguments: ./mcc [<SERVER> [<PORT>]]\n");
+        return 0;
+    }
+
     init_bot(&bot, "Sintralin");
     bot.callbacks.clientbound_play_player_list_item_cb = player_list_item;
     //bot.callbacks.clientbound_play_chunk_data_cb = chunk_data;
@@ -301,7 +322,7 @@ int main() {
     bot.capture_enabled = 1;
     init_capture(&bot, "capture");
 
-    join_server_hostname(&bot, "localhost", "25565");
+    join_server_hostname(&bot, server_name, server_port);
     uv_run(&bot.loop, UV_RUN_DEFAULT);
     while(1);
     uv_loop_close(&bot.loop);
