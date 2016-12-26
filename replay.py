@@ -1,21 +1,27 @@
 #!/usr/bin/python3
 """Host a server that sends data specified by some JSON file.
 """
-import sys
 import json
 import time
 import socket
 import base64
 
-HOST = '' # symbolic name for all available interfaces
-PORT = 25565 # default minecraft port
+DEFAULT_PORT = 25565 # default minecraft port
+DEFAULT_SPACING = 100000 # default ns interval for compressed replay (.1ms)
+
+
+def ns_time():
+    return time.time() * 10**9
 
 
 def host_debug_server(host, port, data):
     """Send a non-zero number of packets to the connecting client.
     """
-    data_offset = data[0]['timestamp']
-    server_offset = time.time() * 10**9
+    if type(data) == list:
+        data_offset = data[0]['timestamp']
+    else:
+        data_offset = 0 # because generator
+    server_offset = ns_time()
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, port))
@@ -33,28 +39,41 @@ def host_debug_server(host, port, data):
                     continue
 
                 # busy wait is the only accurate wait
-                while time.time() * 10**9 - server_offset < ts - data_offset:
+                while ns_time() - server_offset < ts - data_offset:
                     pass
 
                 conn.sendall(base64.b64decode(payload))
                 print("sent: ", payload)
 
 
+def _compress(index, data, spacing=DEFAULT_SPACING):
+    data['timestamp'] = index * spacing
+    return data
+
+
 if __name__ == "__main__":
-    # parse cmd args
-    if len(sys.argv) < 2:
-        print("Usage: debug_server.py <json data> [port]")
-        exit(1)
-    JSON_PATH = sys.argv[1]
+    import argparse
 
-    if len(sys.argv) >= 3:
-        PORT = int(sys.argv[2])
+    parser = argparse.ArgumentParser()
+    parser.add_argument("data", help="path to json data file")
+    parser.add_argument("-p", "--port",
+                        help="port to listen from (default 25565)",
+                        type=int)
+    parser.add_argument("--fast",
+                        help="use fast replay interval (1packet/500ns)",
+                        action='store_true')
+    args = parser.parse_args()
+
+    _json_path = args.data
+    _port = args.port if args.port else DEFAULT_PORT
 
 
-    # load JSON data
-    with open(JSON_PATH) as json_data:
-        DATA = json.load(json_data)['packets']
+    # load data and compress if needed
+    with open(_json_path) as json_data:
+        _data = json.load(json_data)['packets']
+    if args.fast:
+        _data = (_compress(i, pkt, args.fast) for i, pkt in enumerate(_data))
 
 
-    # run mock server
-    host_debug_server(HOST, PORT, DATA)
+    # listen on all available interfaces
+    host_debug_server('', _port, _data)
