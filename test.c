@@ -190,7 +190,6 @@ static inline double distance(struct mc_position p1, struct mc_position p2) {
 
 void break_stop_cb (uv_timer_t* handle) {
      /* start break timer */
-    printf("Break Stop\n");
     struct bot_agent *bot = handle->data;
     send_play_serverbound_player_digging(
         bot,
@@ -223,7 +222,6 @@ void start_block_break(struct bot_agent *bot, int32_t block_id, struct mc_positi
         );
 
     uv_timer_init(&bot->loop, &bot->block_break_timer);
-    printf("Timer for %ld milliseconds\n", break_time_milli);
     uv_timer_start(&bot->block_break_timer, break_stop_cb, break_time_milli, 0);
     bot->is_breaking = 1;
 }
@@ -273,7 +271,6 @@ void block_change_cb(
     }
 }
 
-
 void player_position_and_look_cb (
             struct bot_agent *bot,
             double x,
@@ -294,19 +291,20 @@ int main(int argc, char *argv[], char **envp)
     struct bot_agent bot;
     char *server_name = DEFAULT_SERVER_NAME;
     char *server_port = DEFAULT_SERVER_PORT;
-
-    if (argc == 3) {
-        server_name = argv[1];
-        server_port = argv[2];
-        if (!server_port) {
-            printf("Expected arguments: ./mcc [<SERVER> [<PORT>]]\n");
-            return 0;
-        }
-    } else if (argc == 2) {
-        server_name = argv[1];
-    } else if (argc > 3) {
-        printf("Expected arguments: ./mcc [<SERVER> [<PORT>]]\n");
-        return 0;
+    char *capture_file = NULL; 
+    switch (argc) {
+        case 4:
+            capture_file = argv[3]; 
+        case 3:
+            server_port = argv[2];
+            if (!server_port) {
+                printf("Expected arguments: ./mcc [<SERVER> [<PORT>]]\n");
+                return 0;
+            }
+            break;
+        case 2:
+            server_name = argv[1];
+            break;
     }
 
     init_bot(&bot, "Sintralin");
@@ -320,7 +318,7 @@ int main(int argc, char *argv[], char **envp)
 
     /* packet capture */
     bot.capture_enabled = 1;
-    init_capture(&bot, "capture");
+    init_capture(&bot, capture_file);
 
     join_server_hostname(&bot, server_name, server_port);
     uv_run(&bot.loop, UV_RUN_DEFAULT);

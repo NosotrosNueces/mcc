@@ -747,7 +747,7 @@
         "break_time_shears": 250.0,
         "break_time_stone": 62.5,
         "break_time_sword": 250.0,
-        "break_time_wood": "125",
+        "break_time_wood": 125.0,
         "hardness": 50.0,
         "name": "MINECRAFT_BLOCK_OBSIDIAN"
     },

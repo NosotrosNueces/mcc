@@ -2,1468 +2,2904 @@
 #include <stdio.h>
 #include "break.h"
 
+static const struct block_break_data break_data_table[] = {
+    {
+        .name               = "MINECRAFT_BLOCK_AIR",
+        .hardness           = 0.0,
+        .break_time_diamond = INFINITY,
+        .break_time_gold    = INFINITY,
+        .break_time_hand    = INFINITY,
+        .break_time_iron    = INFINITY,
+        .break_time_shears  = INFINITY,
+        .break_time_stone   = INFINITY,
+        .break_time_sword   = INFINITY,
+        .break_time_wood    = INFINITY,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_STONE",
+        .hardness           = 1.5,
+        .break_time_diamond = 0.3,
+        .break_time_gold    = 0.2,
+        .break_time_hand    = 7.5,
+        .break_time_iron    = 0.4,
+        .break_time_shears  = 7.5,
+        .break_time_stone   = 0.6,
+        .break_time_sword   = 7.5,
+        .break_time_wood    = 1.15,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_GRASS",
+        .hardness           = 0.6,
+        .break_time_diamond = 0.15,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 0.9,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 0.9,
+        .break_time_stone   = 0.25,
+        .break_time_sword   = 0.9,
+        .break_time_wood    = 0.45,
+        .best_tool          = MINECRAFT_TOOL_SHOVEL,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DIRT",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.1,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 0.75,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 0.75,
+        .break_time_stone   = 0.2,
+        .break_time_sword   = 0.75,
+        .break_time_wood    = 0.4,
+        .best_tool          = MINECRAFT_TOOL_SHOVEL,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_COBBLESTONE",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_PLANKS",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_SAPLING",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_BEDROCK",
+        .hardness           = INFINITY,
+        .break_time_diamond = INFINITY,
+        .break_time_gold    = INFINITY,
+        .break_time_hand    = INFINITY,
+        .break_time_iron    = INFINITY,
+        .break_time_shears  = INFINITY,
+        .break_time_stone   = INFINITY,
+        .break_time_sword   = INFINITY,
+        .break_time_wood    = INFINITY,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_FLOWING_WATER",
+        .hardness           = 100.0,
+        .break_time_diamond = INFINITY,
+        .break_time_gold    = INFINITY,
+        .break_time_hand    = INFINITY,
+        .break_time_iron    = INFINITY,
+        .break_time_shears  = INFINITY,
+        .break_time_stone   = INFINITY,
+        .break_time_sword   = INFINITY,
+        .break_time_wood    = INFINITY,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_WATER",
+        .hardness           = 100.0,
+        .break_time_diamond = INFINITY,
+        .break_time_gold    = INFINITY,
+        .break_time_hand    = INFINITY,
+        .break_time_iron    = INFINITY,
+        .break_time_shears  = INFINITY,
+        .break_time_stone   = INFINITY,
+        .break_time_sword   = INFINITY,
+        .break_time_wood    = INFINITY,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_FLOWING_LAVA",
+        .hardness           = 100.0,
+        .break_time_diamond = INFINITY,
+        .break_time_gold    = INFINITY,
+        .break_time_hand    = INFINITY,
+        .break_time_iron    = INFINITY,
+        .break_time_shears  = INFINITY,
+        .break_time_stone   = INFINITY,
+        .break_time_sword   = INFINITY,
+        .break_time_wood    = INFINITY,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_LAVA",
+        .hardness           = 100.0,
+        .break_time_diamond = INFINITY,
+        .break_time_gold    = INFINITY,
+        .break_time_hand    = INFINITY,
+        .break_time_iron    = INFINITY,
+        .break_time_shears  = INFINITY,
+        .break_time_stone   = INFINITY,
+        .break_time_sword   = INFINITY,
+        .break_time_wood    = INFINITY,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_SAND",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.1,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 0.75,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 0.75,
+        .break_time_stone   = 0.2,
+        .break_time_sword   = 0.75,
+        .break_time_wood    = 0.4,
+        .best_tool          = MINECRAFT_TOOL_SHOVEL,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_GRAVEL",
+        .hardness           = 0.6,
+        .break_time_diamond = 0.15,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 0.9,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 0.9,
+        .break_time_stone   = 0.25,
+        .break_time_sword   = 0.9,
+        .break_time_wood    = 0.45,
+        .best_tool          = MINECRAFT_TOOL_SHOVEL,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_GOLD_ORE",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 1.25,
+        .break_time_hand    = 15.0,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 15.0,
+        .break_time_stone   = 3.75,
+        .break_time_sword   = 15.0,
+        .break_time_wood    = 7.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_IRON_ORE",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 1.25,
+        .break_time_hand    = 15.0,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 15.0,
+        .break_time_stone   = 1.15,
+        .break_time_sword   = 15.0,
+        .break_time_wood    = 7.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_COAL_ORE",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 0.4,
+        .break_time_hand    = 15.0,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 15.0,
+        .break_time_stone   = 1.15,
+        .break_time_sword   = 15.0,
+        .break_time_wood    = 2.25,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_LOG",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_LEAVES",
+        .hardness           = 0.2,
+        .break_time_diamond = 0.35,
+        .break_time_gold    = 0.35,
+        .break_time_hand    = 0.35,
+        .break_time_iron    = 0.35,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.35,
+        .break_time_sword   = 0.2,
+        .break_time_wood    = 0.35,
+        .best_tool          = MINECRAFT_TOOL_SHEARS | MINECRAFT_TOOL_SWORD,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_SPONGE",
+        .hardness           = 0.6,
+        .break_time_diamond = 0.9,
+        .break_time_gold    = 0.9,
+        .break_time_hand    = 0.9,
+        .break_time_iron    = 0.9,
+        .break_time_shears  = 0.9,
+        .break_time_stone   = 0.9,
+        .break_time_sword   = 0.9,
+        .break_time_wood    = 0.9,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_GLASS",
+        .hardness           = 0.3,
+        .break_time_diamond = 0.45,
+        .break_time_gold    = 0.45,
+        .break_time_hand    = 0.45,
+        .break_time_iron    = 0.45,
+        .break_time_shears  = 0.45,
+        .break_time_stone   = 0.45,
+        .break_time_sword   = 0.45,
+        .break_time_wood    = 0.45,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_LAPIS_ORE",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 1.25,
+        .break_time_hand    = 15.0,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 15.0,
+        .break_time_stone   = 1.15,
+        .break_time_sword   = 15.0,
+        .break_time_wood    = 7.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_LAPIS_BLOCK",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 1.25,
+        .break_time_hand    = 15.0,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 15.0,
+        .break_time_stone   = 1.15,
+        .break_time_sword   = 15.0,
+        .break_time_wood    = 7.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DISPENSER",
+        .hardness           = 3.5,
+        .break_time_diamond = 0.7,
+        .break_time_gold    = 0.45,
+        .break_time_hand    = 17.5,
+        .break_time_iron    = 0.9,
+        .break_time_shears  = 17.5,
+        .break_time_stone   = 1.35,
+        .break_time_sword   = 17.5,
+        .break_time_wood    = 2.65,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_SANDSTONE",
+        .hardness           = 0.8,
+        .break_time_diamond = 0.2,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 4.0,
+        .break_time_iron    = 0.2,
+        .break_time_shears  = 4.0,
+        .break_time_stone   = 0.35,
+        .break_time_sword   = 4.0,
+        .break_time_wood    = 0.65,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_NOTE_BLOCK",
+        .hardness           = 0.8,
+        .break_time_diamond = 0.2,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 1.25,
+        .break_time_iron    = 0.2,
+        .break_time_shears  = 1.25,
+        .break_time_stone   = 0.35,
+        .break_time_sword   = 1.25,
+        .break_time_wood    = 0.65,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_BED",
+        .hardness           = 0.2,
+        .break_time_diamond = 0.35,
+        .break_time_gold    = 0.35,
+        .break_time_hand    = 0.35,
+        .break_time_iron    = 0.35,
+        .break_time_shears  = 0.35,
+        .break_time_stone   = 0.35,
+        .break_time_sword   = 0.35,
+        .break_time_wood    = 0.35,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_GOLDEN_RAIL",
+        .hardness           = 0.7,
+        .break_time_diamond = 0.15,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 1.05,
+        .break_time_iron    = 0.2,
+        .break_time_shears  = 1.05,
+        .break_time_stone   = 0.3,
+        .break_time_sword   = 1.05,
+        .break_time_wood    = 0.55,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DETECTOR_RAIL",
+        .hardness           = 0.7,
+        .break_time_diamond = 0.15,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 1.05,
+        .break_time_iron    = 0.2,
+        .break_time_shears  = 1.05,
+        .break_time_stone   = 0.3,
+        .break_time_sword   = 1.05,
+        .break_time_wood    = 0.55,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_STICKY_PISTON",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.75,
+        .break_time_gold    = 0.75,
+        .break_time_hand    = 0.75,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 0.75,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 0.75,
+        .break_time_wood    = 0.75,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_WEB",
+        .hardness           = 4.0,
+        .break_time_diamond = 20.0,
+        .break_time_gold    = 20.0,
+        .break_time_hand    = 20.0,
+        .break_time_iron    = 20.0,
+        .break_time_shears  = 0.4,
+        .break_time_stone   = 20.0,
+        .break_time_sword   = 0.4,
+        .break_time_wood    = 20.0,
+        .best_tool          = MINECRAFT_TOOL_SHEARS | MINECRAFT_TOOL_SWORD,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_TALLGRASS",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DEADBUSH",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_PISTON",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.75,
+        .break_time_gold    = 0.75,
+        .break_time_hand    = 0.75,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 0.75,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 0.75,
+        .break_time_wood    = 0.75,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_PISTON_HEAD",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.75,
+        .break_time_gold    = 0.75,
+        .break_time_hand    = 0.75,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 0.75,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 0.75,
+        .break_time_wood    = 0.75,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_WOOL",
+        .hardness           = 0.8,
+        .break_time_diamond = 1.25,
+        .break_time_gold    = 1.25,
+        .break_time_hand    = 1.25,
+        .break_time_iron    = 1.25,
+        .break_time_shears  = 0.25,
+        .break_time_stone   = 1.25,
+        .break_time_sword   = 1.25,
+        .break_time_wood    = 1.25,
+        .best_tool          = MINECRAFT_TOOL_SHEARS,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_PISTON_EXTENSION",
+        .hardness           = INFINITY,
+        .break_time_diamond = INFINITY,
+        .break_time_gold    = INFINITY,
+        .break_time_hand    = INFINITY,
+        .break_time_iron    = INFINITY,
+        .break_time_shears  = INFINITY,
+        .break_time_stone   = INFINITY,
+        .break_time_sword   = INFINITY,
+        .break_time_wood    = INFINITY,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_YELLOW_FLOWER",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_RED_FLOWER",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_BROWN_MUSHROOM",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_RED_MUSHROOM",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_GOLD_BLOCK",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 1.25,
+        .break_time_hand    = 15.0,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 15.0,
+        .break_time_stone   = 3.75,
+        .break_time_sword   = 15.0,
+        .break_time_wood    = 7.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_IRON_BLOCK",
+        .hardness           = 5.0,
+        .break_time_diamond = 0.95,
+        .break_time_gold    = 2.1,
+        .break_time_hand    = 25.0,
+        .break_time_iron    = 1.25,
+        .break_time_shears  = 25.0,
+        .break_time_stone   = 1.9,
+        .break_time_sword   = 25.0,
+        .break_time_wood    = 12.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DOUBLE_STONE_SLAB",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_STONE_SLAB",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_BRICK_BLOCK",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_TNT",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_BOOKSHELF",
+        .hardness           = 1.5,
+        .break_time_diamond = 0.3,
+        .break_time_gold    = 0.2,
+        .break_time_hand    = 2.25,
+        .break_time_iron    = 0.4,
+        .break_time_shears  = 2.25,
+        .break_time_stone   = 0.6,
+        .break_time_sword   = 2.25,
+        .break_time_wood    = 1.15,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_MOSSY_COBBLESTONE",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_OBSIDIAN",
+        .hardness           = 50.0,
+        .break_time_diamond = 9.4,
+        .break_time_gold    = 20.85,
+        .break_time_hand    = 250.0,
+        .break_time_iron    = 41.7,
+        .break_time_shears  = 250.0,
+        .break_time_stone   = 62.5,
+        .break_time_sword   = 250.0,
+        .break_time_wood    = 125.0,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_TORCH",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_FIRE",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_MOB_SPAWNER",
+        .hardness           = 5.0,
+        .break_time_diamond = 0.95,
+        .break_time_gold    = 0.65,
+        .break_time_hand    = 25.0,
+        .break_time_iron    = 1.25,
+        .break_time_shears  = 25.0,
+        .break_time_stone   = 1.9,
+        .break_time_sword   = 25.0,
+        .break_time_wood    = 3.75,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_OAK_STAIRS",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_CHEST",
+        .hardness           = 2.5,
+        .break_time_diamond = 0.5,
+        .break_time_gold    = 0.35,
+        .break_time_hand    = 3.75,
+        .break_time_iron    = 0.65,
+        .break_time_shears  = 3.75,
+        .break_time_stone   = 0.95,
+        .break_time_sword   = 3.75,
+        .break_time_wood    = 1.9,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_REDSTONE_WIRE",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DIAMOND_ORE",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 1.25,
+        .break_time_hand    = 15.0,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 15.0,
+        .break_time_stone   = 3.75,
+        .break_time_sword   = 15.0,
+        .break_time_wood    = 7.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DIAMOND_BLOCK",
+        .hardness           = 5.0,
+        .break_time_diamond = 0.95,
+        .break_time_gold    = 2.1,
+        .break_time_hand    = 25.0,
+        .break_time_iron    = 1.25,
+        .break_time_shears  = 25.0,
+        .break_time_stone   = 6.25,
+        .break_time_sword   = 25.0,
+        .break_time_wood    = 12.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_CRAFTING_TABLE",
+        .hardness           = 2.5,
+        .break_time_diamond = 0.5,
+        .break_time_gold    = 0.35,
+        .break_time_hand    = 3.75,
+        .break_time_iron    = 0.65,
+        .break_time_shears  = 3.75,
+        .break_time_stone   = 0.95,
+        .break_time_sword   = 3.75,
+        .break_time_wood    = 1.9,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_WHEAT",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_FARMLAND",
+        .hardness           = 0.6,
+        .break_time_diamond = 0.15,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 0.9,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 0.9,
+        .break_time_stone   = 0.25,
+        .break_time_sword   = 0.9,
+        .break_time_wood    = 0.45,
+        .best_tool          = MINECRAFT_TOOL_SHOVEL,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_FURNACE",
+        .hardness           = 3.5,
+        .break_time_diamond = 0.7,
+        .break_time_gold    = 0.45,
+        .break_time_hand    = 17.5,
+        .break_time_iron    = 0.9,
+        .break_time_shears  = 17.5,
+        .break_time_stone   = 1.35,
+        .break_time_sword   = 17.5,
+        .break_time_wood    = 2.65,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_LIT_FURNACE",
+        .hardness           = 3.5,
+        .break_time_diamond = 0.7,
+        .break_time_gold    = 0.45,
+        .break_time_hand    = 17.5,
+        .break_time_iron    = 0.9,
+        .break_time_shears  = 17.5,
+        .break_time_stone   = 1.35,
+        .break_time_sword   = 17.5,
+        .break_time_wood    = 2.65,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_STANDING_SIGN",
+        .hardness           = 1.0,
+        .break_time_diamond = 0.2,
+        .break_time_gold    = 0.15,
+        .break_time_hand    = 1.5,
+        .break_time_iron    = 0.25,
+        .break_time_shears  = 1.5,
+        .break_time_stone   = 0.4,
+        .break_time_sword   = 1.5,
+        .break_time_wood    = 0.75,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_WOODEN_DOOR",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 0.4,
+        .break_time_hand    = 4.5,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 4.5,
+        .break_time_stone   = 1.15,
+        .break_time_sword   = 4.5,
+        .break_time_wood    = 2.25,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_LADDER",
+        .hardness           = 0.4,
+        .break_time_diamond = 0.1,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.65,
+        .break_time_iron    = 0.1,
+        .break_time_shears  = 0.65,
+        .break_time_stone   = 0.2,
+        .break_time_sword   = 0.65,
+        .break_time_wood    = 0.35,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_RAIL",
+        .hardness           = 0.7,
+        .break_time_diamond = 0.15,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 1.05,
+        .break_time_iron    = 0.2,
+        .break_time_shears  = 1.05,
+        .break_time_stone   = 0.3,
+        .break_time_sword   = 1.05,
+        .break_time_wood    = 0.55,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_STONE_STAIRS",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_WALL_SIGN",
+        .hardness           = 1.0,
+        .break_time_diamond = 0.2,
+        .break_time_gold    = 0.15,
+        .break_time_hand    = 1.5,
+        .break_time_iron    = 0.25,
+        .break_time_shears  = 1.5,
+        .break_time_stone   = 0.4,
+        .break_time_sword   = 1.5,
+        .break_time_wood    = 0.75,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_LEVER",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.75,
+        .break_time_gold    = 0.75,
+        .break_time_hand    = 0.75,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 0.75,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 0.75,
+        .break_time_wood    = 0.75,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_STONE_PRESSURE_PLATE",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.1,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 2.5,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 2.5,
+        .break_time_stone   = 0.2,
+        .break_time_sword   = 2.5,
+        .break_time_wood    = 0.4,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_IRON_DOOR",
+        .hardness           = 5.0,
+        .break_time_diamond = 0.95,
+        .break_time_gold    = 0.65,
+        .break_time_hand    = 25.0,
+        .break_time_iron    = 1.25,
+        .break_time_shears  = 25.0,
+        .break_time_stone   = 1.9,
+        .break_time_sword   = 25.0,
+        .break_time_wood    = 3.75,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_WOODEN_PRESSURE_PLATE",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.1,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 0.75,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 0.75,
+        .break_time_stone   = 0.2,
+        .break_time_sword   = 0.75,
+        .break_time_wood    = 0.4,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_REDSTONE_ORE",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 1.25,
+        .break_time_hand    = 15.0,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 15.0,
+        .break_time_stone   = 3.75,
+        .break_time_sword   = 15.0,
+        .break_time_wood    = 7.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_LIT_REDSTONE_ORE",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 1.25,
+        .break_time_hand    = 15.0,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 15.0,
+        .break_time_stone   = 3.75,
+        .break_time_sword   = 15.0,
+        .break_time_wood    = 7.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_UNLIT_REDSTONE_TORCH",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_REDSTONE_TORCH",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_STONE_BUTTON",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.75,
+        .break_time_gold    = 0.75,
+        .break_time_hand    = 0.75,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 0.75,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 0.75,
+        .break_time_wood    = 0.75,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_SNOW_LAYER",
+        .hardness           = 0.1,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.5,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.5,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.5,
+        .break_time_wood    = 0.1,
+        .best_tool          = MINECRAFT_TOOL_SHOVEL,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_ICE",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.1,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 0.75,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 0.75,
+        .break_time_stone   = 0.2,
+        .break_time_sword   = 0.75,
+        .break_time_wood    = 0.4,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_SNOW",
+        .hardness           = 0.2,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 1.0,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 1.0,
+        .break_time_stone   = 0.1,
+        .break_time_sword   = 1.0,
+        .break_time_wood    = 0.2,
+        .best_tool          = MINECRAFT_TOOL_SHOVEL,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_CACTUS",
+        .hardness           = 0.4,
+        .break_time_diamond = 0.65,
+        .break_time_gold    = 0.65,
+        .break_time_hand    = 0.65,
+        .break_time_iron    = 0.65,
+        .break_time_shears  = 0.65,
+        .break_time_stone   = 0.65,
+        .break_time_sword   = 0.65,
+        .break_time_wood    = 0.65,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_CLAY",
+        .hardness           = 0.6,
+        .break_time_diamond = 0.15,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 0.9,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 0.9,
+        .break_time_stone   = 0.25,
+        .break_time_sword   = 0.9,
+        .break_time_wood    = 0.45,
+        .best_tool          = MINECRAFT_TOOL_SHOVEL,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_REEDS",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_JUKEBOX",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_FENCE",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_PUMPKIN",
+        .hardness           = 1.0,
+        .break_time_diamond = 0.2,
+        .break_time_gold    = 0.15,
+        .break_time_hand    = 1.5,
+        .break_time_iron    = 0.25,
+        .break_time_shears  = 1.5,
+        .break_time_stone   = 0.4,
+        .break_time_sword   = 1.0,
+        .break_time_wood    = 0.75,
+        .best_tool          = MINECRAFT_TOOL_AXE | MINECRAFT_TOOL_SWORD,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_NETHERRACK",
+        .hardness           = 0.4,
+        .break_time_diamond = 0.1,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 2.0,
+        .break_time_iron    = 0.1,
+        .break_time_shears  = 2.0,
+        .break_time_stone   = 0.2,
+        .break_time_sword   = 2.0,
+        .break_time_wood    = 0.35,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_SOUL_SAND",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.1,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 0.75,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 0.75,
+        .break_time_stone   = 0.2,
+        .break_time_sword   = 0.75,
+        .break_time_wood    = 0.4,
+        .best_tool          = MINECRAFT_TOOL_SHOVEL,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_GLOWSTONE",
+        .hardness           = 0.3,
+        .break_time_diamond = 0.45,
+        .break_time_gold    = 0.45,
+        .break_time_hand    = 0.45,
+        .break_time_iron    = 0.45,
+        .break_time_shears  = 0.45,
+        .break_time_stone   = 0.45,
+        .break_time_sword   = 0.45,
+        .break_time_wood    = 0.45,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_PORTAL",
+        .hardness           = INFINITY,
+        .break_time_diamond = INFINITY,
+        .break_time_gold    = INFINITY,
+        .break_time_hand    = INFINITY,
+        .break_time_iron    = INFINITY,
+        .break_time_shears  = INFINITY,
+        .break_time_stone   = INFINITY,
+        .break_time_sword   = INFINITY,
+        .break_time_wood    = INFINITY,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_LIT_PUMPKIN",
+        .hardness           = 1.0,
+        .break_time_diamond = 0.2,
+        .break_time_gold    = 0.15,
+        .break_time_hand    = 1.5,
+        .break_time_iron    = 0.25,
+        .break_time_shears  = 1.5,
+        .break_time_stone   = 0.4,
+        .break_time_sword   = 1.0,
+        .break_time_wood    = 0.75,
+        .best_tool          = MINECRAFT_TOOL_AXE | MINECRAFT_TOOL_SWORD,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_CAKE",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.75,
+        .break_time_gold    = 0.75,
+        .break_time_hand    = 0.75,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 0.75,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 0.75,
+        .break_time_wood    = 0.75,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_UNPOWERED_REPEATER",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_POWERED_REPEATER",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_STAINED_GLASS",
+        .hardness           = 0.3,
+        .break_time_diamond = 0.45,
+        .break_time_gold    = 0.45,
+        .break_time_hand    = 0.45,
+        .break_time_iron    = 0.45,
+        .break_time_shears  = 0.45,
+        .break_time_stone   = 0.45,
+        .break_time_sword   = 0.45,
+        .break_time_wood    = 0.45,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_TRAPDOOR",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 0.4,
+        .break_time_hand    = 4.5,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 4.5,
+        .break_time_stone   = 1.15,
+        .break_time_sword   = 4.5,
+        .break_time_wood    = 2.25,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_MONSTER_EGG",
+        .hardness           = 0.75,
+        .break_time_diamond = 1.15,
+        .break_time_gold    = 1.15,
+        .break_time_hand    = 1.15,
+        .break_time_iron    = 1.15,
+        .break_time_shears  = 1.15,
+        .break_time_stone   = 1.15,
+        .break_time_sword   = 1.15,
+        .break_time_wood    = 1.15,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_STONE_BRICK",
+        .hardness           = 1.5,
+        .break_time_diamond = 0.3,
+        .break_time_gold    = 0.2,
+        .break_time_hand    = 7.5,
+        .break_time_iron    = 0.4,
+        .break_time_shears  = 7.5,
+        .break_time_stone   = 0.6,
+        .break_time_sword   = 7.5,
+        .break_time_wood    = 1.15,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_BROWN_MUSHROOM_BLOCK",
+        .hardness           = 0.2,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.35,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.35,
+        .break_time_stone   = 0.1,
+        .break_time_sword   = 0.35,
+        .break_time_wood    = 0.2,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_RED_MUSHROOM_BLOCK",
+        .hardness           = 0.2,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.35,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.35,
+        .break_time_stone   = 0.1,
+        .break_time_sword   = 0.35,
+        .break_time_wood    = 0.2,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_IRON_BARS",
+        .hardness           = 5.0,
+        .break_time_diamond = 0.95,
+        .break_time_gold    = 0.65,
+        .break_time_hand    = 25.0,
+        .break_time_iron    = 1.25,
+        .break_time_shears  = 25.0,
+        .break_time_stone   = 1.9,
+        .break_time_sword   = 25.0,
+        .break_time_wood    = 3.75,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_GLASS_PANE",
+        .hardness           = 0.3,
+        .break_time_diamond = 0.45,
+        .break_time_gold    = 0.45,
+        .break_time_hand    = 0.45,
+        .break_time_iron    = 0.45,
+        .break_time_shears  = 0.45,
+        .break_time_stone   = 0.45,
+        .break_time_sword   = 0.45,
+        .break_time_wood    = 0.45,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_MELON_BLOCK",
+        .hardness           = 1.0,
+        .break_time_diamond = 0.2,
+        .break_time_gold    = 0.15,
+        .break_time_hand    = 1.5,
+        .break_time_iron    = 0.25,
+        .break_time_shears  = 1.5,
+        .break_time_stone   = 0.4,
+        .break_time_sword   = 1.0,
+        .break_time_wood    = 0.75,
+        .best_tool          = MINECRAFT_TOOL_AXE | MINECRAFT_TOOL_SWORD,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_PUMPKIN_STEM",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_MELON_STEM",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_VINE",
+        .hardness           = 0.2,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.35,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.35,
+        .break_time_stone   = 0.1,
+        .break_time_sword   = 0.2,
+        .break_time_wood    = 0.2,
+        .best_tool          = MINECRAFT_TOOL_AXE | MINECRAFT_TOOL_SWORD,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_FENCE_GATE",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_BRICK_STAIRS",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_STONE_BRICK_STAIRS",
+        .hardness           = 1.5,
+        .break_time_diamond = 0.3,
+        .break_time_gold    = 0.2,
+        .break_time_hand    = 7.5,
+        .break_time_iron    = 0.4,
+        .break_time_shears  = 7.5,
+        .break_time_stone   = 0.6,
+        .break_time_sword   = 7.5,
+        .break_time_wood    = 1.15,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_MYCELIUM",
+        .hardness           = 0.6,
+        .break_time_diamond = 0.15,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 0.9,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 0.9,
+        .break_time_stone   = 0.25,
+        .break_time_sword   = 0.9,
+        .break_time_wood    = 0.45,
+        .best_tool          = MINECRAFT_TOOL_SHOVEL,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_WATERLILY",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_NETHER_BRICK",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_NETHER_BRICK_FENCE",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_NETHER_BRICK_STAIRS",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_NETHER_WART",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_ENCHANTING_TABLE",
+        .hardness           = 5.0,
+        .break_time_diamond = 0.95,
+        .break_time_gold    = 0.65,
+        .break_time_hand    = 25.0,
+        .break_time_iron    = 1.25,
+        .break_time_shears  = 25.0,
+        .break_time_stone   = 1.9,
+        .break_time_sword   = 25.0,
+        .break_time_wood    = 3.75,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_BREWING_STAND",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.1,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 2.5,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 2.5,
+        .break_time_stone   = 0.2,
+        .break_time_sword   = 2.5,
+        .break_time_wood    = 0.4,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_CAULDRON",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_END_PORTAL",
+        .hardness           = INFINITY,
+        .break_time_diamond = INFINITY,
+        .break_time_gold    = INFINITY,
+        .break_time_hand    = INFINITY,
+        .break_time_iron    = INFINITY,
+        .break_time_shears  = INFINITY,
+        .break_time_stone   = INFINITY,
+        .break_time_sword   = INFINITY,
+        .break_time_wood    = INFINITY,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_END_PORTAL_FRAME",
+        .hardness           = INFINITY,
+        .break_time_diamond = INFINITY,
+        .break_time_gold    = INFINITY,
+        .break_time_hand    = INFINITY,
+        .break_time_iron    = INFINITY,
+        .break_time_shears  = INFINITY,
+        .break_time_stone   = INFINITY,
+        .break_time_sword   = INFINITY,
+        .break_time_wood    = INFINITY,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_END_STONE",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 0.4,
+        .break_time_hand    = 15.0,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 15.0,
+        .break_time_stone   = 1.15,
+        .break_time_sword   = 15.0,
+        .break_time_wood    = 2.25,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DRAGON_EGG",
+        .hardness           = 3.0,
+        .break_time_diamond = 4.5,
+        .break_time_gold    = 4.5,
+        .break_time_hand    = 4.5,
+        .break_time_iron    = 4.5,
+        .break_time_shears  = 4.5,
+        .break_time_stone   = 4.5,
+        .break_time_sword   = 4.5,
+        .break_time_wood    = 4.5,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_REDSTONE_LAMP",
+        .hardness           = 0.3,
+        .break_time_diamond = 0.45,
+        .break_time_gold    = 0.45,
+        .break_time_hand    = 0.45,
+        .break_time_iron    = 0.45,
+        .break_time_shears  = 0.45,
+        .break_time_stone   = 0.45,
+        .break_time_sword   = 0.45,
+        .break_time_wood    = 0.45,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_LIT_REDSTONE_LAMP",
+        .hardness           = 0.3,
+        .break_time_diamond = 0.45,
+        .break_time_gold    = 0.45,
+        .break_time_hand    = 0.45,
+        .break_time_iron    = 0.45,
+        .break_time_shears  = 0.45,
+        .break_time_stone   = 0.45,
+        .break_time_sword   = 0.45,
+        .break_time_wood    = 0.45,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DOUBLE_WOODEN_SLAB",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_WOODEN_SLAB",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_COCOA",
+        .hardness           = 0.2,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.35,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.35,
+        .break_time_stone   = 0.1,
+        .break_time_sword   = 0.2,
+        .break_time_wood    = 0.2,
+        .best_tool          = MINECRAFT_TOOL_AXE | MINECRAFT_TOOL_SWORD,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_SANDSTONE_STAIRS",
+        .hardness           = 0.8,
+        .break_time_diamond = 0.2,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 4.0,
+        .break_time_iron    = 0.2,
+        .break_time_shears  = 4.0,
+        .break_time_stone   = 0.35,
+        .break_time_sword   = 4.0,
+        .break_time_wood    = 0.65,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_EMERALD_ORE",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 1.25,
+        .break_time_hand    = 15.0,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 15.0,
+        .break_time_stone   = 3.75,
+        .break_time_sword   = 15.0,
+        .break_time_wood    = 7.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_ENDER_CHEST",
+        .hardness           = 22.5,
+        .break_time_diamond = 4.25,
+        .break_time_gold    = 2.85,
+        .break_time_hand    = 112.5,
+        .break_time_iron    = 5.65,
+        .break_time_shears  = 112.5,
+        .break_time_stone   = 8.45,
+        .break_time_sword   = 112.5,
+        .break_time_wood    = 16.9,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_TRIPWIRE_HOOK",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_TRIPWIRE",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_EMERALD_BLOCK",
+        .hardness           = 5.0,
+        .break_time_diamond = 0.95,
+        .break_time_gold    = 2.1,
+        .break_time_hand    = 25.0,
+        .break_time_iron    = 1.25,
+        .break_time_shears  = 25.0,
+        .break_time_stone   = 6.25,
+        .break_time_sword   = 25.0,
+        .break_time_wood    = 12.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_SPRUCE_STAIRS",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_BIRCH_STAIRS",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_JUNGLE_STAIRS",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_COMMAND_BLOCK",
+        .hardness           = INFINITY,
+        .break_time_diamond = INFINITY,
+        .break_time_gold    = INFINITY,
+        .break_time_hand    = INFINITY,
+        .break_time_iron    = INFINITY,
+        .break_time_shears  = INFINITY,
+        .break_time_stone   = INFINITY,
+        .break_time_sword   = INFINITY,
+        .break_time_wood    = INFINITY,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_BEACON",
+        .hardness           = 3.0,
+        .break_time_diamond = 4.5,
+        .break_time_gold    = 4.5,
+        .break_time_hand    = 4.5,
+        .break_time_iron    = 4.5,
+        .break_time_shears  = 4.5,
+        .break_time_stone   = 4.5,
+        .break_time_sword   = 4.5,
+        .break_time_wood    = 4.5,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_COBBLESTONE_WALL",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_FLOWER_POT",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_CARROTS",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_POTATOES",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_WOODEN_BUTTON",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.75,
+        .break_time_gold    = 0.75,
+        .break_time_hand    = 0.75,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 0.75,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 0.75,
+        .break_time_wood    = 0.75,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_SKULL",
+        .hardness           = 1.0,
+        .break_time_diamond = 1.5,
+        .break_time_gold    = 1.5,
+        .break_time_hand    = 1.5,
+        .break_time_iron    = 1.5,
+        .break_time_shears  = 1.5,
+        .break_time_stone   = 1.5,
+        .break_time_sword   = 1.5,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_ANVIL",
+        .hardness           = 5.0,
+        .break_time_diamond = 0.95,
+        .break_time_gold    = 0.65,
+        .break_time_hand    = 25.0,
+        .break_time_iron    = 1.25,
+        .break_time_shears  = 25.0,
+        .break_time_stone   = 1.9,
+        .break_time_sword   = 25.0,
+        .break_time_wood    = 3.75,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_TRAPPED_CHEST",
+        .hardness           = 2.5,
+        .break_time_diamond = 0.5,
+        .break_time_gold    = 0.35,
+        .break_time_hand    = 3.75,
+        .break_time_iron    = 0.65,
+        .break_time_shears  = 3.75,
+        .break_time_stone   = 0.95,
+        .break_time_sword   = 3.75,
+        .break_time_wood    = 1.9,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_LIGHT_WEIGHTED_PRESSURE_PLATE",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.1,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 2.5,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 2.5,
+        .break_time_stone   = 0.2,
+        .break_time_sword   = 2.5,
+        .break_time_wood    = 0.4,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_HEAVY_WEIGHTED_PRESSURE_PLATE",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.1,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 2.5,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 2.5,
+        .break_time_stone   = 0.2,
+        .break_time_sword   = 2.5,
+        .break_time_wood    = 0.4,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_UNPOWERED_COMPARATOR",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_POWERED_COMPARATOR",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DAYLIGHT_DETECTOR",
+        .hardness           = 0.2,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.35,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.35,
+        .break_time_stone   = 0.1,
+        .break_time_sword   = 0.35,
+        .break_time_wood    = 0.2,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_REDSTONE_BLOCK",
+        .hardness           = 5.0,
+        .break_time_diamond = 0.95,
+        .break_time_gold    = 0.65,
+        .break_time_hand    = 25.0,
+        .break_time_iron    = 1.25,
+        .break_time_shears  = 25.0,
+        .break_time_stone   = 1.9,
+        .break_time_sword   = 25.0,
+        .break_time_wood    = 3.75,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_QUARTZ_ORE",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 0.4,
+        .break_time_hand    = 15.0,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 15.0,
+        .break_time_stone   = 1.15,
+        .break_time_sword   = 15.0,
+        .break_time_wood    = 2.25,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_HOPPER",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 0.4,
+        .break_time_hand    = 15.0,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 15.0,
+        .break_time_stone   = 1.15,
+        .break_time_sword   = 15.0,
+        .break_time_wood    = 2.25,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_QUARTZ_BLOCK",
+        .hardness           = 0.8,
+        .break_time_diamond = 0.2,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 4.0,
+        .break_time_iron    = 0.2,
+        .break_time_shears  = 4.0,
+        .break_time_stone   = 0.35,
+        .break_time_sword   = 4.0,
+        .break_time_wood    = 0.65,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_QUARTZ_STAIRS",
+        .hardness           = 0.8,
+        .break_time_diamond = 0.2,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 4.0,
+        .break_time_iron    = 0.2,
+        .break_time_shears  = 4.0,
+        .break_time_stone   = 0.35,
+        .break_time_sword   = 4.0,
+        .break_time_wood    = 0.65,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_ACTIVATOR_RAIL",
+        .hardness           = 0.7,
+        .break_time_diamond = 0.15,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 1.05,
+        .break_time_iron    = 0.2,
+        .break_time_shears  = 1.05,
+        .break_time_stone   = 0.3,
+        .break_time_sword   = 1.05,
+        .break_time_wood    = 0.55,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DROPPER",
+        .hardness           = 3.5,
+        .break_time_diamond = 0.7,
+        .break_time_gold    = 0.45,
+        .break_time_hand    = 17.5,
+        .break_time_iron    = 0.9,
+        .break_time_shears  = 17.5,
+        .break_time_stone   = 1.35,
+        .break_time_sword   = 17.5,
+        .break_time_wood    = 2.65,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_STAINED_HARDENED_CLAY",
+        .hardness           = 1.25,
+        .break_time_diamond = 0.25,
+        .break_time_gold    = 0.2,
+        .break_time_hand    = 6.25,
+        .break_time_iron    = 0.35,
+        .break_time_shears  = 6.25,
+        .break_time_stone   = 0.5,
+        .break_time_sword   = 6.25,
+        .break_time_wood    = 0.95,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_STAINED_GLASS_PANE",
+        .hardness           = 0.3,
+        .break_time_diamond = 0.45,
+        .break_time_gold    = 0.45,
+        .break_time_hand    = 0.45,
+        .break_time_iron    = 0.45,
+        .break_time_shears  = 0.45,
+        .break_time_stone   = 0.45,
+        .break_time_sword   = 0.45,
+        .break_time_wood    = 0.45,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_LEAVES2",
+        .hardness           = 0.2,
+        .break_time_diamond = 0.35,
+        .break_time_gold    = 0.35,
+        .break_time_hand    = 0.35,
+        .break_time_iron    = 0.35,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.35,
+        .break_time_sword   = 0.2,
+        .break_time_wood    = 0.35,
+        .best_tool          = MINECRAFT_TOOL_SHEARS | MINECRAFT_TOOL_SWORD,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_LOG2",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_ACACIA_STAIRS",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DARK_OAK_STAIRS",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_SLIME",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_BARRIER",
+        .hardness           = INFINITY,
+        .break_time_diamond = INFINITY,
+        .break_time_gold    = INFINITY,
+        .break_time_hand    = INFINITY,
+        .break_time_iron    = INFINITY,
+        .break_time_shears  = INFINITY,
+        .break_time_stone   = INFINITY,
+        .break_time_sword   = INFINITY,
+        .break_time_wood    = INFINITY,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_IRON_TRAPDOOR",
+        .hardness           = 5.0,
+        .break_time_diamond = 0.95,
+        .break_time_gold    = 0.65,
+        .break_time_hand    = 25.0,
+        .break_time_iron    = 1.25,
+        .break_time_shears  = 25.0,
+        .break_time_stone   = 1.9,
+        .break_time_sword   = 25.0,
+        .break_time_wood    = 3.75,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_PRISMARINE",
+        .hardness           = 1.5,
+        .break_time_diamond = 0.3,
+        .break_time_gold    = 0.2,
+        .break_time_hand    = 7.5,
+        .break_time_iron    = 0.4,
+        .break_time_shears  = 7.5,
+        .break_time_stone   = 0.6,
+        .break_time_sword   = 7.5,
+        .break_time_wood    = 1.15,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_SEA_LANTERN",
+        .hardness           = 0.3,
+        .break_time_diamond = 0.45,
+        .break_time_gold    = 0.45,
+        .break_time_hand    = 0.45,
+        .break_time_iron    = 0.45,
+        .break_time_shears  = 0.45,
+        .break_time_stone   = 0.45,
+        .break_time_sword   = 0.45,
+        .break_time_wood    = 0.45,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_HAY_BLOCK",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.75,
+        .break_time_gold    = 0.75,
+        .break_time_hand    = 0.75,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 0.75,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 0.75,
+        .break_time_wood    = 0.75,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_CARPET",
+        .hardness           = 0.1,
+        .break_time_diamond = 0.2,
+        .break_time_gold    = 0.2,
+        .break_time_hand    = 0.2,
+        .break_time_iron    = 0.2,
+        .break_time_shears  = 0.2,
+        .break_time_stone   = 0.2,
+        .break_time_sword   = 0.2,
+        .break_time_wood    = 0.2,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_HARDENED_CLAY",
+        .hardness           = 1.25,
+        .break_time_diamond = 0.25,
+        .break_time_gold    = 0.2,
+        .break_time_hand    = 6.25,
+        .break_time_iron    = 0.35,
+        .break_time_shears  = 6.25,
+        .break_time_stone   = 0.5,
+        .break_time_sword   = 6.25,
+        .break_time_wood    = 0.95,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_COAL_BLOCK",
+        .hardness           = 5.0,
+        .break_time_diamond = 0.95,
+        .break_time_gold    = 0.65,
+        .break_time_hand    = 25.0,
+        .break_time_iron    = 1.25,
+        .break_time_shears  = 25.0,
+        .break_time_stone   = 1.9,
+        .break_time_sword   = 25.0,
+        .break_time_wood    = 3.75,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_PACKED_ICE",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.1,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 0.75,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 0.75,
+        .break_time_stone   = 0.2,
+        .break_time_sword   = 0.75,
+        .break_time_wood    = 0.4,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DOUBLE_PLANT",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_STANDING_BANNER",
+        .hardness           = 1.0,
+        .break_time_diamond = 0.2,
+        .break_time_gold    = 0.15,
+        .break_time_hand    = 1.5,
+        .break_time_iron    = 0.25,
+        .break_time_shears  = 1.5,
+        .break_time_stone   = 0.4,
+        .break_time_sword   = 1.5,
+        .break_time_wood    = 0.75,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_WALL_BANNER",
+        .hardness           = 1.0,
+        .break_time_diamond = 0.2,
+        .break_time_gold    = 0.15,
+        .break_time_hand    = 1.5,
+        .break_time_iron    = 0.25,
+        .break_time_shears  = 1.5,
+        .break_time_stone   = 0.4,
+        .break_time_sword   = 1.5,
+        .break_time_wood    = 0.75,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DAYLIGHT_DETECTOR_INVERTED",
+        .hardness           = 0.2,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.35,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.35,
+        .break_time_stone   = 0.1,
+        .break_time_sword   = 0.35,
+        .break_time_wood    = 0.2,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_RED_SANDSTONE",
+        .hardness           = 0.8,
+        .break_time_diamond = 0.2,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 4.0,
+        .break_time_iron    = 0.2,
+        .break_time_shears  = 4.0,
+        .break_time_stone   = 0.35,
+        .break_time_sword   = 4.0,
+        .break_time_wood    = 0.65,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_RED_SANDSTONE_STAIRS",
+        .hardness           = 0.8,
+        .break_time_diamond = 0.2,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 4.0,
+        .break_time_iron    = 0.2,
+        .break_time_shears  = 4.0,
+        .break_time_stone   = 0.35,
+        .break_time_sword   = 4.0,
+        .break_time_wood    = 0.65,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DOUBLE_STONE_SLAB2",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_STONE_SLAB2",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_SPRUCE_FENCE_GATE",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_BIRCH_FENCE_GATE",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_JUNGLE_FENCE_GATE",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DARK_OAK_FENCE_GATE",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_ACACIA_FENCE_GATE",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_SPRUCE_FENCE",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_BIRCH_FENCE",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_JUNGLE_FENCE",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DARK_OAK_FENCE",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_ACACIA_FENCE",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 3.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 3.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 3.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_SPRUCE_DOOR",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 0.4,
+        .break_time_hand    = 4.5,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 4.5,
+        .break_time_stone   = 1.15,
+        .break_time_sword   = 4.5,
+        .break_time_wood    = 2.25,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_BIRCH_DOOR",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 0.4,
+        .break_time_hand    = 4.5,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 4.5,
+        .break_time_stone   = 1.15,
+        .break_time_sword   = 4.5,
+        .break_time_wood    = 2.25,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_JUNGLE_DOOR",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 0.4,
+        .break_time_hand    = 4.5,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 4.5,
+        .break_time_stone   = 1.15,
+        .break_time_sword   = 4.5,
+        .break_time_wood    = 2.25,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_ACACIA_DOOR",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 0.4,
+        .break_time_hand    = 4.5,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 4.5,
+        .break_time_stone   = 1.15,
+        .break_time_sword   = 4.5,
+        .break_time_wood    = 2.25,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_DARK_OAK_DOOR",
+        .hardness           = 3.0,
+        .break_time_diamond = 0.6,
+        .break_time_gold    = 0.4,
+        .break_time_hand    = 4.5,
+        .break_time_iron    = 0.75,
+        .break_time_shears  = 4.5,
+        .break_time_stone   = 1.15,
+        .break_time_sword   = 4.5,
+        .break_time_wood    = 2.25,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_END_ROD",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_CHORUS_PLANT",
+        .hardness           = 0.4,
+        .break_time_diamond = 0.1,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.65,
+        .break_time_iron    = 0.1,
+        .break_time_shears  = 0.65,
+        .break_time_stone   = 0.2,
+        .break_time_sword   = 0.65,
+        .break_time_wood    = 0.35,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_CHORUS_FLOWER",
+        .hardness           = 0.4,
+        .break_time_diamond = 0.1,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.65,
+        .break_time_iron    = 0.1,
+        .break_time_shears  = 0.65,
+        .break_time_stone   = 0.2,
+        .break_time_sword   = 0.65,
+        .break_time_wood    = 0.35,
+        .best_tool          = MINECRAFT_TOOL_AXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_PURPUR_BLOCK",
+        .hardness           = 1.5,
+        .break_time_diamond = 0.3,
+        .break_time_gold    = 0.2,
+        .break_time_hand    = 7.5,
+        .break_time_iron    = 0.4,
+        .break_time_shears  = 7.5,
+        .break_time_stone   = 0.6,
+        .break_time_sword   = 7.5,
+        .break_time_wood    = 1.15,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_PURPUR_PILLAR",
+        .hardness           = 1.5,
+        .break_time_diamond = 0.3,
+        .break_time_gold    = 0.2,
+        .break_time_hand    = 7.5,
+        .break_time_iron    = 0.4,
+        .break_time_shears  = 7.5,
+        .break_time_stone   = 0.6,
+        .break_time_sword   = 7.5,
+        .break_time_wood    = 1.15,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_PURPUR_STAIRS",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_PURPUR_DOUBLE_SLAB",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_PURPUR_SLAB",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_END_BRICKS",
+        .hardness           = 0.8,
+        .break_time_diamond = 0.2,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 4.0,
+        .break_time_iron    = 0.2,
+        .break_time_shears  = 4.0,
+        .break_time_stone   = 0.35,
+        .break_time_sword   = 4.0,
+        .break_time_wood    = 0.65,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_BEETROOTS",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_GRASS_PATH",
+        .hardness           = 0.6,
+        .break_time_diamond = 0.15,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 0.9,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 0.9,
+        .break_time_stone   = 0.25,
+        .break_time_sword   = 0.9,
+        .break_time_wood    = 0.45,
+        .best_tool          = MINECRAFT_TOOL_SHOVEL,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_END_GATEWAY",
+        .hardness           = INFINITY,
+        .break_time_diamond = INFINITY,
+        .break_time_gold    = INFINITY,
+        .break_time_hand    = INFINITY,
+        .break_time_iron    = INFINITY,
+        .break_time_shears  = INFINITY,
+        .break_time_stone   = INFINITY,
+        .break_time_sword   = INFINITY,
+        .break_time_wood    = INFINITY,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_REPEATING_COMMAND_BLOCK",
+        .hardness           = INFINITY,
+        .break_time_diamond = INFINITY,
+        .break_time_gold    = INFINITY,
+        .break_time_hand    = INFINITY,
+        .break_time_iron    = INFINITY,
+        .break_time_shears  = INFINITY,
+        .break_time_stone   = INFINITY,
+        .break_time_sword   = INFINITY,
+        .break_time_wood    = INFINITY,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_CHAIN_COMMAND_BLOCK",
+        .hardness           = INFINITY,
+        .break_time_diamond = INFINITY,
+        .break_time_gold    = INFINITY,
+        .break_time_hand    = INFINITY,
+        .break_time_iron    = INFINITY,
+        .break_time_shears  = INFINITY,
+        .break_time_stone   = INFINITY,
+        .break_time_sword   = INFINITY,
+        .break_time_wood    = INFINITY,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_FROSTED_ICE",
+        .hardness           = 0.5,
+        .break_time_diamond = 2.5,
+        .break_time_gold    = 2.5,
+        .break_time_hand    = 2.5,
+        .break_time_iron    = 2.5,
+        .break_time_shears  = 2.5,
+        .break_time_stone   = 2.5,
+        .break_time_sword   = 2.5,
+        .break_time_wood    = 2.5,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_MAGMA",
+        .hardness           = 0.5,
+        .break_time_diamond = 0.1,
+        .break_time_gold    = 0.1,
+        .break_time_hand    = 2.5,
+        .break_time_iron    = 0.15,
+        .break_time_shears  = 2.5,
+        .break_time_stone   = 0.2,
+        .break_time_sword   = 2.5,
+        .break_time_wood    = 0.4,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_NETHER_WART_BLOCK",
+        .hardness           = 1.0,
+        .break_time_diamond = 1.5,
+        .break_time_gold    = 1.5,
+        .break_time_hand    = 1.5,
+        .break_time_iron    = 1.5,
+        .break_time_shears  = 1.5,
+        .break_time_stone   = 1.5,
+        .break_time_sword   = 1.5,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_RED_NETHER_BRICK",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_BONE_BLOCK",
+        .hardness           = 2.0,
+        .break_time_diamond = 0.4,
+        .break_time_gold    = 0.25,
+        .break_time_hand    = 10.0,
+        .break_time_iron    = 0.5,
+        .break_time_shears  = 10.0,
+        .break_time_stone   = 0.75,
+        .break_time_sword   = 10.0,
+        .break_time_wood    = 1.5,
+        .best_tool          = MINECRAFT_TOOL_PICKAXE,
+    },
+    {
+        .name               = "MINECRAFT_BLOCK_STRUCTURE_VOID",
+        .hardness           = 0.0,
+        .break_time_diamond = 0.05,
+        .break_time_gold    = 0.05,
+        .break_time_hand    = 0.05,
+        .break_time_iron    = 0.05,
+        .break_time_shears  = 0.05,
+        .break_time_stone   = 0.05,
+        .break_time_sword   = 0.05,
+        .break_time_wood    = 0.05,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    (struct block_break_data){0},
+    {
+        .name               = "MINECRAFT_BLOCK_STRUCTURE_BLOCK",
+        .hardness           = INFINITY,
+        .break_time_diamond = INFINITY,
+        .break_time_gold    = INFINITY,
+        .break_time_hand    = INFINITY,
+        .break_time_iron    = INFINITY,
+        .break_time_shears  = INFINITY,
+        .break_time_stone   = INFINITY,
+        .break_time_sword   = INFINITY,
+        .break_time_wood    = INFINITY,
+        .best_tool          = MINECRAFT_TOOL_OTHER,
+    },
+};
+
+const char *block_name(int block_data) {
+    int index = block_data >> 4;
+    return break_data_table[index].name;
+}
+
 double block_hardness(int block_data) {
-    enum MINECRAFT_BLOCK block_id = block_data >> 4;
-    switch(block_id) {
-        case MINECRAFT_BLOCK_COMMAND_BLOCK:
-        case MINECRAFT_BLOCK_PORTAL:
-        case MINECRAFT_BLOCK_END_PORTAL:
-        case MINECRAFT_BLOCK_END_PORTAL_FRAME:
-        case MINECRAFT_BLOCK_CHAIN_COMMAND_BLOCK:
-        case MINECRAFT_BLOCK_END_GATEWAY:
-        case MINECRAFT_BLOCK_BARRIER:
-        case MINECRAFT_BLOCK_PISTON_EXTENSION:
-        case MINECRAFT_BLOCK_BEDROCK:
-        case MINECRAFT_BLOCK_REPEATING_COMMAND_BLOCK:
-        case MINECRAFT_BLOCK_STRUCTURE_BLOCK:
-            return INFINITY;
-        case MINECRAFT_BLOCK_FLOWING_LAVA:
-        case MINECRAFT_BLOCK_WATER:
-        case MINECRAFT_BLOCK_LAVA:
-        case MINECRAFT_BLOCK_FLOWING_WATER:
-            return 100.0;
-        case MINECRAFT_BLOCK_OBSIDIAN:
-            return 50.0;
-        case MINECRAFT_BLOCK_ENDER_CHEST:
-            return 22.5;
-        case MINECRAFT_BLOCK_DIAMOND_BLOCK:
-        case MINECRAFT_BLOCK_IRON_DOOR:
-        case MINECRAFT_BLOCK_IRON_BARS:
-        case MINECRAFT_BLOCK_MOB_SPAWNER:
-        case MINECRAFT_BLOCK_COAL_BLOCK:
-        case MINECRAFT_BLOCK_REDSTONE_BLOCK:
-        case MINECRAFT_BLOCK_ANVIL:
-        case MINECRAFT_BLOCK_IRON_BLOCK:
-        case MINECRAFT_BLOCK_ENCHANTING_TABLE:
-        case MINECRAFT_BLOCK_EMERALD_BLOCK:
-        case MINECRAFT_BLOCK_IRON_TRAPDOOR:
-            return 5.0;
-        case MINECRAFT_BLOCK_WEB:
-            return 4.0;
-        case MINECRAFT_BLOCK_FURNACE:
-        case MINECRAFT_BLOCK_DISPENSER:
-        case MINECRAFT_BLOCK_LIT_FURNACE:
-        case MINECRAFT_BLOCK_DROPPER:
-            return 3.5;
-        case MINECRAFT_BLOCK_IRON_ORE:
-        case MINECRAFT_BLOCK_LAPIS_BLOCK:
-        case MINECRAFT_BLOCK_LIT_REDSTONE_ORE:
-        case MINECRAFT_BLOCK_COAL_ORE:
-        case MINECRAFT_BLOCK_WOODEN_DOOR:
-        case MINECRAFT_BLOCK_REDSTONE_ORE:
-        case MINECRAFT_BLOCK_TRAPDOOR:
-        case MINECRAFT_BLOCK_DIAMOND_ORE:
-        case MINECRAFT_BLOCK_GOLD_BLOCK:
-        case MINECRAFT_BLOCK_QUARTZ_ORE:
-        case MINECRAFT_BLOCK_GOLD_ORE:
-        case MINECRAFT_BLOCK_BEACON:
-        case MINECRAFT_BLOCK_BIRCH_DOOR:
-        case MINECRAFT_BLOCK_ACACIA_DOOR:
-        case MINECRAFT_BLOCK_LAPIS_ORE:
-        case MINECRAFT_BLOCK_HOPPER:
-        case MINECRAFT_BLOCK_JUNGLE_DOOR:
-        case MINECRAFT_BLOCK_DRAGON_EGG:
-        case MINECRAFT_BLOCK_END_STONE:
-        case MINECRAFT_BLOCK_EMERALD_ORE:
-        case MINECRAFT_BLOCK_DARK_OAK_DOOR:
-        case MINECRAFT_BLOCK_SPRUCE_DOOR:
-            return 3.0;
-        case MINECRAFT_BLOCK_CRAFTING_TABLE:
-        case MINECRAFT_BLOCK_CHEST:
-        case MINECRAFT_BLOCK_TRAPPED_CHEST:
-            return 2.5;
-        case MINECRAFT_BLOCK_RED_NETHER_BRICK:
-        case MINECRAFT_BLOCK_ACACIA_FENCE_GATE:
-        case MINECRAFT_BLOCK_OAK_STAIRS:
-        case MINECRAFT_BLOCK_STONE_STAIRS:
-        case MINECRAFT_BLOCK_JUNGLE_FENCE_GATE:
-        case MINECRAFT_BLOCK_ACACIA_STAIRS:
-        case MINECRAFT_BLOCK_BONE_BLOCK:
-        case MINECRAFT_BLOCK_LOG:
-        case MINECRAFT_BLOCK_DOUBLE_STONE_SLAB2:
-        case MINECRAFT_BLOCK_DOUBLE_STONE_SLAB:
-        case MINECRAFT_BLOCK_BRICK_BLOCK:
-        case MINECRAFT_BLOCK_BIRCH_FENCE_GATE:
-        case MINECRAFT_BLOCK_COBBLESTONE_WALL:
-        case MINECRAFT_BLOCK_DARK_OAK_STAIRS:
-        case MINECRAFT_BLOCK_NETHER_BRICK:
-        case MINECRAFT_BLOCK_JUKEBOX:
-        case MINECRAFT_BLOCK_CAULDRON:
-        case MINECRAFT_BLOCK_STONE_SLAB:
-        case MINECRAFT_BLOCK_DARK_OAK_FENCE:
-        case MINECRAFT_BLOCK_PLANKS:
-        case MINECRAFT_BLOCK_NETHER_BRICK_FENCE:
-        case MINECRAFT_BLOCK_BIRCH_STAIRS:
-        case MINECRAFT_BLOCK_SPRUCE_FENCE_GATE:
-        case MINECRAFT_BLOCK_LOG2:
-        case MINECRAFT_BLOCK_PURPUR_SLAB:
-        case MINECRAFT_BLOCK_COBBLESTONE:
-        case MINECRAFT_BLOCK_BRICK_STAIRS:
-        case MINECRAFT_BLOCK_FENCE:
-        case MINECRAFT_BLOCK_DOUBLE_WOODEN_SLAB:
-        case MINECRAFT_BLOCK_NETHER_BRICK_STAIRS:
-        case MINECRAFT_BLOCK_SPRUCE_FENCE:
-        case MINECRAFT_BLOCK_DARK_OAK_FENCE_GATE:
-        case MINECRAFT_BLOCK_PURPUR_STAIRS:
-        case MINECRAFT_BLOCK_JUNGLE_FENCE:
-        case MINECRAFT_BLOCK_MOSSY_COBBLESTONE:
-        case MINECRAFT_BLOCK_WOODEN_SLAB:
-        case MINECRAFT_BLOCK_JUNGLE_STAIRS:
-        case MINECRAFT_BLOCK_BIRCH_FENCE:
-        case MINECRAFT_BLOCK_PURPUR_DOUBLE_SLAB:
-        case MINECRAFT_BLOCK_ACACIA_FENCE:
-        case MINECRAFT_BLOCK_FENCE_GATE:
-        case MINECRAFT_BLOCK_SPRUCE_STAIRS:
-        case MINECRAFT_BLOCK_STONE_SLAB2:
-            return 2.0;
-        case MINECRAFT_BLOCK_STONE_BRICK:
-        case MINECRAFT_BLOCK_STONE:
-        case MINECRAFT_BLOCK_PURPUR_PILLAR:
-        case MINECRAFT_BLOCK_BOOKSHELF:
-        case MINECRAFT_BLOCK_PURPUR_BLOCK:
-        case MINECRAFT_BLOCK_STONE_BRICK_STAIRS:
-        case MINECRAFT_BLOCK_PRISMARINE:
-            return 1.5;
-        case MINECRAFT_BLOCK_STAINED_HARDENED_CLAY:
-        case MINECRAFT_BLOCK_HARDENED_CLAY:
-            return 1.25;
-        case MINECRAFT_BLOCK_SKULL:
-        case MINECRAFT_BLOCK_STANDING_BANNER:
-        case MINECRAFT_BLOCK_LIT_PUMPKIN:
-        case MINECRAFT_BLOCK_MELON_BLOCK:
-        case MINECRAFT_BLOCK_PUMPKIN:
-        case MINECRAFT_BLOCK_WALL_SIGN:
-        case MINECRAFT_BLOCK_STANDING_SIGN:
-        case MINECRAFT_BLOCK_WALL_BANNER:
-        case MINECRAFT_BLOCK_NETHER_WART_BLOCK:
-            return 1.0;
-        case MINECRAFT_BLOCK_WOOL:
-        case MINECRAFT_BLOCK_END_BRICKS:
-        case MINECRAFT_BLOCK_NOTE_BLOCK:
-        case MINECRAFT_BLOCK_SANDSTONE_STAIRS:
-        case MINECRAFT_BLOCK_QUARTZ_STAIRS:
-        case MINECRAFT_BLOCK_SANDSTONE:
-        case MINECRAFT_BLOCK_QUARTZ_BLOCK:
-        case MINECRAFT_BLOCK_RED_SANDSTONE_STAIRS:
-        case MINECRAFT_BLOCK_RED_SANDSTONE:
-            return 0.8;
-        case MINECRAFT_BLOCK_MONSTER_EGG:
-            return 0.75;
-        case MINECRAFT_BLOCK_ACTIVATOR_RAIL:
-        case MINECRAFT_BLOCK_DETECTOR_RAIL:
-        case MINECRAFT_BLOCK_GOLDEN_RAIL:
-        case MINECRAFT_BLOCK_RAIL:
-            return 0.7;
-        case MINECRAFT_BLOCK_GRASS_PATH:
-        case MINECRAFT_BLOCK_GRASS:
-        case MINECRAFT_BLOCK_FARMLAND:
-        case MINECRAFT_BLOCK_GRAVEL:
-        case MINECRAFT_BLOCK_SPONGE:
-        case MINECRAFT_BLOCK_MYCELIUM:
-        case MINECRAFT_BLOCK_CLAY:
-            return 0.6;
-        case MINECRAFT_BLOCK_ICE:
-        case MINECRAFT_BLOCK_CAKE:
-        case MINECRAFT_BLOCK_PISTON_HEAD:
-        case MINECRAFT_BLOCK_BREWING_STAND:
-        case MINECRAFT_BLOCK_MAGMA:
-        case MINECRAFT_BLOCK_LEVER:
-        case MINECRAFT_BLOCK_WOODEN_BUTTON:
-        case MINECRAFT_BLOCK_LIGHT_WEIGHTED_PRESSURE_PLATE:
-        case MINECRAFT_BLOCK_STICKY_PISTON:
-        case MINECRAFT_BLOCK_PISTON:
-        case MINECRAFT_BLOCK_HEAVY_WEIGHTED_PRESSURE_PLATE:
-        case MINECRAFT_BLOCK_STONE_BUTTON:
-        case MINECRAFT_BLOCK_FROSTED_ICE:
-        case MINECRAFT_BLOCK_WOODEN_PRESSURE_PLATE:
-        case MINECRAFT_BLOCK_STONE_PRESSURE_PLATE:
-        case MINECRAFT_BLOCK_SOUL_SAND:
-        case MINECRAFT_BLOCK_DIRT:
-        case MINECRAFT_BLOCK_SAND:
-        case MINECRAFT_BLOCK_PACKED_ICE:
-        case MINECRAFT_BLOCK_HAY_BLOCK:
-            return 0.5;
-        case MINECRAFT_BLOCK_CHORUS_PLANT:
-        case MINECRAFT_BLOCK_LADDER:
-        case MINECRAFT_BLOCK_CACTUS:
-        case MINECRAFT_BLOCK_CHORUS_FLOWER:
-        case MINECRAFT_BLOCK_NETHERRACK:
-            return 0.4;
-        case MINECRAFT_BLOCK_GLASS:
-        case MINECRAFT_BLOCK_REDSTONE_LAMP:
-        case MINECRAFT_BLOCK_GLOWSTONE:
-        case MINECRAFT_BLOCK_STAINED_GLASS:
-        case MINECRAFT_BLOCK_GLASS_PANE:
-        case MINECRAFT_BLOCK_SEA_LANTERN:
-        case MINECRAFT_BLOCK_STAINED_GLASS_PANE:
-        case MINECRAFT_BLOCK_LIT_REDSTONE_LAMP:
-            return 0.3;
-        case MINECRAFT_BLOCK_SNOW:
-        case MINECRAFT_BLOCK_DAYLIGHT_DETECTOR:
-        case MINECRAFT_BLOCK_COCOA:
-        case MINECRAFT_BLOCK_DAYLIGHT_DETECTOR_INVERTED:
-        case MINECRAFT_BLOCK_RED_MUSHROOM_BLOCK:
-        case MINECRAFT_BLOCK_BED:
-        case MINECRAFT_BLOCK_VINE:
-        case MINECRAFT_BLOCK_LEAVES2:
-        case MINECRAFT_BLOCK_LEAVES:
-        case MINECRAFT_BLOCK_BROWN_MUSHROOM_BLOCK:
-            return 0.2;
-        case MINECRAFT_BLOCK_CARPET:
-        case MINECRAFT_BLOCK_SNOW_LAYER:
-            return 0.1;
-        case MINECRAFT_BLOCK_TRIPWIRE_HOOK:
-        case MINECRAFT_BLOCK_TORCH:
-        case MINECRAFT_BLOCK_MELON_STEM:
-        case MINECRAFT_BLOCK_UNPOWERED_REPEATER:
-        case MINECRAFT_BLOCK_RED_FLOWER:
-        case MINECRAFT_BLOCK_UNLIT_REDSTONE_TORCH:
-        case MINECRAFT_BLOCK_BROWN_MUSHROOM:
-        case MINECRAFT_BLOCK_FIRE:
-        case MINECRAFT_BLOCK_TRIPWIRE:
-        case MINECRAFT_BLOCK_TALLGRASS:
-        case MINECRAFT_BLOCK_TNT:
-        case MINECRAFT_BLOCK_RED_MUSHROOM:
-        case MINECRAFT_BLOCK_DEADBUSH:
-        case MINECRAFT_BLOCK_BEETROOTS:
-        case MINECRAFT_BLOCK_NETHER_WART:
-        case MINECRAFT_BLOCK_CARROTS:
-        case MINECRAFT_BLOCK_UNPOWERED_COMPARATOR:
-        case MINECRAFT_BLOCK_FLOWER_POT:
-        case MINECRAFT_BLOCK_POTATOES:
-        case MINECRAFT_BLOCK_WATERLILY:
-        case MINECRAFT_BLOCK_AIR:
-        case MINECRAFT_BLOCK_SAPLING:
-        case MINECRAFT_BLOCK_DOUBLE_PLANT:
-        case MINECRAFT_BLOCK_REEDS:
-        case MINECRAFT_BLOCK_POWERED_REPEATER:
-        case MINECRAFT_BLOCK_WHEAT:
-        case MINECRAFT_BLOCK_END_ROD:
-        case MINECRAFT_BLOCK_POWERED_COMPARATOR:
-        case MINECRAFT_BLOCK_PUMPKIN_STEM:
-        case MINECRAFT_BLOCK_YELLOW_FLOWER:
-        case MINECRAFT_BLOCK_SLIME:
-        case MINECRAFT_BLOCK_STRUCTURE_VOID:
-        case MINECRAFT_BLOCK_REDSTONE_WIRE:
-        case MINECRAFT_BLOCK_REDSTONE_TORCH:
-            return 0.0;
-        default:
-            return NAN;
-    }
+    int index = block_data >> 4;
+    return break_data_table[index].hardness;
 }
 
 double block_break_time_hand(int block_data) {
-    enum MINECRAFT_BLOCK block_id = block_data >> 4;
-    switch(block_id) {
-        case MINECRAFT_BLOCK_FLOWING_LAVA:
-        case MINECRAFT_BLOCK_COMMAND_BLOCK:
-        case MINECRAFT_BLOCK_PORTAL:
-        case MINECRAFT_BLOCK_END_PORTAL:
-        case MINECRAFT_BLOCK_WATER:
-        case MINECRAFT_BLOCK_END_PORTAL_FRAME:
-        case MINECRAFT_BLOCK_CHAIN_COMMAND_BLOCK:
-        case MINECRAFT_BLOCK_END_GATEWAY:
-        case MINECRAFT_BLOCK_BARRIER:
-        case MINECRAFT_BLOCK_PISTON_EXTENSION:
-        case MINECRAFT_BLOCK_AIR:
-        case MINECRAFT_BLOCK_LAVA:
-        case MINECRAFT_BLOCK_FLOWING_WATER:
-        case MINECRAFT_BLOCK_BEDROCK:
-        case MINECRAFT_BLOCK_REPEATING_COMMAND_BLOCK:
-        case MINECRAFT_BLOCK_STRUCTURE_BLOCK:
-            return INFINITY;
-        case MINECRAFT_BLOCK_OBSIDIAN:
-            return 250.0;
-        case MINECRAFT_BLOCK_ENDER_CHEST:
-            return 112.5;
-        case MINECRAFT_BLOCK_DIAMOND_BLOCK:
-        case MINECRAFT_BLOCK_IRON_DOOR:
-        case MINECRAFT_BLOCK_IRON_BARS:
-        case MINECRAFT_BLOCK_MOB_SPAWNER:
-        case MINECRAFT_BLOCK_COAL_BLOCK:
-        case MINECRAFT_BLOCK_REDSTONE_BLOCK:
-        case MINECRAFT_BLOCK_ANVIL:
-        case MINECRAFT_BLOCK_IRON_BLOCK:
-        case MINECRAFT_BLOCK_ENCHANTING_TABLE:
-        case MINECRAFT_BLOCK_EMERALD_BLOCK:
-        case MINECRAFT_BLOCK_IRON_TRAPDOOR:
-            return 25.0;
-        case MINECRAFT_BLOCK_WEB:
-            return 20.0;
-        case MINECRAFT_BLOCK_FURNACE:
-        case MINECRAFT_BLOCK_DISPENSER:
-        case MINECRAFT_BLOCK_LIT_FURNACE:
-        case MINECRAFT_BLOCK_DROPPER:
-            return 17.5;
-        case MINECRAFT_BLOCK_IRON_ORE:
-        case MINECRAFT_BLOCK_LAPIS_BLOCK:
-        case MINECRAFT_BLOCK_LIT_REDSTONE_ORE:
-        case MINECRAFT_BLOCK_COAL_ORE:
-        case MINECRAFT_BLOCK_REDSTONE_ORE:
-        case MINECRAFT_BLOCK_DIAMOND_ORE:
-        case MINECRAFT_BLOCK_GOLD_BLOCK:
-        case MINECRAFT_BLOCK_QUARTZ_ORE:
-        case MINECRAFT_BLOCK_GOLD_ORE:
-        case MINECRAFT_BLOCK_LAPIS_ORE:
-        case MINECRAFT_BLOCK_HOPPER:
-        case MINECRAFT_BLOCK_END_STONE:
-        case MINECRAFT_BLOCK_EMERALD_ORE:
-            return 15.0;
-        case MINECRAFT_BLOCK_RED_NETHER_BRICK:
-        case MINECRAFT_BLOCK_STONE_STAIRS:
-        case MINECRAFT_BLOCK_BONE_BLOCK:
-        case MINECRAFT_BLOCK_DOUBLE_STONE_SLAB2:
-        case MINECRAFT_BLOCK_DOUBLE_STONE_SLAB:
-        case MINECRAFT_BLOCK_BRICK_BLOCK:
-        case MINECRAFT_BLOCK_COBBLESTONE_WALL:
-        case MINECRAFT_BLOCK_NETHER_BRICK:
-        case MINECRAFT_BLOCK_CAULDRON:
-        case MINECRAFT_BLOCK_STONE_SLAB:
-        case MINECRAFT_BLOCK_NETHER_BRICK_FENCE:
-        case MINECRAFT_BLOCK_PURPUR_SLAB:
-        case MINECRAFT_BLOCK_COBBLESTONE:
-        case MINECRAFT_BLOCK_BRICK_STAIRS:
-        case MINECRAFT_BLOCK_NETHER_BRICK_STAIRS:
-        case MINECRAFT_BLOCK_PURPUR_STAIRS:
-        case MINECRAFT_BLOCK_MOSSY_COBBLESTONE:
-        case MINECRAFT_BLOCK_PURPUR_DOUBLE_SLAB:
-        case MINECRAFT_BLOCK_STONE_SLAB2:
-            return 10.0;
-        case MINECRAFT_BLOCK_STONE_BRICK:
-        case MINECRAFT_BLOCK_STONE:
-        case MINECRAFT_BLOCK_PURPUR_PILLAR:
-        case MINECRAFT_BLOCK_PURPUR_BLOCK:
-        case MINECRAFT_BLOCK_STONE_BRICK_STAIRS:
-        case MINECRAFT_BLOCK_PRISMARINE:
-            return 7.5;
-        case MINECRAFT_BLOCK_STAINED_HARDENED_CLAY:
-        case MINECRAFT_BLOCK_HARDENED_CLAY:
-            return 6.25;
-        case MINECRAFT_BLOCK_WOODEN_DOOR:
-        case MINECRAFT_BLOCK_TRAPDOOR:
-        case MINECRAFT_BLOCK_BEACON:
-        case MINECRAFT_BLOCK_BIRCH_DOOR:
-        case MINECRAFT_BLOCK_ACACIA_DOOR:
-        case MINECRAFT_BLOCK_JUNGLE_DOOR:
-        case MINECRAFT_BLOCK_DRAGON_EGG:
-        case MINECRAFT_BLOCK_DARK_OAK_DOOR:
-        case MINECRAFT_BLOCK_SPRUCE_DOOR:
-            return 4.5;
-        case MINECRAFT_BLOCK_END_BRICKS:
-        case MINECRAFT_BLOCK_SANDSTONE_STAIRS:
-        case MINECRAFT_BLOCK_QUARTZ_STAIRS:
-        case MINECRAFT_BLOCK_SANDSTONE:
-        case MINECRAFT_BLOCK_QUARTZ_BLOCK:
-        case MINECRAFT_BLOCK_RED_SANDSTONE_STAIRS:
-        case MINECRAFT_BLOCK_RED_SANDSTONE:
-            return 4.0;
-        case MINECRAFT_BLOCK_CRAFTING_TABLE:
-        case MINECRAFT_BLOCK_CHEST:
-        case MINECRAFT_BLOCK_TRAPPED_CHEST:
-            return 3.75;
-        case MINECRAFT_BLOCK_ACACIA_FENCE_GATE:
-        case MINECRAFT_BLOCK_OAK_STAIRS:
-        case MINECRAFT_BLOCK_JUNGLE_FENCE_GATE:
-        case MINECRAFT_BLOCK_ACACIA_STAIRS:
-        case MINECRAFT_BLOCK_LOG:
-        case MINECRAFT_BLOCK_BIRCH_FENCE_GATE:
-        case MINECRAFT_BLOCK_DARK_OAK_STAIRS:
-        case MINECRAFT_BLOCK_JUKEBOX:
-        case MINECRAFT_BLOCK_DARK_OAK_FENCE:
-        case MINECRAFT_BLOCK_PLANKS:
-        case MINECRAFT_BLOCK_BIRCH_STAIRS:
-        case MINECRAFT_BLOCK_SPRUCE_FENCE_GATE:
-        case MINECRAFT_BLOCK_LOG2:
-        case MINECRAFT_BLOCK_FENCE:
-        case MINECRAFT_BLOCK_DOUBLE_WOODEN_SLAB:
-        case MINECRAFT_BLOCK_SPRUCE_FENCE:
-        case MINECRAFT_BLOCK_DARK_OAK_FENCE_GATE:
-        case MINECRAFT_BLOCK_JUNGLE_FENCE:
-        case MINECRAFT_BLOCK_WOODEN_SLAB:
-        case MINECRAFT_BLOCK_JUNGLE_STAIRS:
-        case MINECRAFT_BLOCK_BIRCH_FENCE:
-        case MINECRAFT_BLOCK_ACACIA_FENCE:
-        case MINECRAFT_BLOCK_FENCE_GATE:
-        case MINECRAFT_BLOCK_SPRUCE_STAIRS:
-            return 3.0;
-        case MINECRAFT_BLOCK_BREWING_STAND:
-        case MINECRAFT_BLOCK_MAGMA:
-        case MINECRAFT_BLOCK_LIGHT_WEIGHTED_PRESSURE_PLATE:
-        case MINECRAFT_BLOCK_HEAVY_WEIGHTED_PRESSURE_PLATE:
-        case MINECRAFT_BLOCK_FROSTED_ICE:
-        case MINECRAFT_BLOCK_STONE_PRESSURE_PLATE:
-            return 2.5;
-        case MINECRAFT_BLOCK_BOOKSHELF:
-            return 2.25;
-        case MINECRAFT_BLOCK_NETHERRACK:
-            return 2.0;
-        case MINECRAFT_BLOCK_SKULL:
-        case MINECRAFT_BLOCK_STANDING_BANNER:
-        case MINECRAFT_BLOCK_LIT_PUMPKIN:
-        case MINECRAFT_BLOCK_MELON_BLOCK:
-        case MINECRAFT_BLOCK_PUMPKIN:
-        case MINECRAFT_BLOCK_WALL_SIGN:
-        case MINECRAFT_BLOCK_STANDING_SIGN:
-        case MINECRAFT_BLOCK_WALL_BANNER:
-        case MINECRAFT_BLOCK_NETHER_WART_BLOCK:
-            return 1.5;
-        case MINECRAFT_BLOCK_WOOL:
-        case MINECRAFT_BLOCK_NOTE_BLOCK:
-            return 1.25;
-        case MINECRAFT_BLOCK_MONSTER_EGG:
-            return 1.15;
-        case MINECRAFT_BLOCK_ACTIVATOR_RAIL:
-        case MINECRAFT_BLOCK_DETECTOR_RAIL:
-        case MINECRAFT_BLOCK_GOLDEN_RAIL:
-        case MINECRAFT_BLOCK_RAIL:
-            return 1.05;
-        case MINECRAFT_BLOCK_SNOW:
-            return 1.0;
-        case MINECRAFT_BLOCK_GRASS_PATH:
-        case MINECRAFT_BLOCK_GRASS:
-        case MINECRAFT_BLOCK_FARMLAND:
-        case MINECRAFT_BLOCK_GRAVEL:
-        case MINECRAFT_BLOCK_SPONGE:
-        case MINECRAFT_BLOCK_MYCELIUM:
-        case MINECRAFT_BLOCK_CLAY:
-            return 0.9;
-        case MINECRAFT_BLOCK_ICE:
-        case MINECRAFT_BLOCK_CAKE:
-        case MINECRAFT_BLOCK_PISTON_HEAD:
-        case MINECRAFT_BLOCK_LEVER:
-        case MINECRAFT_BLOCK_WOODEN_BUTTON:
-        case MINECRAFT_BLOCK_STICKY_PISTON:
-        case MINECRAFT_BLOCK_PISTON:
-        case MINECRAFT_BLOCK_STONE_BUTTON:
-        case MINECRAFT_BLOCK_WOODEN_PRESSURE_PLATE:
-        case MINECRAFT_BLOCK_SOUL_SAND:
-        case MINECRAFT_BLOCK_DIRT:
-        case MINECRAFT_BLOCK_SAND:
-        case MINECRAFT_BLOCK_PACKED_ICE:
-        case MINECRAFT_BLOCK_HAY_BLOCK:
-            return 0.75;
-        case MINECRAFT_BLOCK_CHORUS_PLANT:
-        case MINECRAFT_BLOCK_LADDER:
-        case MINECRAFT_BLOCK_CACTUS:
-        case MINECRAFT_BLOCK_CHORUS_FLOWER:
-            return 0.65;
-        case MINECRAFT_BLOCK_SNOW_LAYER:
-            return 0.5;
-        case MINECRAFT_BLOCK_GLASS:
-        case MINECRAFT_BLOCK_REDSTONE_LAMP:
-        case MINECRAFT_BLOCK_GLOWSTONE:
-        case MINECRAFT_BLOCK_STAINED_GLASS:
-        case MINECRAFT_BLOCK_GLASS_PANE:
-        case MINECRAFT_BLOCK_SEA_LANTERN:
-        case MINECRAFT_BLOCK_STAINED_GLASS_PANE:
-        case MINECRAFT_BLOCK_LIT_REDSTONE_LAMP:
-            return 0.45;
-        case MINECRAFT_BLOCK_DAYLIGHT_DETECTOR:
-        case MINECRAFT_BLOCK_COCOA:
-        case MINECRAFT_BLOCK_DAYLIGHT_DETECTOR_INVERTED:
-        case MINECRAFT_BLOCK_RED_MUSHROOM_BLOCK:
-        case MINECRAFT_BLOCK_BED:
-        case MINECRAFT_BLOCK_VINE:
-        case MINECRAFT_BLOCK_LEAVES2:
-        case MINECRAFT_BLOCK_LEAVES:
-        case MINECRAFT_BLOCK_BROWN_MUSHROOM_BLOCK:
-            return 0.35;
-        case MINECRAFT_BLOCK_CARPET:
-            return 0.2;
-        case MINECRAFT_BLOCK_TRIPWIRE_HOOK:
-        case MINECRAFT_BLOCK_TORCH:
-        case MINECRAFT_BLOCK_MELON_STEM:
-        case MINECRAFT_BLOCK_UNPOWERED_REPEATER:
-        case MINECRAFT_BLOCK_RED_FLOWER:
-        case MINECRAFT_BLOCK_UNLIT_REDSTONE_TORCH:
-        case MINECRAFT_BLOCK_BROWN_MUSHROOM:
-        case MINECRAFT_BLOCK_FIRE:
-        case MINECRAFT_BLOCK_TRIPWIRE:
-        case MINECRAFT_BLOCK_TALLGRASS:
-        case MINECRAFT_BLOCK_TNT:
-        case MINECRAFT_BLOCK_RED_MUSHROOM:
-        case MINECRAFT_BLOCK_DEADBUSH:
-        case MINECRAFT_BLOCK_BEETROOTS:
-        case MINECRAFT_BLOCK_NETHER_WART:
-        case MINECRAFT_BLOCK_CARROTS:
-        case MINECRAFT_BLOCK_UNPOWERED_COMPARATOR:
-        case MINECRAFT_BLOCK_FLOWER_POT:
-        case MINECRAFT_BLOCK_POTATOES:
-        case MINECRAFT_BLOCK_WATERLILY:
-        case MINECRAFT_BLOCK_SAPLING:
-        case MINECRAFT_BLOCK_DOUBLE_PLANT:
-        case MINECRAFT_BLOCK_REEDS:
-        case MINECRAFT_BLOCK_POWERED_REPEATER:
-        case MINECRAFT_BLOCK_WHEAT:
-        case MINECRAFT_BLOCK_END_ROD:
-        case MINECRAFT_BLOCK_POWERED_COMPARATOR:
-        case MINECRAFT_BLOCK_PUMPKIN_STEM:
-        case MINECRAFT_BLOCK_YELLOW_FLOWER:
-        case MINECRAFT_BLOCK_SLIME:
-        case MINECRAFT_BLOCK_STRUCTURE_VOID:
-        case MINECRAFT_BLOCK_REDSTONE_WIRE:
-        case MINECRAFT_BLOCK_REDSTONE_TORCH:
-            return 0.05;
-        default:
-            return NAN;
-    }
-}
-
-double block_break_time_shears(int block_data) {
-    enum MINECRAFT_BLOCK block_id = block_data >> 4;
-    switch(block_id) {
-        case MINECRAFT_BLOCK_FLOWING_LAVA:
-        case MINECRAFT_BLOCK_COMMAND_BLOCK:
-        case MINECRAFT_BLOCK_PORTAL:
-        case MINECRAFT_BLOCK_END_PORTAL:
-        case MINECRAFT_BLOCK_WATER:
-        case MINECRAFT_BLOCK_END_PORTAL_FRAME:
-        case MINECRAFT_BLOCK_CHAIN_COMMAND_BLOCK:
-        case MINECRAFT_BLOCK_END_GATEWAY:
-        case MINECRAFT_BLOCK_BARRIER:
-        case MINECRAFT_BLOCK_PISTON_EXTENSION:
-        case MINECRAFT_BLOCK_AIR:
-        case MINECRAFT_BLOCK_LAVA:
-        case MINECRAFT_BLOCK_FLOWING_WATER:
-        case MINECRAFT_BLOCK_BEDROCK:
-        case MINECRAFT_BLOCK_REPEATING_COMMAND_BLOCK:
-        case MINECRAFT_BLOCK_STRUCTURE_BLOCK:
-            return INFINITY;
-        case MINECRAFT_BLOCK_OBSIDIAN:
-            return 250.0;
-        case MINECRAFT_BLOCK_ENDER_CHEST:
-            return 112.5;
-        case MINECRAFT_BLOCK_DIAMOND_BLOCK:
-        case MINECRAFT_BLOCK_IRON_DOOR:
-        case MINECRAFT_BLOCK_IRON_BARS:
-        case MINECRAFT_BLOCK_MOB_SPAWNER:
-        case MINECRAFT_BLOCK_COAL_BLOCK:
-        case MINECRAFT_BLOCK_REDSTONE_BLOCK:
-        case MINECRAFT_BLOCK_ANVIL:
-        case MINECRAFT_BLOCK_IRON_BLOCK:
-        case MINECRAFT_BLOCK_ENCHANTING_TABLE:
-        case MINECRAFT_BLOCK_EMERALD_BLOCK:
-        case MINECRAFT_BLOCK_IRON_TRAPDOOR:
-            return 25.0;
-        case MINECRAFT_BLOCK_FURNACE:
-        case MINECRAFT_BLOCK_DISPENSER:
-        case MINECRAFT_BLOCK_LIT_FURNACE:
-        case MINECRAFT_BLOCK_DROPPER:
-            return 17.5;
-        case MINECRAFT_BLOCK_IRON_ORE:
-        case MINECRAFT_BLOCK_LAPIS_BLOCK:
-        case MINECRAFT_BLOCK_LIT_REDSTONE_ORE:
-        case MINECRAFT_BLOCK_COAL_ORE:
-        case MINECRAFT_BLOCK_REDSTONE_ORE:
-        case MINECRAFT_BLOCK_DIAMOND_ORE:
-        case MINECRAFT_BLOCK_GOLD_BLOCK:
-        case MINECRAFT_BLOCK_QUARTZ_ORE:
-        case MINECRAFT_BLOCK_GOLD_ORE:
-        case MINECRAFT_BLOCK_LAPIS_ORE:
-        case MINECRAFT_BLOCK_HOPPER:
-        case MINECRAFT_BLOCK_END_STONE:
-        case MINECRAFT_BLOCK_EMERALD_ORE:
-            return 15.0;
-        case MINECRAFT_BLOCK_RED_NETHER_BRICK:
-        case MINECRAFT_BLOCK_STONE_STAIRS:
-        case MINECRAFT_BLOCK_BONE_BLOCK:
-        case MINECRAFT_BLOCK_DOUBLE_STONE_SLAB2:
-        case MINECRAFT_BLOCK_DOUBLE_STONE_SLAB:
-        case MINECRAFT_BLOCK_BRICK_BLOCK:
-        case MINECRAFT_BLOCK_COBBLESTONE_WALL:
-        case MINECRAFT_BLOCK_NETHER_BRICK:
-        case MINECRAFT_BLOCK_CAULDRON:
-        case MINECRAFT_BLOCK_STONE_SLAB:
-        case MINECRAFT_BLOCK_NETHER_BRICK_FENCE:
-        case MINECRAFT_BLOCK_PURPUR_SLAB:
-        case MINECRAFT_BLOCK_COBBLESTONE:
-        case MINECRAFT_BLOCK_BRICK_STAIRS:
-        case MINECRAFT_BLOCK_NETHER_BRICK_STAIRS:
-        case MINECRAFT_BLOCK_PURPUR_STAIRS:
-        case MINECRAFT_BLOCK_MOSSY_COBBLESTONE:
-        case MINECRAFT_BLOCK_PURPUR_DOUBLE_SLAB:
-        case MINECRAFT_BLOCK_STONE_SLAB2:
-            return 10.0;
-        case MINECRAFT_BLOCK_STONE_BRICK:
-        case MINECRAFT_BLOCK_STONE:
-        case MINECRAFT_BLOCK_PURPUR_PILLAR:
-        case MINECRAFT_BLOCK_PURPUR_BLOCK:
-        case MINECRAFT_BLOCK_STONE_BRICK_STAIRS:
-        case MINECRAFT_BLOCK_PRISMARINE:
-            return 7.5;
-        case MINECRAFT_BLOCK_STAINED_HARDENED_CLAY:
-        case MINECRAFT_BLOCK_HARDENED_CLAY:
-            return 6.25;
-        case MINECRAFT_BLOCK_WOODEN_DOOR:
-        case MINECRAFT_BLOCK_TRAPDOOR:
-        case MINECRAFT_BLOCK_BEACON:
-        case MINECRAFT_BLOCK_BIRCH_DOOR:
-        case MINECRAFT_BLOCK_ACACIA_DOOR:
-        case MINECRAFT_BLOCK_JUNGLE_DOOR:
-        case MINECRAFT_BLOCK_DRAGON_EGG:
-        case MINECRAFT_BLOCK_DARK_OAK_DOOR:
-        case MINECRAFT_BLOCK_SPRUCE_DOOR:
-            return 4.5;
-        case MINECRAFT_BLOCK_END_BRICKS:
-        case MINECRAFT_BLOCK_SANDSTONE_STAIRS:
-        case MINECRAFT_BLOCK_QUARTZ_STAIRS:
-        case MINECRAFT_BLOCK_SANDSTONE:
-        case MINECRAFT_BLOCK_QUARTZ_BLOCK:
-        case MINECRAFT_BLOCK_RED_SANDSTONE_STAIRS:
-        case MINECRAFT_BLOCK_RED_SANDSTONE:
-            return 4.0;
-        case MINECRAFT_BLOCK_CRAFTING_TABLE:
-        case MINECRAFT_BLOCK_CHEST:
-        case MINECRAFT_BLOCK_TRAPPED_CHEST:
-            return 3.75;
-        case MINECRAFT_BLOCK_ACACIA_FENCE_GATE:
-        case MINECRAFT_BLOCK_OAK_STAIRS:
-        case MINECRAFT_BLOCK_JUNGLE_FENCE_GATE:
-        case MINECRAFT_BLOCK_ACACIA_STAIRS:
-        case MINECRAFT_BLOCK_LOG:
-        case MINECRAFT_BLOCK_BIRCH_FENCE_GATE:
-        case MINECRAFT_BLOCK_DARK_OAK_STAIRS:
-        case MINECRAFT_BLOCK_JUKEBOX:
-        case MINECRAFT_BLOCK_DARK_OAK_FENCE:
-        case MINECRAFT_BLOCK_PLANKS:
-        case MINECRAFT_BLOCK_BIRCH_STAIRS:
-        case MINECRAFT_BLOCK_SPRUCE_FENCE_GATE:
-        case MINECRAFT_BLOCK_LOG2:
-        case MINECRAFT_BLOCK_FENCE:
-        case MINECRAFT_BLOCK_DOUBLE_WOODEN_SLAB:
-        case MINECRAFT_BLOCK_SPRUCE_FENCE:
-        case MINECRAFT_BLOCK_DARK_OAK_FENCE_GATE:
-        case MINECRAFT_BLOCK_JUNGLE_FENCE:
-        case MINECRAFT_BLOCK_WOODEN_SLAB:
-        case MINECRAFT_BLOCK_JUNGLE_STAIRS:
-        case MINECRAFT_BLOCK_BIRCH_FENCE:
-        case MINECRAFT_BLOCK_ACACIA_FENCE:
-        case MINECRAFT_BLOCK_FENCE_GATE:
-        case MINECRAFT_BLOCK_SPRUCE_STAIRS:
-            return 3.0;
-        case MINECRAFT_BLOCK_BREWING_STAND:
-        case MINECRAFT_BLOCK_MAGMA:
-        case MINECRAFT_BLOCK_LIGHT_WEIGHTED_PRESSURE_PLATE:
-        case MINECRAFT_BLOCK_HEAVY_WEIGHTED_PRESSURE_PLATE:
-        case MINECRAFT_BLOCK_FROSTED_ICE:
-        case MINECRAFT_BLOCK_STONE_PRESSURE_PLATE:
-            return 2.5;
-        case MINECRAFT_BLOCK_BOOKSHELF:
-            return 2.25;
-        case MINECRAFT_BLOCK_NETHERRACK:
-            return 2.0;
-        case MINECRAFT_BLOCK_SKULL:
-        case MINECRAFT_BLOCK_STANDING_BANNER:
-        case MINECRAFT_BLOCK_LIT_PUMPKIN:
-        case MINECRAFT_BLOCK_MELON_BLOCK:
-        case MINECRAFT_BLOCK_PUMPKIN:
-        case MINECRAFT_BLOCK_WALL_SIGN:
-        case MINECRAFT_BLOCK_STANDING_SIGN:
-        case MINECRAFT_BLOCK_WALL_BANNER:
-        case MINECRAFT_BLOCK_NETHER_WART_BLOCK:
-            return 1.5;
-        case MINECRAFT_BLOCK_NOTE_BLOCK:
-            return 1.25;
-        case MINECRAFT_BLOCK_MONSTER_EGG:
-            return 1.15;
-        case MINECRAFT_BLOCK_ACTIVATOR_RAIL:
-        case MINECRAFT_BLOCK_DETECTOR_RAIL:
-        case MINECRAFT_BLOCK_GOLDEN_RAIL:
-        case MINECRAFT_BLOCK_RAIL:
-            return 1.05;
-        case MINECRAFT_BLOCK_SNOW:
-            return 1.0;
-        case MINECRAFT_BLOCK_GRASS_PATH:
-        case MINECRAFT_BLOCK_GRASS:
-        case MINECRAFT_BLOCK_FARMLAND:
-        case MINECRAFT_BLOCK_GRAVEL:
-        case MINECRAFT_BLOCK_SPONGE:
-        case MINECRAFT_BLOCK_MYCELIUM:
-        case MINECRAFT_BLOCK_CLAY:
-            return 0.9;
-        case MINECRAFT_BLOCK_ICE:
-        case MINECRAFT_BLOCK_CAKE:
-        case MINECRAFT_BLOCK_PISTON_HEAD:
-        case MINECRAFT_BLOCK_LEVER:
-        case MINECRAFT_BLOCK_WOODEN_BUTTON:
-        case MINECRAFT_BLOCK_STICKY_PISTON:
-        case MINECRAFT_BLOCK_PISTON:
-        case MINECRAFT_BLOCK_STONE_BUTTON:
-        case MINECRAFT_BLOCK_WOODEN_PRESSURE_PLATE:
-        case MINECRAFT_BLOCK_SOUL_SAND:
-        case MINECRAFT_BLOCK_DIRT:
-        case MINECRAFT_BLOCK_SAND:
-        case MINECRAFT_BLOCK_PACKED_ICE:
-        case MINECRAFT_BLOCK_HAY_BLOCK:
-            return 0.75;
-        case MINECRAFT_BLOCK_CHORUS_PLANT:
-        case MINECRAFT_BLOCK_LADDER:
-        case MINECRAFT_BLOCK_CACTUS:
-        case MINECRAFT_BLOCK_CHORUS_FLOWER:
-            return 0.65;
-        case MINECRAFT_BLOCK_SNOW_LAYER:
-            return 0.5;
-        case MINECRAFT_BLOCK_GLASS:
-        case MINECRAFT_BLOCK_REDSTONE_LAMP:
-        case MINECRAFT_BLOCK_GLOWSTONE:
-        case MINECRAFT_BLOCK_STAINED_GLASS:
-        case MINECRAFT_BLOCK_GLASS_PANE:
-        case MINECRAFT_BLOCK_SEA_LANTERN:
-        case MINECRAFT_BLOCK_STAINED_GLASS_PANE:
-        case MINECRAFT_BLOCK_LIT_REDSTONE_LAMP:
-            return 0.45;
-        case MINECRAFT_BLOCK_WEB:
-            return 0.4;
-        case MINECRAFT_BLOCK_DAYLIGHT_DETECTOR:
-        case MINECRAFT_BLOCK_COCOA:
-        case MINECRAFT_BLOCK_DAYLIGHT_DETECTOR_INVERTED:
-        case MINECRAFT_BLOCK_RED_MUSHROOM_BLOCK:
-        case MINECRAFT_BLOCK_BED:
-        case MINECRAFT_BLOCK_VINE:
-        case MINECRAFT_BLOCK_BROWN_MUSHROOM_BLOCK:
-            return 0.35;
-        case MINECRAFT_BLOCK_WOOL:
-            return 0.25;
-        case MINECRAFT_BLOCK_CARPET:
-            return 0.2;
-        case MINECRAFT_BLOCK_TRIPWIRE_HOOK:
-        case MINECRAFT_BLOCK_TORCH:
-        case MINECRAFT_BLOCK_MELON_STEM:
-        case MINECRAFT_BLOCK_UNPOWERED_REPEATER:
-        case MINECRAFT_BLOCK_RED_FLOWER:
-        case MINECRAFT_BLOCK_UNLIT_REDSTONE_TORCH:
-        case MINECRAFT_BLOCK_BROWN_MUSHROOM:
-        case MINECRAFT_BLOCK_FIRE:
-        case MINECRAFT_BLOCK_TRIPWIRE:
-        case MINECRAFT_BLOCK_TALLGRASS:
-        case MINECRAFT_BLOCK_TNT:
-        case MINECRAFT_BLOCK_RED_MUSHROOM:
-        case MINECRAFT_BLOCK_DEADBUSH:
-        case MINECRAFT_BLOCK_BEETROOTS:
-        case MINECRAFT_BLOCK_NETHER_WART:
-        case MINECRAFT_BLOCK_CARROTS:
-        case MINECRAFT_BLOCK_UNPOWERED_COMPARATOR:
-        case MINECRAFT_BLOCK_FLOWER_POT:
-        case MINECRAFT_BLOCK_POTATOES:
-        case MINECRAFT_BLOCK_WATERLILY:
-        case MINECRAFT_BLOCK_SAPLING:
-        case MINECRAFT_BLOCK_DOUBLE_PLANT:
-        case MINECRAFT_BLOCK_REEDS:
-        case MINECRAFT_BLOCK_POWERED_REPEATER:
-        case MINECRAFT_BLOCK_WHEAT:
-        case MINECRAFT_BLOCK_END_ROD:
-        case MINECRAFT_BLOCK_POWERED_COMPARATOR:
-        case MINECRAFT_BLOCK_PUMPKIN_STEM:
-        case MINECRAFT_BLOCK_YELLOW_FLOWER:
-        case MINECRAFT_BLOCK_SLIME:
-        case MINECRAFT_BLOCK_LEAVES2:
-        case MINECRAFT_BLOCK_STRUCTURE_VOID:
-        case MINECRAFT_BLOCK_REDSTONE_WIRE:
-        case MINECRAFT_BLOCK_REDSTONE_TORCH:
-        case MINECRAFT_BLOCK_LEAVES:
-            return 0.05;
-        default:
-            return NAN;
-    }
-}
-
-double block_break_time_sword(int block_data) {
-    enum MINECRAFT_BLOCK block_id = block_data >> 4;
-    switch(block_id) {
-        case MINECRAFT_BLOCK_FLOWING_LAVA:
-        case MINECRAFT_BLOCK_COMMAND_BLOCK:
-        case MINECRAFT_BLOCK_PORTAL:
-        case MINECRAFT_BLOCK_END_PORTAL:
-        case MINECRAFT_BLOCK_WATER:
-        case MINECRAFT_BLOCK_END_PORTAL_FRAME:
-        case MINECRAFT_BLOCK_CHAIN_COMMAND_BLOCK:
-        case MINECRAFT_BLOCK_END_GATEWAY:
-        case MINECRAFT_BLOCK_BARRIER:
-        case MINECRAFT_BLOCK_PISTON_EXTENSION:
-        case MINECRAFT_BLOCK_AIR:
-        case MINECRAFT_BLOCK_LAVA:
-        case MINECRAFT_BLOCK_FLOWING_WATER:
-        case MINECRAFT_BLOCK_BEDROCK:
-        case MINECRAFT_BLOCK_REPEATING_COMMAND_BLOCK:
-        case MINECRAFT_BLOCK_STRUCTURE_BLOCK:
-            return INFINITY;
-        case MINECRAFT_BLOCK_OBSIDIAN:
-            return 250.0;
-        case MINECRAFT_BLOCK_ENDER_CHEST:
-            return 112.5;
-        case MINECRAFT_BLOCK_DIAMOND_BLOCK:
-        case MINECRAFT_BLOCK_IRON_DOOR:
-        case MINECRAFT_BLOCK_IRON_BARS:
-        case MINECRAFT_BLOCK_MOB_SPAWNER:
-        case MINECRAFT_BLOCK_COAL_BLOCK:
-        case MINECRAFT_BLOCK_REDSTONE_BLOCK:
-        case MINECRAFT_BLOCK_ANVIL:
-        case MINECRAFT_BLOCK_IRON_BLOCK:
-        case MINECRAFT_BLOCK_ENCHANTING_TABLE:
-        case MINECRAFT_BLOCK_EMERALD_BLOCK:
-        case MINECRAFT_BLOCK_IRON_TRAPDOOR:
-            return 25.0;
-        case MINECRAFT_BLOCK_FURNACE:
-        case MINECRAFT_BLOCK_DISPENSER:
-        case MINECRAFT_BLOCK_LIT_FURNACE:
-        case MINECRAFT_BLOCK_DROPPER:
-            return 17.5;
-        case MINECRAFT_BLOCK_IRON_ORE:
-        case MINECRAFT_BLOCK_LAPIS_BLOCK:
-        case MINECRAFT_BLOCK_LIT_REDSTONE_ORE:
-        case MINECRAFT_BLOCK_COAL_ORE:
-        case MINECRAFT_BLOCK_REDSTONE_ORE:
-        case MINECRAFT_BLOCK_DIAMOND_ORE:
-        case MINECRAFT_BLOCK_GOLD_BLOCK:
-        case MINECRAFT_BLOCK_QUARTZ_ORE:
-        case MINECRAFT_BLOCK_GOLD_ORE:
-        case MINECRAFT_BLOCK_LAPIS_ORE:
-        case MINECRAFT_BLOCK_HOPPER:
-        case MINECRAFT_BLOCK_END_STONE:
-        case MINECRAFT_BLOCK_EMERALD_ORE:
-            return 15.0;
-        case MINECRAFT_BLOCK_RED_NETHER_BRICK:
-        case MINECRAFT_BLOCK_STONE_STAIRS:
-        case MINECRAFT_BLOCK_BONE_BLOCK:
-        case MINECRAFT_BLOCK_DOUBLE_STONE_SLAB2:
-        case MINECRAFT_BLOCK_DOUBLE_STONE_SLAB:
-        case MINECRAFT_BLOCK_BRICK_BLOCK:
-        case MINECRAFT_BLOCK_COBBLESTONE_WALL:
-        case MINECRAFT_BLOCK_NETHER_BRICK:
-        case MINECRAFT_BLOCK_CAULDRON:
-        case MINECRAFT_BLOCK_STONE_SLAB:
-        case MINECRAFT_BLOCK_NETHER_BRICK_FENCE:
-        case MINECRAFT_BLOCK_PURPUR_SLAB:
-        case MINECRAFT_BLOCK_COBBLESTONE:
-        case MINECRAFT_BLOCK_BRICK_STAIRS:
-        case MINECRAFT_BLOCK_NETHER_BRICK_STAIRS:
-        case MINECRAFT_BLOCK_PURPUR_STAIRS:
-        case MINECRAFT_BLOCK_MOSSY_COBBLESTONE:
-        case MINECRAFT_BLOCK_PURPUR_DOUBLE_SLAB:
-        case MINECRAFT_BLOCK_STONE_SLAB2:
-            return 10.0;
-        case MINECRAFT_BLOCK_STONE_BRICK:
-        case MINECRAFT_BLOCK_STONE:
-        case MINECRAFT_BLOCK_PURPUR_PILLAR:
-        case MINECRAFT_BLOCK_PURPUR_BLOCK:
-        case MINECRAFT_BLOCK_STONE_BRICK_STAIRS:
-        case MINECRAFT_BLOCK_PRISMARINE:
-            return 7.5;
-        case MINECRAFT_BLOCK_STAINED_HARDENED_CLAY:
-        case MINECRAFT_BLOCK_HARDENED_CLAY:
-            return 6.25;
-        case MINECRAFT_BLOCK_WOODEN_DOOR:
-        case MINECRAFT_BLOCK_TRAPDOOR:
-        case MINECRAFT_BLOCK_BEACON:
-        case MINECRAFT_BLOCK_BIRCH_DOOR:
-        case MINECRAFT_BLOCK_ACACIA_DOOR:
-        case MINECRAFT_BLOCK_JUNGLE_DOOR:
-        case MINECRAFT_BLOCK_DRAGON_EGG:
-        case MINECRAFT_BLOCK_DARK_OAK_DOOR:
-        case MINECRAFT_BLOCK_SPRUCE_DOOR:
-            return 4.5;
-        case MINECRAFT_BLOCK_END_BRICKS:
-        case MINECRAFT_BLOCK_SANDSTONE_STAIRS:
-        case MINECRAFT_BLOCK_QUARTZ_STAIRS:
-        case MINECRAFT_BLOCK_SANDSTONE:
-        case MINECRAFT_BLOCK_QUARTZ_BLOCK:
-        case MINECRAFT_BLOCK_RED_SANDSTONE_STAIRS:
-        case MINECRAFT_BLOCK_RED_SANDSTONE:
-            return 4.0;
-        case MINECRAFT_BLOCK_CRAFTING_TABLE:
-        case MINECRAFT_BLOCK_CHEST:
-        case MINECRAFT_BLOCK_TRAPPED_CHEST:
-            return 3.75;
-        case MINECRAFT_BLOCK_ACACIA_FENCE_GATE:
-        case MINECRAFT_BLOCK_OAK_STAIRS:
-        case MINECRAFT_BLOCK_JUNGLE_FENCE_GATE:
-        case MINECRAFT_BLOCK_ACACIA_STAIRS:
-        case MINECRAFT_BLOCK_LOG:
-        case MINECRAFT_BLOCK_BIRCH_FENCE_GATE:
-        case MINECRAFT_BLOCK_DARK_OAK_STAIRS:
-        case MINECRAFT_BLOCK_JUKEBOX:
-        case MINECRAFT_BLOCK_DARK_OAK_FENCE:
-        case MINECRAFT_BLOCK_PLANKS:
-        case MINECRAFT_BLOCK_BIRCH_STAIRS:
-        case MINECRAFT_BLOCK_SPRUCE_FENCE_GATE:
-        case MINECRAFT_BLOCK_LOG2:
-        case MINECRAFT_BLOCK_FENCE:
-        case MINECRAFT_BLOCK_DOUBLE_WOODEN_SLAB:
-        case MINECRAFT_BLOCK_SPRUCE_FENCE:
-        case MINECRAFT_BLOCK_DARK_OAK_FENCE_GATE:
-        case MINECRAFT_BLOCK_JUNGLE_FENCE:
-        case MINECRAFT_BLOCK_WOODEN_SLAB:
-        case MINECRAFT_BLOCK_JUNGLE_STAIRS:
-        case MINECRAFT_BLOCK_BIRCH_FENCE:
-        case MINECRAFT_BLOCK_ACACIA_FENCE:
-        case MINECRAFT_BLOCK_FENCE_GATE:
-        case MINECRAFT_BLOCK_SPRUCE_STAIRS:
-            return 3.0;
-        case MINECRAFT_BLOCK_BREWING_STAND:
-        case MINECRAFT_BLOCK_MAGMA:
-        case MINECRAFT_BLOCK_LIGHT_WEIGHTED_PRESSURE_PLATE:
-        case MINECRAFT_BLOCK_HEAVY_WEIGHTED_PRESSURE_PLATE:
-        case MINECRAFT_BLOCK_FROSTED_ICE:
-        case MINECRAFT_BLOCK_STONE_PRESSURE_PLATE:
-            return 2.5;
-        case MINECRAFT_BLOCK_BOOKSHELF:
-            return 2.25;
-        case MINECRAFT_BLOCK_NETHERRACK:
-            return 2.0;
-        case MINECRAFT_BLOCK_SKULL:
-        case MINECRAFT_BLOCK_STANDING_BANNER:
-        case MINECRAFT_BLOCK_WALL_SIGN:
-        case MINECRAFT_BLOCK_STANDING_SIGN:
-        case MINECRAFT_BLOCK_WALL_BANNER:
-        case MINECRAFT_BLOCK_NETHER_WART_BLOCK:
-            return 1.5;
-        case MINECRAFT_BLOCK_WOOL:
-        case MINECRAFT_BLOCK_NOTE_BLOCK:
-            return 1.25;
-        case MINECRAFT_BLOCK_MONSTER_EGG:
-            return 1.15;
-        case MINECRAFT_BLOCK_ACTIVATOR_RAIL:
-        case MINECRAFT_BLOCK_DETECTOR_RAIL:
-        case MINECRAFT_BLOCK_GOLDEN_RAIL:
-        case MINECRAFT_BLOCK_RAIL:
-            return 1.05;
-        case MINECRAFT_BLOCK_SNOW:
-        case MINECRAFT_BLOCK_LIT_PUMPKIN:
-        case MINECRAFT_BLOCK_MELON_BLOCK:
-        case MINECRAFT_BLOCK_PUMPKIN:
-            return 1.0;
-        case MINECRAFT_BLOCK_GRASS_PATH:
-        case MINECRAFT_BLOCK_GRASS:
-        case MINECRAFT_BLOCK_FARMLAND:
-        case MINECRAFT_BLOCK_GRAVEL:
-        case MINECRAFT_BLOCK_SPONGE:
-        case MINECRAFT_BLOCK_MYCELIUM:
-        case MINECRAFT_BLOCK_CLAY:
-            return 0.9;
-        case MINECRAFT_BLOCK_ICE:
-        case MINECRAFT_BLOCK_CAKE:
-        case MINECRAFT_BLOCK_PISTON_HEAD:
-        case MINECRAFT_BLOCK_LEVER:
-        case MINECRAFT_BLOCK_WOODEN_BUTTON:
-        case MINECRAFT_BLOCK_STICKY_PISTON:
-        case MINECRAFT_BLOCK_PISTON:
-        case MINECRAFT_BLOCK_STONE_BUTTON:
-        case MINECRAFT_BLOCK_WOODEN_PRESSURE_PLATE:
-        case MINECRAFT_BLOCK_SOUL_SAND:
-        case MINECRAFT_BLOCK_DIRT:
-        case MINECRAFT_BLOCK_SAND:
-        case MINECRAFT_BLOCK_PACKED_ICE:
-        case MINECRAFT_BLOCK_HAY_BLOCK:
-            return 0.75;
-        case MINECRAFT_BLOCK_CHORUS_PLANT:
-        case MINECRAFT_BLOCK_LADDER:
-        case MINECRAFT_BLOCK_CACTUS:
-        case MINECRAFT_BLOCK_CHORUS_FLOWER:
-            return 0.65;
-        case MINECRAFT_BLOCK_SNOW_LAYER:
-            return 0.5;
-        case MINECRAFT_BLOCK_GLASS:
-        case MINECRAFT_BLOCK_REDSTONE_LAMP:
-        case MINECRAFT_BLOCK_GLOWSTONE:
-        case MINECRAFT_BLOCK_STAINED_GLASS:
-        case MINECRAFT_BLOCK_GLASS_PANE:
-        case MINECRAFT_BLOCK_SEA_LANTERN:
-        case MINECRAFT_BLOCK_STAINED_GLASS_PANE:
-        case MINECRAFT_BLOCK_LIT_REDSTONE_LAMP:
-            return 0.45;
-        case MINECRAFT_BLOCK_WEB:
-            return 0.4;
-        case MINECRAFT_BLOCK_DAYLIGHT_DETECTOR:
-        case MINECRAFT_BLOCK_DAYLIGHT_DETECTOR_INVERTED:
-        case MINECRAFT_BLOCK_RED_MUSHROOM_BLOCK:
-        case MINECRAFT_BLOCK_BED:
-        case MINECRAFT_BLOCK_BROWN_MUSHROOM_BLOCK:
-            return 0.35;
-        case MINECRAFT_BLOCK_CARPET:
-        case MINECRAFT_BLOCK_COCOA:
-        case MINECRAFT_BLOCK_VINE:
-        case MINECRAFT_BLOCK_LEAVES2:
-        case MINECRAFT_BLOCK_LEAVES:
-            return 0.2;
-        case MINECRAFT_BLOCK_TRIPWIRE_HOOK:
-        case MINECRAFT_BLOCK_TORCH:
-        case MINECRAFT_BLOCK_MELON_STEM:
-        case MINECRAFT_BLOCK_UNPOWERED_REPEATER:
-        case MINECRAFT_BLOCK_RED_FLOWER:
-        case MINECRAFT_BLOCK_UNLIT_REDSTONE_TORCH:
-        case MINECRAFT_BLOCK_BROWN_MUSHROOM:
-        case MINECRAFT_BLOCK_FIRE:
-        case MINECRAFT_BLOCK_TRIPWIRE:
-        case MINECRAFT_BLOCK_TALLGRASS:
-        case MINECRAFT_BLOCK_TNT:
-        case MINECRAFT_BLOCK_RED_MUSHROOM:
-        case MINECRAFT_BLOCK_DEADBUSH:
-        case MINECRAFT_BLOCK_BEETROOTS:
-        case MINECRAFT_BLOCK_NETHER_WART:
-        case MINECRAFT_BLOCK_CARROTS:
-        case MINECRAFT_BLOCK_UNPOWERED_COMPARATOR:
-        case MINECRAFT_BLOCK_FLOWER_POT:
-        case MINECRAFT_BLOCK_POTATOES:
-        case MINECRAFT_BLOCK_WATERLILY:
-        case MINECRAFT_BLOCK_SAPLING:
-        case MINECRAFT_BLOCK_DOUBLE_PLANT:
-        case MINECRAFT_BLOCK_REEDS:
-        case MINECRAFT_BLOCK_POWERED_REPEATER:
-        case MINECRAFT_BLOCK_WHEAT:
-        case MINECRAFT_BLOCK_END_ROD:
-        case MINECRAFT_BLOCK_POWERED_COMPARATOR:
-        case MINECRAFT_BLOCK_PUMPKIN_STEM:
-        case MINECRAFT_BLOCK_YELLOW_FLOWER:
-        case MINECRAFT_BLOCK_SLIME:
-        case MINECRAFT_BLOCK_STRUCTURE_VOID:
-        case MINECRAFT_BLOCK_REDSTONE_WIRE:
-        case MINECRAFT_BLOCK_REDSTONE_TORCH:
-            return 0.05;
-        default:
-            return NAN;
-    }
-}
-
-const char *block_name(int block_data) {
-    enum MINECRAFT_BLOCK block_id = block_data >> 4;
-    switch(block_id) {
-        case MINECRAFT_BLOCK_AIR:
-            return "MINECRAFT_BLOCK_AIR";
-        case MINECRAFT_BLOCK_STONE:
-            return "MINECRAFT_BLOCK_STONE";
-        case MINECRAFT_BLOCK_GRASS:
-            return "MINECRAFT_BLOCK_GRASS";
-        case MINECRAFT_BLOCK_DIRT:
-            return "MINECRAFT_BLOCK_DIRT";
-        case MINECRAFT_BLOCK_COBBLESTONE:
-            return "MINECRAFT_BLOCK_COBBLESTONE";
-        case MINECRAFT_BLOCK_PLANKS:
-            return "MINECRAFT_BLOCK_PLANKS";
-        case MINECRAFT_BLOCK_SAPLING:
-            return "MINECRAFT_BLOCK_SAPLING";
-        case MINECRAFT_BLOCK_BEDROCK:
-            return "MINECRAFT_BLOCK_BEDROCK";
-        case MINECRAFT_BLOCK_FLOWING_WATER:
-            return "MINECRAFT_BLOCK_FLOWING_WATER";
-        case MINECRAFT_BLOCK_WATER:
-            return "MINECRAFT_BLOCK_WATER";
-        case MINECRAFT_BLOCK_FLOWING_LAVA:
-            return "MINECRAFT_BLOCK_FLOWING_LAVA";
-        case MINECRAFT_BLOCK_LAVA:
-            return "MINECRAFT_BLOCK_LAVA";
-        case MINECRAFT_BLOCK_SAND:
-            return "MINECRAFT_BLOCK_SAND";
-        case MINECRAFT_BLOCK_GRAVEL:
-            return "MINECRAFT_BLOCK_GRAVEL";
-        case MINECRAFT_BLOCK_GOLD_ORE:
-            return "MINECRAFT_BLOCK_GOLD_ORE";
-        case MINECRAFT_BLOCK_IRON_ORE:
-            return "MINECRAFT_BLOCK_IRON_ORE";
-        case MINECRAFT_BLOCK_COAL_ORE:
-            return "MINECRAFT_BLOCK_COAL_ORE";
-        case MINECRAFT_BLOCK_LOG:
-            return "MINECRAFT_BLOCK_LOG";
-        case MINECRAFT_BLOCK_LEAVES:
-            return "MINECRAFT_BLOCK_LEAVES";
-        case MINECRAFT_BLOCK_SPONGE:
-            return "MINECRAFT_BLOCK_SPONGE";
-        case MINECRAFT_BLOCK_GLASS:
-            return "MINECRAFT_BLOCK_GLASS";
-        case MINECRAFT_BLOCK_LAPIS_ORE:
-            return "MINECRAFT_BLOCK_LAPIS_ORE";
-        case MINECRAFT_BLOCK_LAPIS_BLOCK:
-            return "MINECRAFT_BLOCK_LAPIS_BLOCK";
-        case MINECRAFT_BLOCK_DISPENSER:
-            return "MINECRAFT_BLOCK_DISPENSER";
-        case MINECRAFT_BLOCK_SANDSTONE:
-            return "MINECRAFT_BLOCK_SANDSTONE";
-        case MINECRAFT_BLOCK_NOTE_BLOCK:
-            return "MINECRAFT_BLOCK_NOTE_BLOCK";
-        case MINECRAFT_BLOCK_BED:
-            return "MINECRAFT_BLOCK_BED";
-        case MINECRAFT_BLOCK_GOLDEN_RAIL:
-            return "MINECRAFT_BLOCK_GOLDEN_RAIL";
-        case MINECRAFT_BLOCK_DETECTOR_RAIL:
-            return "MINECRAFT_BLOCK_DETECTOR_RAIL";
-        case MINECRAFT_BLOCK_STICKY_PISTON:
-            return "MINECRAFT_BLOCK_STICKY_PISTON";
-        case MINECRAFT_BLOCK_WEB:
-            return "MINECRAFT_BLOCK_WEB";
-        case MINECRAFT_BLOCK_TALLGRASS:
-            return "MINECRAFT_BLOCK_TALLGRASS";
-        case MINECRAFT_BLOCK_DEADBUSH:
-            return "MINECRAFT_BLOCK_DEADBUSH";
-        case MINECRAFT_BLOCK_PISTON:
-            return "MINECRAFT_BLOCK_PISTON";
-        case MINECRAFT_BLOCK_PISTON_HEAD:
-            return "MINECRAFT_BLOCK_PISTON_HEAD";
-        case MINECRAFT_BLOCK_WOOL:
-            return "MINECRAFT_BLOCK_WOOL";
-        case MINECRAFT_BLOCK_PISTON_EXTENSION:
-            return "MINECRAFT_BLOCK_PISTON_EXTENSION";
-        case MINECRAFT_BLOCK_YELLOW_FLOWER:
-            return "MINECRAFT_BLOCK_YELLOW_FLOWER";
-        case MINECRAFT_BLOCK_RED_FLOWER:
-            return "MINECRAFT_BLOCK_RED_FLOWER";
-        case MINECRAFT_BLOCK_BROWN_MUSHROOM:
-            return "MINECRAFT_BLOCK_BROWN_MUSHROOM";
-        case MINECRAFT_BLOCK_RED_MUSHROOM:
-            return "MINECRAFT_BLOCK_RED_MUSHROOM";
-        case MINECRAFT_BLOCK_GOLD_BLOCK:
-            return "MINECRAFT_BLOCK_GOLD_BLOCK";
-        case MINECRAFT_BLOCK_IRON_BLOCK:
-            return "MINECRAFT_BLOCK_IRON_BLOCK";
-        case MINECRAFT_BLOCK_DOUBLE_STONE_SLAB:
-            return "MINECRAFT_BLOCK_DOUBLE_STONE_SLAB";
-        case MINECRAFT_BLOCK_STONE_SLAB:
-            return "MINECRAFT_BLOCK_STONE_SLAB";
-        case MINECRAFT_BLOCK_BRICK_BLOCK:
-            return "MINECRAFT_BLOCK_BRICK_BLOCK";
-        case MINECRAFT_BLOCK_TNT:
-            return "MINECRAFT_BLOCK_TNT";
-        case MINECRAFT_BLOCK_BOOKSHELF:
-            return "MINECRAFT_BLOCK_BOOKSHELF";
-        case MINECRAFT_BLOCK_MOSSY_COBBLESTONE:
-            return "MINECRAFT_BLOCK_MOSSY_COBBLESTONE";
-        case MINECRAFT_BLOCK_OBSIDIAN:
-            return "MINECRAFT_BLOCK_OBSIDIAN";
-        case MINECRAFT_BLOCK_TORCH:
-            return "MINECRAFT_BLOCK_TORCH";
-        case MINECRAFT_BLOCK_FIRE:
-            return "MINECRAFT_BLOCK_FIRE";
-        case MINECRAFT_BLOCK_MOB_SPAWNER:
-            return "MINECRAFT_BLOCK_MOB_SPAWNER";
-        case MINECRAFT_BLOCK_OAK_STAIRS:
-            return "MINECRAFT_BLOCK_OAK_STAIRS";
-        case MINECRAFT_BLOCK_CHEST:
-            return "MINECRAFT_BLOCK_CHEST";
-        case MINECRAFT_BLOCK_REDSTONE_WIRE:
-            return "MINECRAFT_BLOCK_REDSTONE_WIRE";
-        case MINECRAFT_BLOCK_DIAMOND_ORE:
-            return "MINECRAFT_BLOCK_DIAMOND_ORE";
-        case MINECRAFT_BLOCK_DIAMOND_BLOCK:
-            return "MINECRAFT_BLOCK_DIAMOND_BLOCK";
-        case MINECRAFT_BLOCK_CRAFTING_TABLE:
-            return "MINECRAFT_BLOCK_CRAFTING_TABLE";
-        case MINECRAFT_BLOCK_WHEAT:
-            return "MINECRAFT_BLOCK_WHEAT";
-        case MINECRAFT_BLOCK_FARMLAND:
-            return "MINECRAFT_BLOCK_FARMLAND";
-        case MINECRAFT_BLOCK_FURNACE:
-            return "MINECRAFT_BLOCK_FURNACE";
-        case MINECRAFT_BLOCK_LIT_FURNACE:
-            return "MINECRAFT_BLOCK_LIT_FURNACE";
-        case MINECRAFT_BLOCK_STANDING_SIGN:
-            return "MINECRAFT_BLOCK_STANDING_SIGN";
-        case MINECRAFT_BLOCK_WOODEN_DOOR:
-            return "MINECRAFT_BLOCK_WOODEN_DOOR";
-        case MINECRAFT_BLOCK_LADDER:
-            return "MINECRAFT_BLOCK_LADDER";
-        case MINECRAFT_BLOCK_RAIL:
-            return "MINECRAFT_BLOCK_RAIL";
-        case MINECRAFT_BLOCK_STONE_STAIRS:
-            return "MINECRAFT_BLOCK_STONE_STAIRS";
-        case MINECRAFT_BLOCK_WALL_SIGN:
-            return "MINECRAFT_BLOCK_WALL_SIGN";
-        case MINECRAFT_BLOCK_LEVER:
-            return "MINECRAFT_BLOCK_LEVER";
-        case MINECRAFT_BLOCK_STONE_PRESSURE_PLATE:
-            return "MINECRAFT_BLOCK_STONE_PRESSURE_PLATE";
-        case MINECRAFT_BLOCK_IRON_DOOR:
-            return "MINECRAFT_BLOCK_IRON_DOOR";
-        case MINECRAFT_BLOCK_WOODEN_PRESSURE_PLATE:
-            return "MINECRAFT_BLOCK_WOODEN_PRESSURE_PLATE";
-        case MINECRAFT_BLOCK_REDSTONE_ORE:
-            return "MINECRAFT_BLOCK_REDSTONE_ORE";
-        case MINECRAFT_BLOCK_LIT_REDSTONE_ORE:
-            return "MINECRAFT_BLOCK_LIT_REDSTONE_ORE";
-        case MINECRAFT_BLOCK_UNLIT_REDSTONE_TORCH:
-            return "MINECRAFT_BLOCK_UNLIT_REDSTONE_TORCH";
-        case MINECRAFT_BLOCK_REDSTONE_TORCH:
-            return "MINECRAFT_BLOCK_REDSTONE_TORCH";
-        case MINECRAFT_BLOCK_STONE_BUTTON:
-            return "MINECRAFT_BLOCK_STONE_BUTTON";
-        case MINECRAFT_BLOCK_SNOW_LAYER:
-            return "MINECRAFT_BLOCK_SNOW_LAYER";
-        case MINECRAFT_BLOCK_ICE:
-            return "MINECRAFT_BLOCK_ICE";
-        case MINECRAFT_BLOCK_SNOW:
-            return "MINECRAFT_BLOCK_SNOW";
-        case MINECRAFT_BLOCK_CACTUS:
-            return "MINECRAFT_BLOCK_CACTUS";
-        case MINECRAFT_BLOCK_CLAY:
-            return "MINECRAFT_BLOCK_CLAY";
-        case MINECRAFT_BLOCK_REEDS:
-            return "MINECRAFT_BLOCK_REEDS";
-        case MINECRAFT_BLOCK_JUKEBOX:
-            return "MINECRAFT_BLOCK_JUKEBOX";
-        case MINECRAFT_BLOCK_FENCE:
-            return "MINECRAFT_BLOCK_FENCE";
-        case MINECRAFT_BLOCK_PUMPKIN:
-            return "MINECRAFT_BLOCK_PUMPKIN";
-        case MINECRAFT_BLOCK_NETHERRACK:
-            return "MINECRAFT_BLOCK_NETHERRACK";
-        case MINECRAFT_BLOCK_SOUL_SAND:
-            return "MINECRAFT_BLOCK_SOUL_SAND";
-        case MINECRAFT_BLOCK_GLOWSTONE:
-            return "MINECRAFT_BLOCK_GLOWSTONE";
-        case MINECRAFT_BLOCK_PORTAL:
-            return "MINECRAFT_BLOCK_PORTAL";
-        case MINECRAFT_BLOCK_LIT_PUMPKIN:
-            return "MINECRAFT_BLOCK_LIT_PUMPKIN";
-        case MINECRAFT_BLOCK_CAKE:
-            return "MINECRAFT_BLOCK_CAKE";
-        case MINECRAFT_BLOCK_UNPOWERED_REPEATER:
-            return "MINECRAFT_BLOCK_UNPOWERED_REPEATER";
-        case MINECRAFT_BLOCK_POWERED_REPEATER:
-            return "MINECRAFT_BLOCK_POWERED_REPEATER";
-        case MINECRAFT_BLOCK_STAINED_GLASS:
-            return "MINECRAFT_BLOCK_STAINED_GLASS";
-        case MINECRAFT_BLOCK_TRAPDOOR:
-            return "MINECRAFT_BLOCK_TRAPDOOR";
-        case MINECRAFT_BLOCK_MONSTER_EGG:
-            return "MINECRAFT_BLOCK_MONSTER_EGG";
-        case MINECRAFT_BLOCK_STONE_BRICK:
-            return "MINECRAFT_BLOCK_STONE_BRICK";
-        case MINECRAFT_BLOCK_BROWN_MUSHROOM_BLOCK:
-            return "MINECRAFT_BLOCK_BROWN_MUSHROOM_BLOCK";
-        case MINECRAFT_BLOCK_RED_MUSHROOM_BLOCK:
-            return "MINECRAFT_BLOCK_RED_MUSHROOM_BLOCK";
-        case MINECRAFT_BLOCK_IRON_BARS:
-            return "MINECRAFT_BLOCK_IRON_BARS";
-        case MINECRAFT_BLOCK_GLASS_PANE:
-            return "MINECRAFT_BLOCK_GLASS_PANE";
-        case MINECRAFT_BLOCK_MELON_BLOCK:
-            return "MINECRAFT_BLOCK_MELON_BLOCK";
-        case MINECRAFT_BLOCK_PUMPKIN_STEM:
-            return "MINECRAFT_BLOCK_PUMPKIN_STEM";
-        case MINECRAFT_BLOCK_MELON_STEM:
-            return "MINECRAFT_BLOCK_MELON_STEM";
-        case MINECRAFT_BLOCK_VINE:
-            return "MINECRAFT_BLOCK_VINE";
-        case MINECRAFT_BLOCK_FENCE_GATE:
-            return "MINECRAFT_BLOCK_FENCE_GATE";
-        case MINECRAFT_BLOCK_BRICK_STAIRS:
-            return "MINECRAFT_BLOCK_BRICK_STAIRS";
-        case MINECRAFT_BLOCK_STONE_BRICK_STAIRS:
-            return "MINECRAFT_BLOCK_STONE_BRICK_STAIRS";
-        case MINECRAFT_BLOCK_MYCELIUM:
-            return "MINECRAFT_BLOCK_MYCELIUM";
-        case MINECRAFT_BLOCK_WATERLILY:
-            return "MINECRAFT_BLOCK_WATERLILY";
-        case MINECRAFT_BLOCK_NETHER_BRICK:
-            return "MINECRAFT_BLOCK_NETHER_BRICK";
-        case MINECRAFT_BLOCK_NETHER_BRICK_FENCE:
-            return "MINECRAFT_BLOCK_NETHER_BRICK_FENCE";
-        case MINECRAFT_BLOCK_NETHER_BRICK_STAIRS:
-            return "MINECRAFT_BLOCK_NETHER_BRICK_STAIRS";
-        case MINECRAFT_BLOCK_NETHER_WART:
-            return "MINECRAFT_BLOCK_NETHER_WART";
-        case MINECRAFT_BLOCK_ENCHANTING_TABLE:
-            return "MINECRAFT_BLOCK_ENCHANTING_TABLE";
-        case MINECRAFT_BLOCK_BREWING_STAND:
-            return "MINECRAFT_BLOCK_BREWING_STAND";
-        case MINECRAFT_BLOCK_CAULDRON:
-            return "MINECRAFT_BLOCK_CAULDRON";
-        case MINECRAFT_BLOCK_END_PORTAL:
-            return "MINECRAFT_BLOCK_END_PORTAL";
-        case MINECRAFT_BLOCK_END_PORTAL_FRAME:
-            return "MINECRAFT_BLOCK_END_PORTAL_FRAME";
-        case MINECRAFT_BLOCK_END_STONE:
-            return "MINECRAFT_BLOCK_END_STONE";
-        case MINECRAFT_BLOCK_DRAGON_EGG:
-            return "MINECRAFT_BLOCK_DRAGON_EGG";
-        case MINECRAFT_BLOCK_REDSTONE_LAMP:
-            return "MINECRAFT_BLOCK_REDSTONE_LAMP";
-        case MINECRAFT_BLOCK_LIT_REDSTONE_LAMP:
-            return "MINECRAFT_BLOCK_LIT_REDSTONE_LAMP";
-        case MINECRAFT_BLOCK_DOUBLE_WOODEN_SLAB:
-            return "MINECRAFT_BLOCK_DOUBLE_WOODEN_SLAB";
-        case MINECRAFT_BLOCK_WOODEN_SLAB:
-            return "MINECRAFT_BLOCK_WOODEN_SLAB";
-        case MINECRAFT_BLOCK_COCOA:
-            return "MINECRAFT_BLOCK_COCOA";
-        case MINECRAFT_BLOCK_SANDSTONE_STAIRS:
-            return "MINECRAFT_BLOCK_SANDSTONE_STAIRS";
-        case MINECRAFT_BLOCK_EMERALD_ORE:
-            return "MINECRAFT_BLOCK_EMERALD_ORE";
-        case MINECRAFT_BLOCK_ENDER_CHEST:
-            return "MINECRAFT_BLOCK_ENDER_CHEST";
-        case MINECRAFT_BLOCK_TRIPWIRE_HOOK:
-            return "MINECRAFT_BLOCK_TRIPWIRE_HOOK";
-        case MINECRAFT_BLOCK_TRIPWIRE:
-            return "MINECRAFT_BLOCK_TRIPWIRE";
-        case MINECRAFT_BLOCK_EMERALD_BLOCK:
-            return "MINECRAFT_BLOCK_EMERALD_BLOCK";
-        case MINECRAFT_BLOCK_SPRUCE_STAIRS:
-            return "MINECRAFT_BLOCK_SPRUCE_STAIRS";
-        case MINECRAFT_BLOCK_BIRCH_STAIRS:
-            return "MINECRAFT_BLOCK_BIRCH_STAIRS";
-        case MINECRAFT_BLOCK_JUNGLE_STAIRS:
-            return "MINECRAFT_BLOCK_JUNGLE_STAIRS";
-        case MINECRAFT_BLOCK_COMMAND_BLOCK:
-            return "MINECRAFT_BLOCK_COMMAND_BLOCK";
-        case MINECRAFT_BLOCK_BEACON:
-            return "MINECRAFT_BLOCK_BEACON";
-        case MINECRAFT_BLOCK_COBBLESTONE_WALL:
-            return "MINECRAFT_BLOCK_COBBLESTONE_WALL";
-        case MINECRAFT_BLOCK_FLOWER_POT:
-            return "MINECRAFT_BLOCK_FLOWER_POT";
-        case MINECRAFT_BLOCK_CARROTS:
-            return "MINECRAFT_BLOCK_CARROTS";
-        case MINECRAFT_BLOCK_POTATOES:
-            return "MINECRAFT_BLOCK_POTATOES";
-        case MINECRAFT_BLOCK_WOODEN_BUTTON:
-            return "MINECRAFT_BLOCK_WOODEN_BUTTON";
-        case MINECRAFT_BLOCK_SKULL:
-            return "MINECRAFT_BLOCK_SKULL";
-        case MINECRAFT_BLOCK_ANVIL:
-            return "MINECRAFT_BLOCK_ANVIL";
-        case MINECRAFT_BLOCK_TRAPPED_CHEST:
-            return "MINECRAFT_BLOCK_TRAPPED_CHEST";
-        case MINECRAFT_BLOCK_LIGHT_WEIGHTED_PRESSURE_PLATE:
-            return "MINECRAFT_BLOCK_LIGHT_WEIGHTED_PRESSURE_PLATE";
-        case MINECRAFT_BLOCK_HEAVY_WEIGHTED_PRESSURE_PLATE:
-            return "MINECRAFT_BLOCK_HEAVY_WEIGHTED_PRESSURE_PLATE";
-        case MINECRAFT_BLOCK_UNPOWERED_COMPARATOR:
-            return "MINECRAFT_BLOCK_UNPOWERED_COMPARATOR";
-        case MINECRAFT_BLOCK_POWERED_COMPARATOR:
-            return "MINECRAFT_BLOCK_POWERED_COMPARATOR";
-        case MINECRAFT_BLOCK_DAYLIGHT_DETECTOR:
-            return "MINECRAFT_BLOCK_DAYLIGHT_DETECTOR";
-        case MINECRAFT_BLOCK_REDSTONE_BLOCK:
-            return "MINECRAFT_BLOCK_REDSTONE_BLOCK";
-        case MINECRAFT_BLOCK_QUARTZ_ORE:
-            return "MINECRAFT_BLOCK_QUARTZ_ORE";
-        case MINECRAFT_BLOCK_HOPPER:
-            return "MINECRAFT_BLOCK_HOPPER";
-        case MINECRAFT_BLOCK_QUARTZ_BLOCK:
-            return "MINECRAFT_BLOCK_QUARTZ_BLOCK";
-        case MINECRAFT_BLOCK_QUARTZ_STAIRS:
-            return "MINECRAFT_BLOCK_QUARTZ_STAIRS";
-        case MINECRAFT_BLOCK_ACTIVATOR_RAIL:
-            return "MINECRAFT_BLOCK_ACTIVATOR_RAIL";
-        case MINECRAFT_BLOCK_DROPPER:
-            return "MINECRAFT_BLOCK_DROPPER";
-        case MINECRAFT_BLOCK_STAINED_HARDENED_CLAY:
-            return "MINECRAFT_BLOCK_STAINED_HARDENED_CLAY";
-        case MINECRAFT_BLOCK_STAINED_GLASS_PANE:
-            return "MINECRAFT_BLOCK_STAINED_GLASS_PANE";
-        case MINECRAFT_BLOCK_LEAVES2:
-            return "MINECRAFT_BLOCK_LEAVES2";
-        case MINECRAFT_BLOCK_LOG2:
-            return "MINECRAFT_BLOCK_LOG2";
-        case MINECRAFT_BLOCK_ACACIA_STAIRS:
-            return "MINECRAFT_BLOCK_ACACIA_STAIRS";
-        case MINECRAFT_BLOCK_DARK_OAK_STAIRS:
-            return "MINECRAFT_BLOCK_DARK_OAK_STAIRS";
-        case MINECRAFT_BLOCK_SLIME:
-            return "MINECRAFT_BLOCK_SLIME";
-        case MINECRAFT_BLOCK_BARRIER:
-            return "MINECRAFT_BLOCK_BARRIER";
-        case MINECRAFT_BLOCK_IRON_TRAPDOOR:
-            return "MINECRAFT_BLOCK_IRON_TRAPDOOR";
-        case MINECRAFT_BLOCK_PRISMARINE:
-            return "MINECRAFT_BLOCK_PRISMARINE";
-        case MINECRAFT_BLOCK_SEA_LANTERN:
-            return "MINECRAFT_BLOCK_SEA_LANTERN";
-        case MINECRAFT_BLOCK_HAY_BLOCK:
-            return "MINECRAFT_BLOCK_HAY_BLOCK";
-        case MINECRAFT_BLOCK_CARPET:
-            return "MINECRAFT_BLOCK_CARPET";
-        case MINECRAFT_BLOCK_HARDENED_CLAY:
-            return "MINECRAFT_BLOCK_HARDENED_CLAY";
-        case MINECRAFT_BLOCK_COAL_BLOCK:
-            return "MINECRAFT_BLOCK_COAL_BLOCK";
-        case MINECRAFT_BLOCK_PACKED_ICE:
-            return "MINECRAFT_BLOCK_PACKED_ICE";
-        case MINECRAFT_BLOCK_DOUBLE_PLANT:
-            return "MINECRAFT_BLOCK_DOUBLE_PLANT";
-        case MINECRAFT_BLOCK_STANDING_BANNER:
-            return "MINECRAFT_BLOCK_STANDING_BANNER";
-        case MINECRAFT_BLOCK_WALL_BANNER:
-            return "MINECRAFT_BLOCK_WALL_BANNER";
-        case MINECRAFT_BLOCK_DAYLIGHT_DETECTOR_INVERTED:
-            return "MINECRAFT_BLOCK_DAYLIGHT_DETECTOR_INVERTED";
-        case MINECRAFT_BLOCK_RED_SANDSTONE:
-            return "MINECRAFT_BLOCK_RED_SANDSTONE";
-        case MINECRAFT_BLOCK_RED_SANDSTONE_STAIRS:
-            return "MINECRAFT_BLOCK_RED_SANDSTONE_STAIRS";
-        case MINECRAFT_BLOCK_DOUBLE_STONE_SLAB2:
-            return "MINECRAFT_BLOCK_DOUBLE_STONE_SLAB2";
-        case MINECRAFT_BLOCK_STONE_SLAB2:
-            return "MINECRAFT_BLOCK_STONE_SLAB2";
-        case MINECRAFT_BLOCK_SPRUCE_FENCE_GATE:
-            return "MINECRAFT_BLOCK_SPRUCE_FENCE_GATE";
-        case MINECRAFT_BLOCK_BIRCH_FENCE_GATE:
-            return "MINECRAFT_BLOCK_BIRCH_FENCE_GATE";
-        case MINECRAFT_BLOCK_JUNGLE_FENCE_GATE:
-            return "MINECRAFT_BLOCK_JUNGLE_FENCE_GATE";
-        case MINECRAFT_BLOCK_DARK_OAK_FENCE_GATE:
-            return "MINECRAFT_BLOCK_DARK_OAK_FENCE_GATE";
-        case MINECRAFT_BLOCK_ACACIA_FENCE_GATE:
-            return "MINECRAFT_BLOCK_ACACIA_FENCE_GATE";
-        case MINECRAFT_BLOCK_SPRUCE_FENCE:
-            return "MINECRAFT_BLOCK_SPRUCE_FENCE";
-        case MINECRAFT_BLOCK_BIRCH_FENCE:
-            return "MINECRAFT_BLOCK_BIRCH_FENCE";
-        case MINECRAFT_BLOCK_JUNGLE_FENCE:
-            return "MINECRAFT_BLOCK_JUNGLE_FENCE";
-        case MINECRAFT_BLOCK_DARK_OAK_FENCE:
-            return "MINECRAFT_BLOCK_DARK_OAK_FENCE";
-        case MINECRAFT_BLOCK_ACACIA_FENCE:
-            return "MINECRAFT_BLOCK_ACACIA_FENCE";
-        case MINECRAFT_BLOCK_SPRUCE_DOOR:
-            return "MINECRAFT_BLOCK_SPRUCE_DOOR";
-        case MINECRAFT_BLOCK_BIRCH_DOOR:
-            return "MINECRAFT_BLOCK_BIRCH_DOOR";
-        case MINECRAFT_BLOCK_JUNGLE_DOOR:
-            return "MINECRAFT_BLOCK_JUNGLE_DOOR";
-        case MINECRAFT_BLOCK_ACACIA_DOOR:
-            return "MINECRAFT_BLOCK_ACACIA_DOOR";
-        case MINECRAFT_BLOCK_DARK_OAK_DOOR:
-            return "MINECRAFT_BLOCK_DARK_OAK_DOOR";
-        case MINECRAFT_BLOCK_END_ROD:
-            return "MINECRAFT_BLOCK_END_ROD";
-        case MINECRAFT_BLOCK_CHORUS_PLANT:
-            return "MINECRAFT_BLOCK_CHORUS_PLANT";
-        case MINECRAFT_BLOCK_CHORUS_FLOWER:
-            return "MINECRAFT_BLOCK_CHORUS_FLOWER";
-        case MINECRAFT_BLOCK_PURPUR_BLOCK:
-            return "MINECRAFT_BLOCK_PURPUR_BLOCK";
-        case MINECRAFT_BLOCK_PURPUR_PILLAR:
-            return "MINECRAFT_BLOCK_PURPUR_PILLAR";
-        case MINECRAFT_BLOCK_PURPUR_STAIRS:
-            return "MINECRAFT_BLOCK_PURPUR_STAIRS";
-        case MINECRAFT_BLOCK_PURPUR_DOUBLE_SLAB:
-            return "MINECRAFT_BLOCK_PURPUR_DOUBLE_SLAB";
-        case MINECRAFT_BLOCK_PURPUR_SLAB:
-            return "MINECRAFT_BLOCK_PURPUR_SLAB";
-        case MINECRAFT_BLOCK_END_BRICKS:
-            return "MINECRAFT_BLOCK_END_BRICKS";
-        case MINECRAFT_BLOCK_BEETROOTS:
-            return "MINECRAFT_BLOCK_BEETROOTS";
-        case MINECRAFT_BLOCK_GRASS_PATH:
-            return "MINECRAFT_BLOCK_GRASS_PATH";
-        case MINECRAFT_BLOCK_END_GATEWAY:
-            return "MINECRAFT_BLOCK_END_GATEWAY";
-        case MINECRAFT_BLOCK_REPEATING_COMMAND_BLOCK:
-            return "MINECRAFT_BLOCK_REPEATING_COMMAND_BLOCK";
-        case MINECRAFT_BLOCK_CHAIN_COMMAND_BLOCK:
-            return "MINECRAFT_BLOCK_CHAIN_COMMAND_BLOCK";
-        case MINECRAFT_BLOCK_FROSTED_ICE:
-            return "MINECRAFT_BLOCK_FROSTED_ICE";
-        case MINECRAFT_BLOCK_MAGMA:
-            return "MINECRAFT_BLOCK_MAGMA";
-        case MINECRAFT_BLOCK_NETHER_WART_BLOCK:
-            return "MINECRAFT_BLOCK_NETHER_WART_BLOCK";
-        case MINECRAFT_BLOCK_RED_NETHER_BRICK:
-            return "MINECRAFT_BLOCK_RED_NETHER_BRICK";
-        case MINECRAFT_BLOCK_BONE_BLOCK:
-            return "MINECRAFT_BLOCK_BONE_BLOCK";
-        case MINECRAFT_BLOCK_STRUCTURE_VOID:
-            return "MINECRAFT_BLOCK_STRUCTURE_VOID";
-        case MINECRAFT_BLOCK_STRUCTURE_BLOCK:
-            return "MINECRAFT_BLOCK_STRUCTURE_BLOCK";
-    }
+    int index = block_data >> 4;
+    return break_data_table[index].hardness;
 }
