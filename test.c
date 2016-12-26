@@ -292,19 +292,20 @@ int main(int argc, char *argv[], char **envp)
     char *server_name = DEFAULT_SERVER_NAME;
     char *server_port = DEFAULT_SERVER_PORT;
     char *capture_file = NULL; 
+
     switch (argc) {
         case 4:
             capture_file = argv[3]; 
         case 3:
             server_port = argv[2];
-            if (!server_port) {
-                printf("Expected arguments: ./mcc [<SERVER> [<PORT>]]\n");
-                return 0;
-            }
             break;
         case 2:
             server_name = argv[1];
             break;
+        default:
+            printf("Expected arguments: "
+                   "./mcc [<server> [<port> [<debug dump>]]\n");
+            return -1;
     }
 
     init_bot(&bot, "Sintralin");
