@@ -14,7 +14,7 @@ def ns_time():
     return time.time() * 10**9
 
 
-def host_debug_server(host, port, data):
+def host_debug_server(host, port, data, do_echo):
     """Send a non-zero number of packets to the connecting client.
     """
     if type(data) == list:
@@ -43,7 +43,9 @@ def host_debug_server(host, port, data):
                     pass
 
                 conn.sendall(base64.b64decode(payload))
-                print("sent: ", payload)
+
+                if do_echo:
+                    print("sent: ", payload)
 
 
 def _compress(index, data, spacing=DEFAULT_SPACING):
@@ -56,16 +58,20 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("data", help="path to json data file")
+    parser.add_argument("-v", "--verbose",
+                        action="store_true",
+                        help="toggle echoing server output")
     parser.add_argument("-p", "--port",
-                        help="port to listen from (default 25565)",
-                        type=int)
+                        type=int, default=DEFAULT_PORT,
+                        help="port to listen from")
     parser.add_argument("--fast",
-                        help="use fast replay interval (1packet/500ns)",
-                        action='store_true')
+                        action='store_true',
+                        help="use fast replay interval (1packet/500ns)")
     args = parser.parse_args()
 
     _json_path = args.data
-    _port = args.port if args.port else DEFAULT_PORT
+    _port = args.port
+    _echo = args.verbose
 
 
     # load data and compress if needed
@@ -76,4 +82,4 @@ if __name__ == "__main__":
 
 
     # listen on all available interfaces
-    host_debug_server('', _port, _data)
+    host_debug_server('', _port, _data, _echo)
