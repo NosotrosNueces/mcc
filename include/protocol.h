@@ -3,14 +3,15 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "bot.h"
+#include "serial.h"
 
 #define DEFAULT_THRESHOLD (512)
 
 
 int send_string(struct bot_agent *bot, char *str);
 
-int send_uncompressed(struct bot_agent *bot, char *data, size_t len);
-int send_compressed(struct bot_agent *bot, char *data, size_t len);
+int send_uncompressed(struct bot_agent *bot, struct packet_write_buffer *data, size_t len);
+int send_compressed(struct bot_agent *bot, struct packet_write_buffer *data, size_t len);
 
 
 int32_t send_handshaking_serverbound_handshake(

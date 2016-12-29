@@ -8,6 +8,7 @@
 #include <uv.h>
 #include <zlib.h>
 #include "protocol.h"
+#include "queue.h"
 #include "serial.h"
 #include "nbt.h"
 #include "capture.h"
@@ -15,20 +16,6 @@
 #define DEFAULT_PACKET_LENGTH   (1 << 10)
 #define CHUNK_DIM               16
 
-
-/* appends length to the buffer as a varint, returns the start of the buffer */
-/* writes the new length of packet in len */
-char *_prepend_varint(char *buf, int32_t val, size_t *len) {
-    char buf_len[5];
-    int offset = varint32_encode(val, buf_len, sizeof(buf_len));
-    if (len != NULL) {
-        *len += offset;
-    }
-    //char *start = (char *)buf + 5 - offset;
-    char *start = buf - offset;
-    memcpy(start, buf_len, offset);
-    return start;
-}
 
 void on_write(uv_write_t *req, int status) {
     free(req->data);
@@ -72,7 +59,7 @@ int send_string(struct bot_agent *bot, char *str)
     return uv_write(req, (uv_stream_t *)&bot->socket, &buf, 1, NULL);
 }
 
-int send_packet(struct bot_agent *bot, char *data, size_t len) {
+int send_packet(struct bot_agent *bot, struct packet_write_buffer *data, size_t len) {
     int bytes_written = 0;
     if (bot->compression_enabled) {
         bytes_written = send_compressed(bot, data, len);
@@ -82,27 +69,40 @@ int send_packet(struct bot_agent *bot, char *data, size_t len) {
     return bytes_written;
 }
 
-int send_uncompressed(struct bot_agent *bot, char *data, size_t len)
+int send_packet_throttled(struct bot_agent *bot, struct packet_write_buffer *data, size_t len) {
+    char *payload = malloc(len);
+    memcpy(payload, data->head, len);
+
+    struct packet_buffer p = {.payload_len = len, .payload = payload};
+    int success = queue_push(&bot->packet_throttle_queue, p);
+
+    if (success == 0) {
+        return len;
+    } else {
+        return 0;
+    }
+}
+
+int send_uncompressed(struct bot_agent *bot, struct packet_write_buffer *data, size_t len)
 {
 
-    data  = _prepend_varint(data, (int32_t)len, &len);
+    _prepend_vint32(data, (int32_t)len);
+    
+    len = data->tail - data->head;
 
-    int bytes_written = uv_write_encrypt(bot, data, len);
+    int bytes_written = uv_write_encrypt(bot, data->head, len);
     return bytes_written;
 }
 
-int send_compressed(struct bot_agent *bot, char *data, size_t len) {
+int send_compressed(struct bot_agent *bot, struct packet_write_buffer *data, size_t len) {
     char *packet;
     int packet_length;
     struct packet_write_buffer buffer;
     if (len >= bot->compression_threshold) {
         unsigned char out[1024];
-
-        init_packet_write_buffer(&buffer, len);
-        pad_length(&buffer); 
-        char *data_start = buffer.ptr;
-
-        bot->compression_stream.next_in = (unsigned char *)data;
+        /* Compressed packets require 2 varints prepended */
+        init_packet_write_buffer(&buffer, VARINT_MAXLEN * 2, len);
+        bot->compression_stream.next_in = (unsigned char *)data->head;
         bot->compression_stream.avail_in = len;
         size_t compressed_length = 0; 
         do {
@@ -119,16 +119,16 @@ int send_compressed(struct bot_agent *bot, char *data, size_t len) {
             compressed_length += bytes_written;
         } while (bot->compression_stream.avail_out == 0);
 
-        data_start = _prepend_varint(data_start, len, &compressed_length); 
-        data_start = _prepend_varint(data_start, compressed_length, &compressed_length);
-        packet = data_start;
-        packet_length = compressed_length;
+        _prepend_vint32(&buffer, len); 
+        _prepend_vint32(&buffer, compressed_length);
+        packet_length = buffer.tail - buffer.head;
+        packet = buffer.head;
         deflateReset(&bot->compression_stream);
-    } else {
-        data = _prepend_varint(data, 0, &len);
-        data = _prepend_varint(data, len, &len);
-        packet = data;
-        packet_length = len;
+    } else  {
+        _prepend_vint32(data, 0);
+        _prepend_vint32(data, len + 1);
+        packet_length = data->tail - data->head;
+        packet = data->head;
     }
 
     int bytes_written = uv_write_encrypt(bot, packet, packet_length);
@@ -149,9 +149,8 @@ int32_t send_handshaking_serverbound_handshake(
         vint32_t      next_state
         ) {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x00);
     _push_vint32(&buf, protocol_version);
@@ -159,10 +158,10 @@ int32_t send_handshaking_serverbound_handshake(
     _push_uint16_t(&buf, server_port);
     _push_vint32(&buf, next_state);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -177,16 +176,15 @@ int32_t send_login_serverbound_login_start(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x00);
     _push_string(&buf, username);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -199,9 +197,8 @@ int32_t send_login_serverbound_encryption_response(
         unsigned char *verify_token
         ) {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x01);
     _push_vint32(&buf, ss_length);
@@ -209,9 +206,9 @@ int32_t send_login_serverbound_encryption_response(
     _push_vint32(&buf, verify_token_length);
     _push(&buf, verify_token, verify_token_length);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 
@@ -226,15 +223,14 @@ int32_t send_status_serverbound_request(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x00);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 
@@ -246,16 +242,15 @@ int32_t send_status_serverbound_ping(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x01);
     _push_int64_t(&buf, time);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -270,16 +265,15 @@ int32_t send_play_serverbound_teleport_confirm(
         ) 
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x00);
     _push_vint32(&buf, teleport_id);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 
@@ -294,9 +288,8 @@ int32_t send_play_serverbound_tab_complete(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x01);
     _push_string(&buf, text);
@@ -308,9 +301,9 @@ int32_t send_play_serverbound_tab_complete(
         _push_mc_position(&buf, looked_at_block);
     }
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -321,16 +314,15 @@ int32_t send_play_serverbound_chat_message(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x02);
     _push_string(&buf, message);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet_throttled(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -341,16 +333,15 @@ int32_t send_play_serverbound_client_status(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x03);
     _push_vint32(&buf, action_id);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -366,9 +357,8 @@ int32_t send_play_serverbound_client_settings(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x04);
     _push_string(&buf, locale);
@@ -379,9 +369,9 @@ int32_t send_play_serverbound_client_settings(
     _push(&buf, &displayed_skin_parts, sizeof(displayed_skin_parts));
     _push_vint32(&buf, main_hand);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -394,9 +384,8 @@ int32_t send_play_serverbound_confirm_transaction(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x05);
     _push(&buf, &window_id, sizeof(window_id));
@@ -404,9 +393,9 @@ int32_t send_play_serverbound_confirm_transaction(
     int8_t b = accepted ? 1 : 0;
     _push(&buf, &b, sizeof(b));
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -418,17 +407,16 @@ int32_t send_play_serverbound_enchant_item(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x06);
     _push(&buf, &window_id, sizeof(window_id));
     _push(&buf, &enchantment, sizeof(enchantment));
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -444,9 +432,8 @@ int32_t send_play_serverbound_click_window(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x07);
     _push(&buf, &window_id, sizeof(window_id));
@@ -456,9 +443,9 @@ int32_t send_play_serverbound_click_window(
     _push_vint32(&buf, mode);
     _push_slot(&buf, clicked_item);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -469,16 +456,15 @@ int32_t send_play_serverbound_close_window(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x08);
     _push(&buf, &window_id, sizeof(window_id));
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -491,17 +477,16 @@ int32_t send_play_serverbound_plugin_message(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x09);
     _push_string(&buf, channel);
     _push(&buf, data, data_length); 
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -517,9 +502,8 @@ int32_t send_play_serverbound_use_entity(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x0A);
     _push_vint32(&buf, target);
@@ -533,9 +517,9 @@ int32_t send_play_serverbound_use_entity(
             _push_vint32(&buf, hand);
     }
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -546,16 +530,15 @@ int32_t send_play_serverbound_keep_alive(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x0B);
     _push_vint32(&buf, keep_alive_id);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -569,9 +552,8 @@ int32_t send_play_serverbound_player_position(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x0C);
     _push_double(&buf, x);
@@ -580,9 +562,9 @@ int32_t send_play_serverbound_player_position(
     int8_t b = on_ground ? 1 : 0;
     _push(&buf, &b, sizeof(b));
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -598,9 +580,8 @@ int32_t send_play_serverbound_player_position_look(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x0D);
     _push_double(&buf, x);
@@ -611,9 +592,9 @@ int32_t send_play_serverbound_player_position_look(
     int8_t b = on_ground ? 1 : 0;
     _push(&buf, &b, sizeof(b));
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -626,9 +607,8 @@ int32_t send_play_serverbound_player_look(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x0E);
     _push_float(&buf, yaw);
@@ -636,9 +616,9 @@ int32_t send_play_serverbound_player_look(
     int8_t b = on_ground ? 1 : 0;
     _push(&buf, &b, sizeof(b));
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -649,17 +629,16 @@ int32_t send_play_serverbound_player(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x0F);
     int8_t b = on_ground ? 1 : 0;
     _push(&buf, &b, sizeof(b));
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -674,9 +653,8 @@ int32_t send_play_serverbound_vehicle_move(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x10);
     _push_double(&buf, x);
@@ -685,9 +663,9 @@ int32_t send_play_serverbound_vehicle_move(
     _push_float(&buf, yaw);
     _push_float(&buf, pitch);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -699,9 +677,8 @@ int32_t send_play_serverbound_steer_boat(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x11);
     int8_t b = right_paddle ? 1 : 0;
@@ -709,9 +686,9 @@ int32_t send_play_serverbound_steer_boat(
     b = left_paddle ? 1 : 0;
     _push(&buf, &b, sizeof(b));
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -724,18 +701,17 @@ int32_t send_play_serverbound_player_abilities(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x12);
     _push(&buf, &flags, sizeof(flags));
     _push_float(&buf, flying_speed);
     _push_float(&buf, walking_speed);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -748,18 +724,17 @@ int32_t send_play_serverbound_player_digging(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x13);
     _push_vint32(&buf, status);
     _push_mc_position(&buf, location);
     _push(&buf, &face, sizeof(face));
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -772,18 +747,17 @@ int32_t send_play_serverbound_entity_action(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x14);
     _push_vint32(&buf, entity_id);
     _push_vint32(&buf, action_id);
     _push_vint32(&buf, jump_boost);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -796,18 +770,17 @@ int32_t send_play_serverbound_steer_vehicle(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x15);
     _push_float(&buf, sideways);
     _push_float(&buf, forward);
     _push(&buf, &flags, sizeof(flags));
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -818,16 +791,15 @@ int32_t send_play_serverbound_resource_pack_status(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x16);
     _push_vint32(&buf, result);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -838,16 +810,15 @@ int32_t send_play_serverbound_held_item_change(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x17);
     _push_int16_t(&buf, slot);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -859,17 +830,16 @@ int32_t send_play_serverbound_creative_inventory_action(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x18);
     _push_int16_t(&buf, slot);
     _push_slot(&buf, clicked_item);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -884,9 +854,8 @@ int32_t send_play_serverbound_update_sign(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x19);
     _push_mc_position(&buf, location);
@@ -895,9 +864,9 @@ int32_t send_play_serverbound_update_sign(
     _push_string(&buf, line3);
     _push_string(&buf, line4);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -908,16 +877,15 @@ int32_t send_play_serverbound_animation(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x1A);
     _push_vint32(&buf, hand);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -928,16 +896,15 @@ int32_t send_play_serverbound_spectate(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x1B);
     _push(&buf, uuid, 16);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -953,9 +920,8 @@ int32_t send_play_serverbound_player_block_placement(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x1C);
     _push_mc_position(&buf, location);
@@ -965,9 +931,9 @@ int32_t send_play_serverbound_player_block_placement(
     _push_float(&buf, y);
     _push_float(&buf, z);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -978,16 +944,15 @@ int32_t send_play_serverbound_use_item(
         )
 {
     struct packet_write_buffer buf;
-    init_packet_write_buffer(&buf, DEFAULT_PACKET_LENGTH);
-    pad_length(&buf);
-    char *data_start = buf.ptr;
+    init_packet_write_buffer(&buf, VARINT_MAXLEN, DEFAULT_PACKET_LENGTH);
+    
 
     _push_vint32(&buf, 0x1D);
     _push_vint32(&buf, hand);
 
-    size_t length = buf.ptr - data_start;
+    size_t length = buf.tail - buf.head;
 
-    send_packet(bot, data_start, length);
+    send_packet(bot, &buf, length);
     free(buf.base);
     return length;
 }
@@ -1096,7 +1061,10 @@ void deserialize_clientbound_login_set_compression(char *packet_data, struct bot
     packet_data = _read_vint32(packet_data, &threshold, bot);
 
     bot->compression_threshold = threshold;
-    bot->compression_enabled = threshold != -1;
+    if (threshold != -1) {
+        printf("Compression enabled\n");
+        bot->compression_enabled = 1;
+    }
 
     if (bot->callbacks.clientbound_login_set_compression_cb != NULL) {
         bot->callbacks.clientbound_login_set_compression_cb(

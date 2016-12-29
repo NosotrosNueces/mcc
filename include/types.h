@@ -1,5 +1,7 @@
 #pragma once
 
+#include "queue.h"
+
 #include <uv.h>
 #include <stdbool.h>
 #include <zlib.h>
@@ -1088,7 +1090,6 @@ struct bot_agent {
     bool reduced_debug_info;
 
     enum state current_state;
-    int packet_id;
 
     char *name;
     struct mc_position position;
@@ -1137,6 +1138,8 @@ struct bot_agent {
     int32_t packet_bytes_read; /* how many packet bytes have been read into buffer */
     char *packet_buffer; /* the buffer into which socket stream data is copied */
     char *packet_data; /* pointer to the start of a packet within packet_buffer */
+    int32_t packet_id;
+
     /* callbacks */ 
     struct _callbacks callbacks;
 
@@ -1144,4 +1147,9 @@ struct bot_agent {
     uv_timer_t block_break_timer;
     struct mc_position block_break_location;
     int is_breaking;
+    
+    uv_timer_t packet_throttle_timer;
+    uv_thread_t packet_throttle_thread;
+    struct queue packet_throttle_queue;
+    struct timespec throttle_sleep;
 };

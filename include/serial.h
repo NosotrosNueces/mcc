@@ -2,11 +2,16 @@
 #include <stdint.h>
 #include "types.h"
 
+#define VARINT_MAXLEN   5
 
+/* Buffer with padding before the head and after the tail */
 struct packet_write_buffer {
     uint32_t capacity;
+    uint32_t headroom;
+    uint32_t tailroom;
     char *base;
-    char *ptr;
+    char *head;
+    char *tail;
 };
 
 int varint64(char *data, int32_t bytes_left, int64_t *value);
@@ -35,6 +40,11 @@ char *_read_vint32(char *buf, vint32_t *val, struct bot_agent *bot);
 char *_read_vint64(char *buf, vint64_t *val, struct bot_agent *bot);
 char *_read_string(char *buf, char **strptr, int32_t *str_len, struct bot_agent *bot);
 char *_read_slot(char *packet_raw, struct slot_type *slot_data, struct bot_agent *bot);
+void _prepend(struct packet_write_buffer *buffer, const void *data, size_t size);
+
+void _prepend_vint32(struct packet_write_buffer *buffer, vint32_t val);
+
+
 void _push(struct packet_write_buffer *buffer, const void *data, size_t size);
 void _push_int16_t(struct packet_write_buffer *buffer, int16_t val);
 void _push_uint16_t(struct packet_write_buffer *buffer, uint16_t val);
@@ -51,4 +61,4 @@ void _push_string(struct packet_write_buffer *buffer, const char *str);
 void _push_slot(struct packet_write_buffer *buffer, struct slot_type *slot_data);
 
 void pad_length(struct packet_write_buffer *buffer);
-void init_packet_write_buffer(struct packet_write_buffer *buffer, uint32_t capacity);
+void init_packet_write_buffer(struct packet_write_buffer *buffer, uint32_t capacity, uint32_t headroom);
