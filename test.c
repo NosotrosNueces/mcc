@@ -7,13 +7,10 @@
 #include "protocol.h"
 #include "capture.h"
 #include "break.h"
+#include "throttle.h"
 
 #define DEFAULT_SERVER_NAME "localhost"
 #define DEFAULT_SERVER_PORT "25565"
-
-void *_read(void *buffer, void *storage, size_t size);
-void *_read_vint32(void *buffer, int32_t *val);
-void *_read_string(void *buffer, char **strptr, int32_t *len);
 
 struct player {
     char uuid[16];
@@ -248,7 +245,7 @@ void block_change_cb(
                 (int)location.z
                 );
         printf("%s", message);
-        //send_play_serverbound_chat_message(bot, message);
+        send_play_serverbound_chat_message(bot, message);
 
         snprintf(message,
                 sizeof(message),
@@ -256,7 +253,7 @@ void block_change_cb(
                 block_hardness(block_id)
                 );
         printf("%s", message);
-        //send_play_serverbound_chat_message(bot, message);
+        send_play_serverbound_chat_message(bot, message);
 
         snprintf(message,
                 sizeof(message),
@@ -264,7 +261,7 @@ void block_change_cb(
                 block_break_time_hand(block_id)
                 );
         printf("%s", message);
-        //send_play_serverbound_chat_message(bot, message);
+        send_play_serverbound_chat_message(bot, message);
         printf("    metadata: 0x%02x\n", block_id & 15);
         
         start_block_break(bot, block_id, location);
@@ -322,6 +319,7 @@ int main(int argc, char *argv[], char **envp)
     init_capture(&bot, capture_file);
 
     join_server_hostname(&bot, server_name, server_port);
+    init_throttle(&bot, 1000);
     uv_run(&bot.loop, UV_RUN_DEFAULT);
     while(1);
     uv_loop_close(&bot.loop);

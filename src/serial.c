@@ -188,33 +188,60 @@ char *_read_mc_position(char *buffer, struct mc_position *position, struct bot_a
     return buffer;
 }
 
-void _resize_packet_write_buffer(struct packet_write_buffer *buffer) {
-    uint32_t offset = buffer->ptr - buffer->base;
-    buffer->capacity *= 2;
+void _resize_packet_write_buffer_head(struct packet_write_buffer *buffer, uint32_t new_headroom) {
+    uint32_t tail_offset = buffer->tail - buffer->base;
+    buffer->headroom = new_headroom;
+    buffer->capacity = buffer->headroom + buffer->tailroom;
+   
+    size_t old_len = buffer->tail - buffer->head;
+    char *old_base = buffer->base, *old_head= buffer->head;
+
+    buffer->base = malloc(buffer->capacity);
+    buffer->head = buffer->base + buffer->headroom;
+    buffer->tail = buffer->base + tail_offset;
+
+    memcpy(buffer->head, old_head, old_len);
+    free(old_base);
+}
+
+void _resize_packet_write_buffer_tail(struct packet_write_buffer *buffer, uint32_t new_tailroom) {
+    uint32_t tail_offset = buffer->tail - buffer->base;
+    buffer->tailroom = new_tailroom;
+    buffer->capacity = buffer->headroom + buffer->tailroom;
     buffer->base = realloc(buffer->base, buffer->capacity);
-    buffer->ptr = buffer->base + offset;
+    buffer->head = buffer->base + buffer->headroom;
+    buffer->tail = buffer->base + tail_offset;
 }
 
-void pad_length(struct packet_write_buffer *buffer) {
-    while (buffer->capacity < buffer->ptr + 5 - buffer->base) {
-        _resize_packet_write_buffer(buffer);
+void init_packet_write_buffer(struct packet_write_buffer *buffer, uint32_t headroom, uint32_t tailroom) {
+    buffer->headroom = headroom;
+    buffer->tailroom = tailroom;
+    buffer->capacity = headroom + tailroom;
+    buffer->base = malloc(buffer->capacity);
+    buffer->head = buffer->tail = buffer->base + headroom;
+}
+
+void _prepend(struct packet_write_buffer *buffer, const void *data, size_t size) {
+    while (buffer->headroom < size) {
+        ;
     }
-    buffer->ptr += 5;
+    buffer->head -= size;
+    memcpy(buffer->head, data, size);
 }
 
-void init_packet_write_buffer(struct packet_write_buffer *buffer, uint32_t capacity) {
-    buffer->capacity = capacity;
-    buffer->base = malloc(capacity);
-    buffer->ptr = buffer->base;
+void _prepend_vint32(struct packet_write_buffer *buffer, vint32_t val) {
+    char varint[5];
+    uint32_t len = varint32_encode(val, varint, sizeof(varint));
+     _prepend(buffer, varint, len);
 }
 
 void _push(struct packet_write_buffer *buffer, const void *data, size_t size)
 {
-    while (buffer->capacity < buffer->ptr + size - buffer->base) {
-        _resize_packet_write_buffer(buffer);
+    while (buffer->tailroom < size) {
+        _resize_packet_write_buffer_tail(buffer, buffer->tailroom * 2);
     }
-    memcpy(buffer->ptr, data, size);    
-    buffer->ptr += size;
+    memcpy(buffer->tail, data, size);    
+    buffer->tail += size;
 }
 
 void _push_int16_t(struct packet_write_buffer *buffer, int16_t val) {

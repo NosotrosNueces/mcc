@@ -25,7 +25,9 @@ SRCFILES	= 	src/protocol.c \
 				src/base64.c \
 				src/serial.c \
 				src/capture.c \
-				src/break.c
+				src/break.c \
+				src/throttle.c \
+				src/queue.c
 
 OBJECTS 	= $(patsubst $(SRC)/%.c,$(OBJ)/%.o, $(SRCFILES))
 

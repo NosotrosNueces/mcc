@@ -33,7 +33,6 @@ def generate_block_break_table(break_json):
     for i in range(256):
         if str(i) in break_json:
             data = break_json[str(i)]
-            print(str(i))
             code +=    '    {\n' + \
                        '        .name               = "{:s}",\n'.format(data['name']) + \
                        '        .hardness           = {:s},\n'.format(c_float_to_string(data['hardness'])) + \
