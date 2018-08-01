@@ -1130,8 +1130,8 @@ struct bot_agent {
     unsigned char *verify_token;
     unsigned char ss[SECRET_KEY_LENGTH];
     uint32_t block_size;
-    EVP_CIPHER_CTX ctx_encrypt;
-    EVP_CIPHER_CTX ctx_decrypt;
+    EVP_CIPHER_CTX *ctx_encrypt;
+    EVP_CIPHER_CTX *ctx_decrypt;
 
     int32_t packet_capacity;
     int32_t packet_length;

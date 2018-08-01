@@ -32,7 +32,7 @@ int uv_write_encrypt(struct bot_agent *bot, char *data, size_t len) {
         int32_t max_len = len + bot->block_size;
         buf = uv_buf_init(malloc(max_len), max_len);
         int32_t outl;
-        if (!EVP_EncryptUpdate(&bot->ctx_encrypt, (unsigned char *)buf.base, &outl, (const unsigned char *)data, len)) {
+        if (!EVP_EncryptUpdate(bot->ctx_encrypt, (unsigned char *)buf.base, &outl, (const unsigned char *)data, len)) {
             fprintf(stderr, "Encryption error.\n");
             assert(0);
         }
@@ -1015,10 +1015,10 @@ void deserialize_clientbound_login_encryption_request(char *packet_data, struct 
     srand(time(NULL));
     /* Generat 16-byte shared secret */
     bot->block_size = EVP_CIPHER_block_size(EVP_aes_128_cfb8());
-    EVP_CIPHER_CTX_init(&bot->ctx_encrypt);
-    EVP_CIPHER_CTX_init(&bot->ctx_decrypt);
-    EVP_EncryptInit_ex(&bot->ctx_encrypt, EVP_aes_128_cfb8(), NULL, bot->ss, bot->ss);
-    EVP_DecryptInit_ex(&bot->ctx_decrypt, EVP_aes_128_cfb8(), NULL, bot->ss, bot->ss);
+    bot->ctx_encrypt = EVP_CIPHER_CTX_new();
+    bot->ctx_decrypt = EVP_CIPHER_CTX_new();
+    EVP_EncryptInit_ex(bot->ctx_encrypt, EVP_aes_128_cfb8(), NULL, bot->ss, bot->ss);
+    EVP_DecryptInit_ex(bot->ctx_decrypt, EVP_aes_128_cfb8(), NULL, bot->ss, bot->ss);
     random_bytes(sizeof(bot->ss), bot->ss);
     int ss_cipher_length = RSA_public_encrypt(sizeof(bot->ss), bot->ss, ss_cipher, r, RSA_PKCS1_PADDING);
     int token_cipher_length = RSA_public_encrypt(verify_token_length, verify_token, token_cipher, r, RSA_PKCS1_PADDING);
@@ -3785,7 +3785,7 @@ void read_socket(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
     /* decrypt packet if needed */
     if (bot->encryption_enabled) {
         stream_data_raw = malloc(nread + bot->block_size);
-        if(!EVP_DecryptUpdate(&bot->ctx_decrypt, (unsigned char *)stream_data_raw, &data_length, (const unsigned char *)buf->base, nread)) {
+        if(!EVP_DecryptUpdate(bot->ctx_decrypt, (unsigned char *)stream_data_raw, &data_length, (const unsigned char *)buf->base, nread)) {
             fprintf(stderr, "Decryption error.\n");
             assert(0);
         }
