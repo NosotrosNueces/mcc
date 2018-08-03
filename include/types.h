@@ -6,7 +6,6 @@
 #include <stdbool.h>
 #include <zlib.h>
 #include <openssl/evp.h>
-#include <pcap.h>
 #include <stdio.h>
 
 
@@ -1110,9 +1109,6 @@ struct bot_agent {
     
     int capture_enabled;
     FILE *capture;
-    /* TODO: Use pcap to record traffic instead of custom binary format? */
-    pcap_dumper_t *pdumper;
-    char pcap_errorbuf[PCAP_ERRBUF_SIZE];
 
     int mcc_status;
 
