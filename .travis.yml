@@ -1,5 +1,11 @@
 language: c
 compiler: clang
 before_install:
-    sudo apt-get install -y libuv-dev
+    wget https://dist.libuv.org/dist/v1.22.0/libuv-v1.22.0.tar.gz
+    tar -xzf libuv*.tar.gz
+    cd libuv*
+    sh autogen.sh
+    ./configure
+    make
+    sudo make install
 script: make
