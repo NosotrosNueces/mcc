@@ -1,3 +1,5 @@
 language: c
 compiler: clang
+before_install:
+    sudo apt-get install -y libuv-dev
 script: make
